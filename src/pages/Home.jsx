@@ -2,6 +2,8 @@
 import CategorySection from '../components/CategorySection';
 import BgImage from '../assets/Images/barca.png';
 import MobileBgImage from '../assets/Images/mbarca.png';
+import CallIcon from '../assets/Images/call.png';
+import WhatsIcon from '../assets/Images/whatsapp.jpeg';
 
 const Home = () => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
@@ -51,14 +53,16 @@ const Home = () => {
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
             <a
               href="tel:0000000"
-              className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-sky-50 md:text-base"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-sky-50 md:text-base"
             >
+              <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
               Call us
             </a>
             <a
               href="https://wa.me/0000000"
-              className="inline-flex items-center justify-center rounded-full border border-white/70 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10 md:text-base"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/80 bg-emerald-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:bg-emerald-500/90 hover:border-emerald-500 md:text-base"
             >
+              <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
               WhatsApp
             </a>
           </div>
