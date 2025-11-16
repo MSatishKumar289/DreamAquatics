@@ -5,7 +5,7 @@ const Footer = () => {
         <div className="text-center">
           <h3 className="text-xl font-bold mb-2">Dream Aquatics</h3>
           <p className="text-gray-400 text-sm">
-            Premium aquarium products and supplies
+            Exclusive and Exotics
           </p>
           <p className="text-gray-500 text-xs mt-4">
             © {new Date().getFullYear()} Dream Aquatics. All rights reserved.
