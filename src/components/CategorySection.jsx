@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import CategoryCard from './CategoryCard';
 
 const CategorySection = ({ categoryName, products }) => {
+  const navigate = useNavigate();
   const categoryLabel = {
     'fishes': 'Fishes',
     'live-plants': 'Live Plants',
@@ -11,7 +13,7 @@ const CategorySection = ({ categoryName, products }) => {
   const displayName = categoryLabel[categoryName] || categoryName;
 
   const handleViewAll = () => {
-    // Placeholder for future navigation
+    navigate(`/category/${categoryName}`);
   };
 
   // Take only the first 4 products for this category
