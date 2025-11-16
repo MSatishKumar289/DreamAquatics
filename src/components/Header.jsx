@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 const Header = () => {
-  const [cartCount] = useState(0); // Placeholder for cart count
+  const { cartItems } = useCart();
+  const cartCount = cartItems.length;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const categories = [
@@ -16,9 +19,13 @@ const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Brand Title */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600">
+          <Link
+            to="/"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            aria-label="Dream Aquatics home"
+          >
             Dream Aquatics
-          </h1>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
