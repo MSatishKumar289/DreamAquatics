@@ -1,3 +1,6 @@
+import BettaImage from '../assets/Images/Betta.png';
+import GoldImage from '../assets/Images/Gold.png';
+
 // Sample product data for Phase 1
 export const sampleProducts = [
   // Fishes
@@ -16,7 +19,7 @@ export const sampleProducts = [
     title: 'Betta Fish',
     subtitle: 'Colorful ornamental fish',
     price: 350,
-    image: 'betta-fish.jpg',
+    image: BettaImage,
     description: 'Stunning betta fish with vibrant colors'
   },
   {
@@ -25,7 +28,7 @@ export const sampleProducts = [
     title: 'Goldfish',
     subtitle: 'Classic aquarium favorite',
     price: 250,
-    image: 'goldfish.jpg',
+    image: GoldImage,
     description: 'Traditional goldfish, great for beginners'
   },
   {
