@@ -1,16 +1,19 @@
 import { useParams, Link } from 'react-router-dom';
 import { getProductsByCategory } from '../data/sampleProducts';
-import ProductTile from '../components/ProductTile';
+import { getSubItems } from '../data/subSampleProducts';
+import CategoryCard from '../components/CategoryCard';
+
 import ProductModal from '../components/ProductModal';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 
 const CategoryListingPage = () => {
-  const { categorySlug } = useParams();
+  const { categorySlug, subCategorySlug } = useParams();
   const { addToCart } = useCart();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  
   // Map category slug to human-readable title
   const categoryLabel = {
     'fishes': 'Fishes',
@@ -18,12 +21,22 @@ const CategoryListingPage = () => {
     'accessories': 'Accessories',
     'tank': 'Tank'
   };
-
-  const categoryTitle = categoryLabel[categorySlug] || categorySlug;
-
+  
+  const categoryTitle = categorySlug;
+  const titleOfListingPage = subCategorySlug || categoryLabel[categorySlug];
+  
   // Filter products by category
   const products = getProductsByCategory(categorySlug);
-
+  const subProducts = getSubItems(subCategorySlug);
+  
+  const productForIteration = subCategorySlug?.length > 0 ? subProducts : products;
+  
+  console.log("We are inside CategoryListingPage - categoryTitle: ", categoryTitle);
+  console.log(" categorySlug: ", categorySlug);
+  console.log( " subCategorySlug: ", subCategorySlug);
+  console.log("productForIteration: ", productForIteration);
+  console.log("subProducts: ", subProducts, "--- products: ", products)
+  
   const handleViewMore = (product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
@@ -50,23 +63,47 @@ const CategoryListingPage = () => {
             Home
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">{categoryTitle}</span>
+          {/* If no sub category slug, show the category title	 */}
+          {
+            !subCategorySlug && <span className="text-gray-900">{categoryTitle}</span>
+          }
+          {/*  */}
+          {
+            subCategorySlug && 
+            <>
+              <Link
+                to={`/category/${categorySlug}`}
+                className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+              >
+                {categoryTitle}
+              </Link>
+              <span className="mx-2">/</span>
+              <span className="text-gray-900">{subCategorySlug}</span>
+            </>
+          }
+          
         </nav>
 
         {/* Category Title */}
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
-          {categoryTitle}
+          {titleOfListingPage}
         </h1>
 
         {/* Product Grid */}
-        {products.length > 0 ? (
+        {productForIteration.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
-            {products.map((product) => (
-              <ProductTile
-                key={product.id}
-                product={product}
-                onViewMore={handleViewMore}
-              />
+            {productForIteration.map((product) => (
+              // <ProductTile
+              //   key={product.id}
+              //   product={product}
+              //   onViewMore={handleViewMore}
+              // />
+              <CategoryCard key={product.id}
+              categoryName={categoryTitle}
+              product={product}
+              handleSubCategoryClick={() => {handleViewMore(product)}}
+              isSubCategory={subCategorySlug!=undefined}/>
+
             ))}
           </div>
         ) : (

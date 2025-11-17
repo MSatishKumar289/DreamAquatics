@@ -14,6 +14,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/category/:categorySlug" element={<CategoryListingPage />} />
+            <Route path="/category/:categorySlug/:subCategorySlug" element={<CategoryListingPage />} />
           </Routes>
           <Footer />
         </div>
