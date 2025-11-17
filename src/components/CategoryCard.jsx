@@ -1,14 +1,16 @@
 import { getImageWithFallback } from '../assets';
+import { useNavigate } from 'react-router-dom';
 
-const CategoryCard = ({ product }) => {
+const CategoryCard = ({ categoryName, product, isSubCategory = false, handleSubCategoryClick }) => {
+
+  const navigate = useNavigate();
+
   const handleClick = () => {
-    // Placeholder for future navigation/click handling
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick();
+    if(!isSubCategory){
+      // Placeholder for future navigation/click handling
+      navigate(`/category/${categoryName}/${product.title}`);
+    } else {
+      handleSubCategoryClick();
     }
   };
 
@@ -22,7 +24,6 @@ const CategoryCard = ({ product }) => {
       role="button"
       aria-label={`View details for ${product.title}`}
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
     >
       {/* Image Container with 4:3 aspect ratio */}
       <div className="w-full aspect-[4/3] bg-gray-200 overflow-hidden">
@@ -46,7 +47,7 @@ const CategoryCard = ({ product }) => {
           {product.subtitle}
         </p>
         <p className="text-base font-bold text-blue-600">
-          ₹{product.price.toLocaleString('en-IN')}
+          ₹{product?.price?.toLocaleString('en-IN')}
         </p>
       </div>
     </article>
