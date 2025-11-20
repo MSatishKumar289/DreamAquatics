@@ -31,11 +31,11 @@ const CategoryListingPage = () => {
   
   const productForIteration = subCategorySlug?.length > 0 ? subProducts : products;
   
-  console.log("We are inside CategoryListingPage - categoryTitle: ", categoryTitle);
-  console.log(" categorySlug: ", categorySlug);
-  console.log( " subCategorySlug: ", subCategorySlug);
-  console.log("productForIteration: ", productForIteration);
-  console.log("subProducts: ", subProducts, "--- products: ", products)
+  // console.log("We are inside CategoryListingPage - categoryTitle: ", categoryTitle);
+  // console.log(" categorySlug: ", categorySlug);
+  // console.log( " subCategorySlug: ", subCategorySlug);
+  // console.log("productForIteration: ", productForIteration);
+  // console.log("subProducts: ", subProducts, "--- products: ", products)
   
   const handleViewMore = (product) => {
     setSelectedProduct(product);
