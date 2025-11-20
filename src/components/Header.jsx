@@ -46,7 +46,8 @@ const Header = () => {
             ))}
             
             {/* Cart Icon */}
-            <button
+            <Link
+              to={`/cart`}
               className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
               aria-label={`Shopping cart with ${cartCount} items`}
             >
@@ -59,13 +60,14 @@ const Header = () => {
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button & Cart */}
           <div className="flex md:hidden items-center space-x-4">
             {/* Mobile Cart Icon */}
-            <button
+            <Link
+              to={`/cart`}
               className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
               aria-label={`Shopping cart with ${cartCount} items`}
             >
@@ -78,7 +80,7 @@ const Header = () => {
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
 
             {/* Hamburger Menu Button */}
             <button

@@ -47,7 +47,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-[70vw] w-full mx-4 p-6 relative max-h-[60vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl w-[70vw] mx-4 p-6 relative max-h-[60vh] overflow-y-auto">
         {/* Close Button */}
         
         <button

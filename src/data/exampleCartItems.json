@@ -1,0 +1,19 @@
+[
+  {
+    "id": "fish-1",
+    "title": "Neon Tetra",
+    "price": 120,
+    "qty": 2,
+    "image": "neon-tetra.jpg",
+    "meta": "Small schooling fish"
+  },
+  {
+    "id": "plant-2",
+    "title": "Anubias",
+    "price": 220,
+    "qty": 1,
+    "image": "anubias.jpg",
+    "meta": "Dark green foliage"
+  }
+]
+
