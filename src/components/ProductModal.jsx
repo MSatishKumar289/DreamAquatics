@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getImageWithFallback } from '../assets';
 import close_ic from '../assets/Icons/close_ic.svg';
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
   // Handle Escape key press
   useEffect(() => {
     const handleEscape = (e) => {
@@ -35,9 +37,13 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   };
 
   const handleAddToCart = () => {
+    if (showConfirmation) return;
     onAddToCart(product);
-    // Optionally close modal after adding to cart
-    // onClose();
+    setShowConfirmation(true);
+    setTimeout(() => {
+      setShowConfirmation(false);
+      onClose();
+    }, 4000);
   };
 
   let imageSrc = product.image;
@@ -71,18 +77,24 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
         <div className="flex flex-col gap-6 md:min-h-[420px] md:flex-row">
           {/* Product Image */}
           <div className="space-y-4 md:w-1/2">
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100 shadow-inner">
               <img
                 src={imageSrc}
                 alt={product.title}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
+              {showConfirmation && (
+                <div className="pointer-events-none absolute inset-x-6 bottom-6 rounded-2xl border border-emerald-100 bg-white/95 px-5 py-3 text-center shadow-xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-500">Added to cart</p>
+                  <span className="text-2xl text-emerald-600">✓</span>
+                </div>
+              )}
             </div>
 
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              className="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
+              className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-white font-semibold shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
               aria-label={`Add ${product.title} to cart`}
             >
               Add to Cart

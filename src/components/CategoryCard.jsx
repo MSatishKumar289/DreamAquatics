@@ -14,6 +14,10 @@ const CategoryCard = ({ categoryName, product, isSubCategory = false, handleSubC
     }
   };
 
+  // Determine availability badge text
+  const availabilityText = product?.availability || product?.status || 'In Stock';
+  const isSoldOut = /sold/i.test(availabilityText);
+
   // Get image from src/assets/ with fallback to placeholder
   const imageSrc = getImageWithFallback(product.image, product.title);
 
@@ -46,10 +50,19 @@ const CategoryCard = ({ categoryName, product, isSubCategory = false, handleSubC
         <p className="text-sm text-gray-600 mb-2 line-clamp-1">
           {product.subtitle}
         </p>
-        <p className="text-base font-bold text-gray-900">
-          {'\u20B9'}
-          {Number(product?.price ?? 0).toLocaleString('en-IN')}
-        </p>
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-base font-bold text-gray-900">
+            {'\u20B9'}
+            {Number(product?.price ?? 0).toLocaleString('en-IN')}
+          </p>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-white ${
+              isSoldOut ? 'bg-red-500/90' : 'bg-emerald-500/90'
+            }`}
+          >
+            {isSoldOut ? 'Sold Out' : 'In Stock'}
+          </span>
+        </div>
       </div>
     </article>
   );
