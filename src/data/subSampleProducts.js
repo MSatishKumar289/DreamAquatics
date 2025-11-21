@@ -29,35 +29,35 @@ export const subcategoryData = {
       title: "Halfmoon Betta",
       price: 450,
       description: "Large 180° tail spread with long flowing fins and bold colors.",
-      image: "halfmoon-betta.jpg"
+      image: "Images/hm.jpg"
     },
     {
       id: "betta-2",
       title: "Crowntail Betta",
       price: 400,
       description: "Spiky crown-like tail rays, very striking in small display tanks.",
-      image: "crowntail-betta.jpg"
+      image: "Images/ct.jpg"
     },
     {
       id: "betta-3",
       title: "Plakat Betta",
       price: 500,
       description: "Short-finned betta with strong body and active swimming behavior.",
-      image: "plakat-betta.jpg"
+      image: "Images/pt.jpg"
     },
     {
       id: "betta-4",
       title: "Dumbo Ear Betta",
       price: 700,
       description: "Extra-large pectoral fins that look like ears, very ornamental.",
-      image: "dumbo-ear-betta.jpg"
+      image: "Images/de.jpg"
     },
     {
       id: "betta-5",
       title: "Koi Galaxy Betta",
       price: 900,
       description: "Marbled koi-style pattern with metallic galaxy speckles.",
-      image: "koi-galaxy-betta.jpg"
+      image: "Images/koi.jpg"
     }
   ],
 

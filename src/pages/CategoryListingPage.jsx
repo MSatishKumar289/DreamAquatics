@@ -4,7 +4,7 @@ import { getSubItems } from '../data/subSampleProducts';
 import CategoryCard from '../components/CategoryCard';
 
 import ProductModal from '../components/ProductModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 
 const CategoryListingPage = () => {
@@ -12,6 +12,10 @@ const CategoryListingPage = () => {
   const { addToCart } = useCart();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [categorySlug, subCategorySlug]);
 
   
   // Map category slug to human-readable title

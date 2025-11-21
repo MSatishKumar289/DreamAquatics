@@ -46,8 +46,9 @@ const CategoryCard = ({ categoryName, product, isSubCategory = false, handleSubC
         <p className="text-sm text-gray-600 mb-2 line-clamp-1">
           {product.subtitle}
         </p>
-        <p className="text-base font-bold text-blue-600">
-          ₹{product?.price?.toLocaleString('en-IN')}
+        <p className="text-base font-bold text-gray-900">
+          {'\u20B9'}
+          {Number(product?.price ?? 0).toLocaleString('en-IN')}
         </p>
       </div>
     </article>

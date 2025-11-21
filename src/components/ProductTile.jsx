@@ -16,8 +16,9 @@ const ProductTile = ({ product, onViewMore }) => {
       </div>
 
       {/* Price */}
-      <p className="text-lg font-semibold mt-3 px-4">
-        ₹{product.price}
+      <p className="text-lg font-semibold text-gray-900 mt-3 px-4">
+        {'\u20B9'}
+        {Number(product.price ?? 0).toLocaleString('en-IN')}
       </p>
 
       {/* Short Description (2 lines with ellipsis) */}
