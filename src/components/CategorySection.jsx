@@ -21,8 +21,8 @@ const CategorySection = ({ categoryName, products }) => {
 
   return (
     <section className="py-6 md:py-8" aria-labelledby={`category-${categoryName}`}>
-      <div className="container mx-auto px-2 sm:px-2 lg:px-4">
-        <div className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-sky-100/60 backdrop-blur">
+      <div className="container mx-auto px-0 sm:px-2 lg:px-4">
+        <div className="rounded-none bg-white/95 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2

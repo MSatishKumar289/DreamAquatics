@@ -4,6 +4,9 @@ import BgImage from '../assets/Images/barca.png';
 import MobileBgImage from '../assets/Images/mbarca.png';
 import CallIcon from '../assets/Images/call.png';
 import WhatsIcon from '../assets/Images/whatsapp.jpeg';
+import HighlightOne from '../assets/Images/go.jpg';
+import HighlightTwo from '../assets/Images/koi.jpg';
+import HighlightThree from '../assets/Images/de.jpg';
 
 const Home = () => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
@@ -22,49 +25,89 @@ const Home = () => {
             style={{ backgroundImage: `url(${MobileBgImage})` }}
             aria-hidden
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/45 to-black/35" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
         </div>
 
-        <div className="relative mx-auto flex max-w-5xl flex-col gap-6 px-5 text-white md:px-8">
-          <div className="space-y-3 md:space-y-3">
-            <h1 className="text-center text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
-              Exclusive and Exotics
-            </h1>
-            <p className="text-left text-base text-sky-50/90 md:text-lg">
-              Welcome to the wonderful world of fish keeping.Your trusted source for exotic aquarium fishes with expert advice and nation wide shipping.
-            </p>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2 md:gap-8">
-            <div className="space-y-2 border-l-4 border-sky-300/80 pl-4">
-              <p className="text-lg font-semibold md:text-xl">Custom-built aquariums</p>
-              <p className="text-sm text-sky-50/90 md:text-base">
-                Designed for your space with the right tech to keep vibrant fish like neon tetras healthy and active.
+        <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white md:grid-cols-[1.2fr_0.8fr] md:px-10">
+          <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
+            <div className="space-y-3 text-center md:text-left">
+              <p className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-sky-100 md:justify-start">
+                Dream Aquatics
+              </p>
+              <h1 className="text-3xl font-light leading-tight md:text-4xl lg:text-5xl">
+                Exclusive and <span className="font-semibold text-sky-200">Exotics</span>
+              </h1>
+              <p className="text-base text-sky-50/90 md:text-lg">
+                Welcome to the wonderful world of fish keeping. Your trusted source for exotic aquarium fishes with expert advice and nationwide shipping.
               </p>
             </div>
-            <div className="space-y-2 border-l-4 border-sky-300/80 pl-4">
-              <p className="text-lg font-semibold md:text-xl">Professional maintenance</p>
-              <p className="text-sm text-sky-50/90 md:text-base">
-                Scheduled care, water checks, and quick cleanups to keep your aquarium crystal clear and stress-free.
-              </p>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-sky-900/30 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-200">Custom-built aquariums</p>
+                <p className="mt-2 text-lg font-semibold text-white">
+                  Designed for your space with the right tech to keep vibrant fish like neon tetras healthy and active.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-sky-900/30 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-200">Professional maintenance</p>
+                <p className="mt-2 text-lg font-semibold text-white">
+                  Scheduled care, water checks, and quick cleanups to keep your aquarium crystal clear and stress-free.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 md:justify-start">
+              <a
+                href="tel:0000000"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
+              >
+                <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
+                Call us
+              </a>
+              <a
+                href="https://wa.me/0000000"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
+              >
+                <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
+                WhatsApp
+              </a>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-            <a
-              href="tel:0000000"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-sky-50 md:text-base"
-            >
-              <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
-              Call us
-            </a>
-            <a
-              href="https://wa.me/0000000"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/80 bg-emerald-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:bg-emerald-500/90 hover:border-emerald-500 md:text-base"
-            >
-              <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
-              WhatsApp
-            </a>
+          <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-sky-200">Store highlights</p>
+                <p className="text-xl font-semibold text-white">This week at the studio</p>
+              </div>
+              <span className="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white/80">Live feed</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/10">
+                <img src={HighlightOne} alt="Highlight tank" className="h-full w-full object-cover" />
+              </div>
+              <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
+                <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-cover" />
+              </div>
+              <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
+                <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-cover" />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-6 text-sm uppercase tracking-[0.3em] text-sky-100/80">
+              <span className="flex flex-col">
+                <strong className="text-3xl text-white">18</strong>
+                aquascapes
+              </span>
+              <span className="flex flex-col">
+                <strong className="text-3xl text-white">12</strong>
+                rare arrivals
+              </span>
+              <span className="flex flex-col">
+                <strong className="text-3xl text-white">5</strong>
+                shipped today
+              </span>
+            </div>
           </div>
         </div>
       </section>

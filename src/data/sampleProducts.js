@@ -3,21 +3,22 @@ export const sampleProducts = [
   // Fishes
   {
     id: 'fish-1',
+     category: 'fishes',
+    title: 'Betta Fish',
+    subtitle: 'Colorful ornamental fish',
+    price: 350,
+    image: 'Images/Betta-Fish.jpg',
+    description: 'Stunning betta fish with vibrant colors'
+   
+  },
+  {
+    id: 'fish-2',
     category: 'fishes',
     title: 'Tetras',
     subtitle: 'Small schooling fish',
     price: 120,
     image: 'Images/tetra.jpg',
     description: 'Beautiful small schooling fish perfect for community tanks'
-  },
-  {
-    id: 'fish-2',
-    category: 'fishes',
-    title: 'Betta Fish',
-    subtitle: 'Colorful ornamental fish',
-    price: 350,
-    image: 'Images/Betta-Fish.jpg',
-    description: 'Stunning betta fish with vibrant colors'
   },
   {
     id: 'fish-3',
