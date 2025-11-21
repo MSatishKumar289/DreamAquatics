@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { getImageWithFallback } from '../assets';
 import close_ic from '../assets/Icons/close_ic.svg';
 
@@ -43,16 +43,14 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     setTimeout(() => {
       setShowConfirmation(false);
       onClose();
-    }, 4000);
+    }, 2000);
   };
 
   let imageSrc = product.image;
   if (typeof product.image === 'string') {
-    if (product.image.startsWith('http')) {
-      imageSrc = product.image;
-    } else {
-      imageSrc = getImageWithFallback(product.image, product.title);
-    }
+    imageSrc = product.image.startsWith('http')
+      ? product.image
+      : getImageWithFallback(product.image, product.title);
   }
 
   return (
@@ -74,27 +72,27 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-6 md:min-h-[420px] md:flex-row">
-          {/* Product Image */}
+        <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row">
           <div className="space-y-4 md:w-1/2">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100 shadow-inner">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
               <img
                 src={imageSrc}
                 alt={product.title}
-                className="h-full w-full object-cover"
+                className="w-full h-full object-cover"
               />
               {showConfirmation && (
-                <div className="pointer-events-none absolute inset-x-6 bottom-6 rounded-2xl border border-emerald-100 bg-white/95 px-5 py-3 text-center shadow-xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-500">Added to cart</p>
-                  <span className="text-2xl text-emerald-600">✓</span>
+                <div className="pointer-events-none absolute inset-x-4 bottom-4 flex justify-center">
+                  <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-white/95 px-3 py-2 text-emerald-600 shadow-lg">
+                    <span className="text-base font-bold">✓</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.3em]">Added to cart</span>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-white font-semibold shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
+              className="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
               aria-label={`Add ${product.title} to cart`}
             >
               Add to Cart
@@ -102,18 +100,15 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
           </div>
           <div className="space-y-4 md:w-1/2">
             <section className="space-y-4">
-              {/* Product Title */}
               <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
                 {product.title}
               </h2>
 
-              {/* Price */}
               <p className="text-2xl font-bold text-gray-900">
                 {'\u20B9'}
                 {product?.price?.toLocaleString('en-IN')}
               </p>
 
-              {/* Full Description */}
               <p className="text-md text-gray-700 leading-relaxed">
                 {product.description}
               </p>
@@ -126,4 +121,3 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 };
 
 export default ProductModal;
-
