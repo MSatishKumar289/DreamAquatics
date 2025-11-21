@@ -4,10 +4,10 @@ import CategoryCard from './CategoryCard';
 const CategorySection = ({ categoryName, products }) => {
   const navigate = useNavigate();
   const categoryLabel = {
-    'fishes': 'Fishes',
-    'live-plants': 'Live Plants',
-    'accessories': 'Accessories',
-    'tank': 'Tank'
+    'fishes': '🐠 Fishes',
+    'live-plants': '🌿 Live Plants',
+    'accessories': '🧰 Accessories',
+    'tank': '🫧 Tank'
   };
 
   const displayName = categoryLabel[categoryName] || categoryName;

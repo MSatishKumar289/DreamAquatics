@@ -1,4 +1,5 @@
 import trash_ic from "../assets/Icons/trash_ic.svg";
+import { getImageWithFallback } from "../assets";
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -10,6 +11,15 @@ const CartItem = ({ item, onIncrement, onDecrement, onRemove }) => {
   const disableMinus = item.qty <= 1;
   const lineTotal = item.price * item.qty;
 
+  let imageSrc = item.image;
+  if (typeof item.image === 'string') {
+    if (item.image.startsWith('http')) {
+      imageSrc = item.image;
+    } else {
+      imageSrc = getImageWithFallback(item.image, item.title);
+    }
+  }
+
   return (
     <article
       className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-100 md:flex-row md:items-center"
@@ -17,7 +27,7 @@ const CartItem = ({ item, onIncrement, onDecrement, onRemove }) => {
       aria-label={item.title}
     >
       <img
-        src={item.image}
+        src={imageSrc}
         alt={item.title}
         className="h-24 w-24 rounded-md object-cover"
       />

@@ -48,10 +48,10 @@ const Header = () => {
             {/* Cart Icon */}
             <Link
               to={`/cart`}
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
               aria-label={`Shopping cart with ${cartCount} items`}
             >
-              <img src={cart_ic} />
+              <img src={cart_ic} alt="Cart" />
               {cartCount > 0 && (
                 <span
                   className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
@@ -68,10 +68,10 @@ const Header = () => {
             {/* Mobile Cart Icon */}
             <Link
               to={`/cart`}
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
               aria-label={`Shopping cart with ${cartCount} items`}
             >
-              <img src={mobile_cart_ic} />
+              <img src={mobile_cart_ic} alt="Cart" />
               {cartCount > 0 && (
                 <span
                   className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"

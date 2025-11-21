@@ -56,65 +56,72 @@ const CategoryListingPage = () => {
   };
 
   return (
-    <main className="min-h-screen">
-      {/* Breadcrumb */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-        <nav className="text-sm text-gray-600 mb-4" aria-label="Breadcrumb">
-          <Link
-            to="/"
-            className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
-          >
-            Home
-          </Link>
-          <span className="mx-2">/</span>
-          {/* If no sub category slug, show the category title	 */}
-          {
-            !subCategorySlug && <span className="text-gray-900">{categoryTitle}</span>
-          }
-          {/*  */}
-          {
-            subCategorySlug && 
-            <>
-              <Link
-                to={`/category/${categorySlug}`}
-                className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
-              >
-                {categoryTitle}
-              </Link>
-              <span className="mx-2">/</span>
-              <span className="text-gray-900">{subCategorySlug}</span>
-            </>
-          }
-          
-        </nav>
+    <main className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-white pb-12">
+      <div className="container mx-auto px-4 pt-6 sm:px-6 lg:px-8">
+        <section className="rounded-3xl border border-white/40 bg-white/80 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
+          <nav className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400" aria-label="Breadcrumb">
+            <Link
+              to="/"
+              className="text-slate-500 transition hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded px-1"
+            >
+              Home
+            </Link>
+            <span className="mx-2 text-slate-400">/</span>
+            {!subCategorySlug && <span className="text-slate-700">{categoryTitle}</span>}
+            {subCategorySlug && (
+              <>
+                <Link
+                  to={`/category/${categorySlug}`}
+                  className="text-slate-500 transition hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded px-1"
+                >
+                  {categoryTitle}
+                </Link>
+                <span className="mx-2 text-slate-400">/</span>
+                <span className="text-slate-700">{subCategorySlug}</span>
+              </>
+            )}
+          </nav>
 
-        {/* Category Title */}
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
-          {titleOfListingPage}
-        </h1>
-
-        {/* Product Grid */}
-        {productForIteration.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
-            {productForIteration.map((product) => (
-              // <ProductTile
-              //   key={product.id}
-              //   product={product}
-              //   onViewMore={handleViewMore}
-              // />
-              <CategoryCard key={product.id}
-              categoryName={categoryTitle}
-              product={product}
-              handleSubCategoryClick={() => {handleViewMore(product)}}
-              isSubCategory={subCategorySlug!=undefined}/>
-
-            ))}
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.4em] text-blue-600">Collection</p>
+              <h1 className="text-4xl font-bold text-slate-900 sm:text-5xl">
+                {titleOfListingPage}
+              </h1>
+              <p className="mt-3 max-w-2xl text-base text-slate-600">
+                Explore carefully curated aquatic species ready to ship nationwide. Each card taps for full details and quick cart access.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <div className="rounded-2xl border border-blue-100 bg-white/90 px-4 py-3 text-center shadow-sm">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Listings</p>
+                <p className="text-2xl font-semibold text-slate-900">{productForIteration.length}</p>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No products found in this category.</p>
-          </div>
-        )}
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-white/60 bg-white/90 p-5 shadow-lg shadow-blue-100/80">
+          {productForIteration.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {productForIteration.map((product) => (
+                <CategoryCard
+                  key={product.id}
+                  categoryName={categoryTitle}
+                  product={product}
+                  handleSubCategoryClick={() => {
+                    handleViewMore(product);
+                  }}
+                  isSubCategory={subCategorySlug != undefined}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-lg text-gray-600">No products found in this category.</p>
+            </div>
+          )}
+        </section>
       </div>
 
       {/* Product Modal */}
