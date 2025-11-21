@@ -5,6 +5,7 @@ import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
 import close_ic from '../assets/Icons/close_ic.svg';
 import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
+import RayBrand from '../assets/Images/top.png';
 
 
 const Header = () => {
@@ -26,10 +27,11 @@ const Header = () => {
           {/* Brand Title */}
           <Link
             to="/"
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="flex items-center gap-3 text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             aria-label="Dream Aquatics home"
           >
-            Dream Aquatics
+            <span>Dream Aquatics</span>
+            <img src={RayBrand} alt="" className="h-10 w-auto opacity-90 sm:h-11 md:h-12" />
           </Link>
 
           {/* Desktop Navigation */}
