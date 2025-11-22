@@ -35,7 +35,7 @@ const Home = () => {
               <p className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-sky-100 md:justify-start">
                 Dream Aquatics
               </p>
-              <h1 className="text-3xl font-light leading-tight md:text-4xl lg:text-5xl">
+              <h1 className="text-[1.5rem] font-light leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem]">
                 Exclusive and <span className="font-semibold text-sky-200">Exotics</span>
               </h1>
               <p className="text-base text-sky-50/90 md:text-lg">
@@ -76,15 +76,10 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-sky-200">Store highlights</p>
-                <p className="text-xl font-semibold text-white">This week at the studio</p>
-              </div>
-              <span className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/20 px-5 py-1 text-xs font-semibold tracking-[0.2em] text-white/80">
-                Live feed
-              </span>
+          <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.4em] text-sky-200">Store highlights</p>
+              <p className="text-xl font-semibold text-white">This week at the studio</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/10">

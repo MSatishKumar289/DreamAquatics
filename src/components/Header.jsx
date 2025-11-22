@@ -31,9 +31,9 @@ const Header = () => {
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
-              <span className="text-[1.5rem] sm:text-5xl md:text-6xl font-extrabold">D</span>
+              <span className="text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold">D</span>
               <span className="text-[1.2rem] sm:text-[2.6rem] md:text-4xl font-semibold tracking-wide">REAM</span>
-              <span className="ml-2 text-[1.5rem] sm:text-5xl md:text-6xl font-extrabold">A</span>
+              <span className="ml-2 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
               <span className="text-[1.2rem] sm:text-[2.6rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
             </div>
             <img src={RayBrand} alt="" className="h-10 w-auto translate-y-1 opacity-90 sm:h-12 sm:translate-y-1.5 md:h-14" />
