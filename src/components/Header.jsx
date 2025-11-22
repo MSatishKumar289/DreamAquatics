@@ -27,15 +27,20 @@ const Header = () => {
           {/* Brand Title */}
           <Link
             to="/"
-            className="flex items-center gap-3 text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="flex items-center gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             aria-label="Dream Aquatics home"
           >
-            <span>Dream Aquatics</span>
-            <img src={RayBrand} alt="" className="h-10 w-auto opacity-90 sm:h-11 md:h-12" />
+            <div className="flex items-baseline leading-none">
+              <span className="text-[1.5rem] sm:text-5xl md:text-6xl font-extrabold">D</span>
+              <span className="text-[1.2rem] sm:text-[2.6rem] md:text-4xl font-semibold tracking-wide">REAM</span>
+              <span className="ml-2 text-[1.5rem] sm:text-5xl md:text-6xl font-extrabold">A</span>
+              <span className="text-[1.2rem] sm:text-[2.6rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
+            </div>
+            <img src={RayBrand} alt="" className="h-10 w-auto translate-y-1 opacity-90 sm:h-12 sm:translate-y-1.5 md:h-14" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+          <div className="hidden lg:flex items-center space-x-6 lg:space-x-8">
             {categories.map((category) => (
               <Link
                 key={category.value}
@@ -66,7 +71,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex md:hidden items-center space-x-4">
+          <div className="flex lg:hidden items-center space-x-4">
             {/* Mobile Cart Icon */}
             <Link
               to={`/cart`}

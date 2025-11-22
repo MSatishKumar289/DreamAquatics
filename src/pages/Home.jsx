@@ -7,6 +7,7 @@ import WhatsIcon from '../assets/Images/whatsapp.jpeg';
 import HighlightOne from '../assets/Images/go.jpg';
 import HighlightTwo from '../assets/Images/koi.jpg';
 import HighlightThree from '../assets/Images/de.jpg';
+import HighlightVideo from '../assets/Images/video.mp4';
 
 const Home = () => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
@@ -81,11 +82,22 @@ const Home = () => {
                 <p className="text-xs uppercase tracking-[0.4em] text-sky-200">Store highlights</p>
                 <p className="text-xl font-semibold text-white">This week at the studio</p>
               </div>
-              <span className="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white/80">Live feed</span>
+              <span className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/20 px-5 py-1 text-xs font-semibold tracking-[0.2em] text-white/80">
+                Live feed
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/10">
-                <img src={HighlightOne} alt="Highlight tank" className="h-full w-full object-cover" />
+                <video
+                  src={HighlightVideo}
+                  className="h-full w-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  controls
+                  poster={HighlightOne}
+                />
               </div>
               <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
                 <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-cover" />
