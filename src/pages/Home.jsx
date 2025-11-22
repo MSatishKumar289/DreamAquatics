@@ -7,7 +7,7 @@ import WhatsIcon from '../assets/Images/whatsapp.jpeg';
 import HighlightOne from '../assets/Images/go.jpg';
 import HighlightTwo from '../assets/Images/koi.jpg';
 import HighlightThree from '../assets/Images/de.jpg';
-import HighlightVideo from '../assets/Images/video.mp4';
+import HighlightVideo from '../assets/Videos/video.mp4';
 
 const Home = () => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
