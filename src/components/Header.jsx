@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
@@ -12,6 +12,7 @@ const Header = () => {
   const { cartItems } = useCart();
   const cartCount = cartItems.length;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const categories = [
     { label: 'Fishes', value: 'fishes' },
@@ -111,6 +112,10 @@ const Header = () => {
             {categories.map((category) => (
               <button
                 key={category.value}
+                onClick={() => {
+                  navigate(`/category/${category.value}`);
+                  setIsMobileMenuOpen(false);
+                }}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 aria-label={`View ${category.label} category`}
               >
