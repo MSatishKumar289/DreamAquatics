@@ -11,8 +11,24 @@
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+  }
+
   body {
     font-family: 'Trajan Pro', 'Times New Roman', serif;
     @apply bg-gray-50 text-gray-900;
+  }
+
+  main {
+    flex: 1;
   }
 }
