@@ -10,14 +10,16 @@ function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        <div className="App">
+        <div className="App flex min-h-screen flex-col">
           <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/category/:categorySlug" element={<CategoryListingPage />} />
-            <Route path="/category/:categorySlug/:subCategorySlug" element={<CategoryListingPage />} />
-            <Route path="/cart" element={<CartPage/>} />
-          </Routes>
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/category/:categorySlug" element={<CategoryListingPage />} />
+              <Route path="/category/:categorySlug/:subCategorySlug" element={<CategoryListingPage />} />
+              <Route path="/cart" element={<CartPage/>} />
+            </Routes>
+          </main>
           <Footer />
         </div>
       </BrowserRouter>
