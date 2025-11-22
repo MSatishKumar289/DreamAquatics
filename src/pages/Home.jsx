@@ -32,9 +32,6 @@ const Home = () => {
         <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white md:grid-cols-[1.2fr_0.8fr] md:px-10">
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
             <div className="space-y-3 text-center md:text-left">
-              <p className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-sky-100 md:justify-start">
-                Dream Aquatics
-              </p>
               <h1 className="text-[1.5rem] font-light leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem]">
                 Exclusive and <span className="font-semibold text-sky-200">Exotics</span>
               </h1>
