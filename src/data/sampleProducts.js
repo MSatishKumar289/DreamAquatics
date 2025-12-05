@@ -14,7 +14,7 @@ export const sampleProducts = [
   {
     id: 'fish-2',
     category: 'fishes',
-    title: 'Tetras',
+    title: 'Neon Tetra',
     subtitle: 'Small schooling fish',
     price: 120,
     image: 'Images/tetra.jpg',

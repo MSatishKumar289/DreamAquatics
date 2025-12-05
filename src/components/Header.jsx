@@ -9,8 +9,8 @@ import RayBrand from '../assets/Images/top.png';
 
 
 const Header = () => {
-  const { cartItems } = useCart();
-  const cartCount = cartItems.length;
+  const { itemCount } = useCart();
+  const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
