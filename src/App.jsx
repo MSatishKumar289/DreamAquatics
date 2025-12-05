@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
+import AdminAddProduct from './pages/AdminAddProduct';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
               <Route path="/category/:categorySlug" element={<CategoryListingPage />} />
               <Route path="/category/:categorySlug/:subCategorySlug" element={<CategoryListingPage />} />
               <Route path="/cart" element={<CartPage/>} />
+              <Route path="/admin/add-product" element={<AdminAddProduct />} />
             </Routes>
           </main>
           <Footer />

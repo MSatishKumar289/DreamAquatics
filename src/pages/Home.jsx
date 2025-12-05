@@ -1,4 +1,5 @@
-﻿import { getProductsByCategory } from '../data/sampleProducts';
+﻿import { Link } from 'react-router-dom';
+import { getProductsByCategory } from '../data/sampleProducts';
 import CategorySection from '../components/CategorySection';
 import BgImage from '../assets/Images/barca.png';
 import MobileBgImage from '../assets/Images/mbarca.png';
@@ -14,6 +15,15 @@ const Home = () => {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white">
+      {/* TEMPORARY: Remove this button after development */}
+      <div className="px-5 pt-6 md:px-10">
+        <Link
+          to="/admin/add-product"
+          className="inline-flex items-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-900 mb-4"
+        >
+          Go to Admin Add Product
+        </Link>
+      </div>
       <section className="relative overflow-hidden py-6 md:py-8">
         <div className="absolute inset-0">
           <div
