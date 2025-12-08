@@ -8,10 +8,11 @@ import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
 import RayBrand from '../assets/Images/top.png';
 
 
-const Header = () => {
+const Header = ({ user, onLogout }) => {
   const { itemCount } = useCart();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
 
   const categories = [
@@ -23,21 +24,21 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-        <div className="flex items-center justify-between h-16 md:h-20">
+      <nav className="container mx-auto px-3 sm:px-6 lg:px-8" aria-label="Main navigation">
+        <div className="flex items-center justify-between gap-2 h-16 md:h-20">
           {/* Brand Title */}
           <Link
             to="/"
-            className="flex items-center gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
-              <span className="text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold">D</span>
-              <span className="text-[1.2rem] sm:text-[2.6rem] md:text-4xl font-semibold tracking-wide">REAM</span>
-              <span className="ml-2 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
-              <span className="text-[1.2rem] sm:text-[2.6rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
+              <span className="text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">D</span>
+              <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">REAM</span>
+              <span className="ml-1 sm:ml-2 text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
+              <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
             </div>
-            <img src={RayBrand} alt="" className="h-10 w-auto translate-y-1 opacity-90 sm:h-12 sm:translate-y-1.5 md:h-14" />
+            <img src={RayBrand} alt="" className="h-9 w-auto opacity-90 sm:h-12 md:h-14" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -52,6 +53,74 @@ const Header = () => {
                 {category.label}
               </Link>
             ))}
+
+            {/* Profile / Login */}
+            <div className="relative">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setIsProfileOpen((prev) => !prev)}
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  aria-label="Account menu"
+                >
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                  <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
+                  <svg
+                    className="relative h-5 w-5 text-slate-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <circle cx="12" cy="8.5" r="3.25" />
+                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                  </svg>
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  aria-label="Login to your Dream Aquatics account"
+                >
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                  <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
+                  <svg
+                    className="relative h-5 w-5 text-slate-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <circle cx="12" cy="8.5" r="3.25" />
+                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                  </svg>
+                </Link>
+              )}
+              {user && isProfileOpen && (
+                <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
+                  <p className="text-sm font-semibold text-slate-800">Signed in</p>
+                  <p className="text-base font-bold text-sky-800">{user.name}</p>
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      onLogout?.();
+                      navigate('/');
+                    }}
+                    className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
             
             {/* Cart Icon */}
             <Link
@@ -72,7 +141,73 @@ const Header = () => {
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex lg:hidden items-center space-x-4">
+          <div className="flex lg:hidden items-center space-x-2.5 flex-shrink-0">
+            <div className="relative">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setIsProfileOpen((prev) => !prev)}
+                  className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  aria-label="Account menu"
+                >
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                  <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
+                  <svg
+                    className="relative h-[16px] w-[16px] text-slate-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <circle cx="12" cy="8.5" r="3.25" />
+                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                  </svg>
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  aria-label="Login to your Dream Aquatics account"
+                >
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                  <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
+                  <svg
+                    className="relative h-[16px] w-[16px] text-slate-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <circle cx="12" cy="8.5" r="3.25" />
+                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                  </svg>
+                </Link>
+              )}
+              {user && isProfileOpen && (
+                <div className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
+                  <p className="text-sm font-semibold text-slate-800">Signed in</p>
+                  <p className="text-base font-bold text-sky-800">{user.name}</p>
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      onLogout?.();
+                      navigate('/');
+                    }}
+                    className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
             {/* Mobile Cart Icon */}
             <Link
               to={`/cart`}
