@@ -6,12 +6,13 @@ import MobileBgImage from '../assets/Images/mbarca.png';
 import CallIcon from '../assets/Images/call.png';
 import WhatsIcon from '../assets/Images/whatsapp.jpeg';
 import HighlightOne from '../assets/Images/go.jpg';
-import HighlightTwo from '../assets/Images/koi.jpg';
-import HighlightThree from '../assets/Images/de.jpg';
+import HighlightTwo from '../assets/Images/prey.jpg';
+import HighlightThree from '../assets/Images/ram.jpg';
 import HighlightVideo from '../assets/Videos/video.mp4';
 
 const Home = () => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
+  const instagramUrl = 'https://www.instagram.com/dreamaquatics23/?hl=en';
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white">
@@ -65,7 +66,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 md:justify-start">
+            <div className="flex flex-wrap items-center justify-center gap-4 md:justify-center">
               <a
                 href="tel:0000000"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
@@ -108,19 +109,16 @@ const Home = () => {
                 <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-cover" />
               </div>
             </div>
-            <div className="flex flex-wrap gap-6 text-sm uppercase tracking-[0.3em] text-sky-100/80">
-              <span className="flex flex-col">
-                <strong className="text-3xl text-white">18</strong>
-                aquascapes
-              </span>
-              <span className="flex flex-col">
-                <strong className="text-3xl text-white">12</strong>
-                rare arrivals
-              </span>
-              <span className="flex flex-col">
-                <strong className="text-3xl text-white">5</strong>
-                shipped today
-              </span>
+            <div className="mt-2 flex justify-center">
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="relative inline-flex items-center justify-center overflow-hidden rounded-full border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
+              >
+                <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
+                Follow us on Instagram
+              </a>
             </div>
           </div>
         </div>
