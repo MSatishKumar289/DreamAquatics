@@ -1,76 +1,24 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const Login = ({ onLogin }) => {
   const navigate = useNavigate();
-  const googleButtonRef = useRef(null);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
-  const [googleReady, setGoogleReady] = useState(false);
 
-  const decodeJwt = (token) => {
-    const payload = token?.split('.')[1];
-    if (!payload) return null;
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`)
-        .join('')
-    );
-    return JSON.parse(decoded);
-  };
-
-  const handleCredential = useCallback((response) => {
-    try {
-      const payload = decodeJwt(response.credential);
-      const name = payload?.name || payload?.given_name || 'Friend';
-      const email = payload?.email || '';
-      onLogin?.(name, email);
-      navigate('/');
-    } catch (e) {
-      setError('Could not read Google response. Please try again.');
-    }
-  }, [navigate, onLogin]);
-
-  useEffect(() => {
-    if (window.google?.accounts?.id) {
-      setGoogleReady(true);
+  const handleSubmit = useCallback(() => {
+    if (!name.trim()) {
+      setError('Please enter your name');
       return;
     }
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setGoogleReady(true);
-    script.onerror = () => setError('Google sign-in could not load. Check your connection.');
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!googleReady || !googleButtonRef.current) return;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      setError('Add VITE_GOOGLE_CLIENT_ID to your .env file to enable Google login.');
+    if (!phone.trim()) {
+      setError('Please enter your mobile number');
       return;
     }
-    // Clear existing rendered button to avoid duplicates on re-render.
-    googleButtonRef.current.innerHTML = '';
-    const { accounts } = window.google;
-    accounts.id.initialize({
-      client_id: clientId,
-      callback: handleCredential,
-    });
-    accounts.id.renderButton(googleButtonRef.current, {
-      theme: 'outline',
-      size: 'large',
-      shape: 'pill',
-      width: 320,
-      text: 'continue_with',
-    });
-  }, [googleReady, handleCredential]);
+    onLogin?.(name.trim(), phone.trim());
+    navigate('/');
+  }, [name, phone, onLogin, navigate]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 px-4 py-12">
@@ -86,19 +34,38 @@ const Login = ({ onLogin }) => {
           <div className="mb-6 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600">Welcome back</p>
             <h1 className="mt-2 text-2xl font-bold text-slate-900">Log in to Dream Aquatics</h1>
-            <p className="text-sm text-slate-600">Track orders, saved carts, and custom builds.</p>
+            <p className="text-sm text-slate-600">Enter your details to continue.</p>
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-center">
-              <div ref={googleButtonRef} className="flex justify-center" />
-            </div>
-            {error && <p className="text-center text-sm text-red-600">{error}</p>}
-            {!import.meta.env.VITE_GOOGLE_CLIENT_ID && (
-              <p className="text-center text-xs text-amber-700">
-                Set VITE_GOOGLE_CLIENT_ID in .env to enable Google sign-in.
-              </p>
-            )}
+            <label className="block text-sm font-semibold text-slate-700">
+              Name
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">
+              Mobile number
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. +91 98765 43210"
+                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              />
+            </label>
+            {error && <p className="text-sm font-semibold text-rose-600">{error}</p>}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="w-full rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-600 px-6 py-3 text-base font-semibold text-white shadow-[0_15px_40px_rgba(59,130,246,0.45)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white"
+            >
+              Continue
+            </button>
           </div>
 
           <p className="mt-6 text-center text-sm text-slate-600">
