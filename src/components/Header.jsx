@@ -8,7 +8,7 @@ import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
 import RayBrand from '../assets/Images/top.png';
 
 
-const Header = ({ user, onLogout }) => {
+const Header = ({ user, onLogout, onRequestLogin }) => {
   const { itemCount } = useCart();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -80,8 +80,9 @@ const Header = ({ user, onLogout }) => {
                   </svg>
                 </button>
               ) : (
-                <Link
-                  to="/login"
+                <button
+                  type="button"
+                  onClick={() => onRequestLogin?.()}
                   className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                   aria-label="Login to your Dream Aquatics account"
                 >
@@ -100,13 +101,13 @@ const Header = ({ user, onLogout }) => {
                     <circle cx="12" cy="8.5" r="3.25" />
                     <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
                   </svg>
-                </Link>
+                </button>
               )}
               {user && isProfileOpen && (
                 <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
-                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {user.phone && <p className="text-xs text-slate-600 break-words">Phone: {user.phone}</p>}
                   <button
                     type="button"
                     onClick={() => {
@@ -167,8 +168,9 @@ const Header = ({ user, onLogout }) => {
                   </svg>
                 </button>
               ) : (
-                <Link
-                  to="/login"
+                <button
+                  type="button"
+                  onClick={() => onRequestLogin?.()}
                   className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                   aria-label="Login to your Dream Aquatics account"
                 >
@@ -187,13 +189,13 @@ const Header = ({ user, onLogout }) => {
                     <circle cx="12" cy="8.5" r="3.25" />
                     <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
                   </svg>
-                </Link>
+                </button>
               )}
               {user && isProfileOpen && (
                 <div className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
-                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {user.phone && <p className="text-xs text-slate-600 break-words">Phone: {user.phone}</p>}
                   <button
                     type="button"
                     onClick={() => {

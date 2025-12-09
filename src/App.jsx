@@ -60,11 +60,10 @@ function App() {
     };
   }, [user]);
 
-  const handleLogin = useCallback((name, email) => {
+  const handleLogin = useCallback((name, phone) => {
     const session = {
       name,
-      email: email || '',
-      phone: '',
+      phone: phone || '',
       expiresAt: Date.now() + SESSION_MS,
     };
     setUser(session);
@@ -81,72 +80,95 @@ function App() {
     return `Welcome ${user.name}`;
   }, [user]);
 
-  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [nameInput, setNameInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
+  const [formError, setFormError] = useState('');
 
-  useEffect(() => {
-    if (user?.name && !user.phone) {
-      setIsPhoneModalOpen(true);
-    } else {
-      setIsPhoneModalOpen(false);
-    }
-  }, [user]);
+  const openLoginModal = useCallback(() => {
+    setFormError('');
+    setIsLoginModalOpen(true);
+  }, []);
+
+  const closeLoginModal = useCallback(() => {
+    setIsLoginModalOpen(false);
+    setFormError('');
+  }, []);
 
   const handleSavePhone = useCallback(() => {
-    if (!phoneInput.trim()) {
+    if (!nameInput.trim()) {
+      setFormError('Please enter your name');
       return;
     }
-    const updated = { ...user, phone: phoneInput.trim() };
-    setUser(updated);
-    localStorage.setItem(USER_KEY, JSON.stringify(updated));
-    setIsPhoneModalOpen(false);
+    if (!phoneInput.trim()) {
+      setFormError('Please enter your mobile number');
+      return;
+    }
+    handleLogin(nameInput.trim(), phoneInput.trim());
+    setNameInput('');
     setPhoneInput('');
-  }, [phoneInput, user]);
+    setFormError('');
+    setIsLoginModalOpen(false);
+  }, [handleLogin, nameInput, phoneInput]);
 
   return (
     <CartProvider>
       <BrowserRouter>
         <div className="App flex min-h-screen flex-col">
-          <Header user={user} onLogout={handleLogout} />
+          <Header user={user} onLogout={handleLogout} onRequestLogin={openLoginModal} />
           {welcomeText && (
             <div className="bg-sky-50 text-sky-800 text-center text-sm font-semibold tracking-wide py-2">
               {welcomeText}
             </div>
           )}
-          {isPhoneModalOpen && (
+          {isLoginModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
               <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-                <h2 className="text-xl font-bold text-slate-900">Add your mobile number</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  We&apos;ll use it to share order updates and support.
+                <h2 className="text-xl font-bold text-slate-900">Sign in</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Enter your name and mobile number to continue.
                 </p>
-                <label className="mt-4 block text-sm font-semibold text-slate-700">
-                  Mobile number
-                  <input
-                    type="tel"
-                    value={phoneInput}
-                    onChange={(e) => setPhoneInput(e.target.value)}
-                    placeholder="e.g. +91 98765 43210"
-                    className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                  />
-                </label>
+                <div className="mt-4 space-y-4">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Name
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="Your name"
+                      className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </label>
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Mobile number
+                    <input
+                      type="tel"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder="e.g. +91 98765 43210"
+                      className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </label>
+                  {formError && <p className="text-sm font-semibold text-rose-600">{formError}</p>}
+                </div>
                 <div className="mt-6 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => {
-                      setIsPhoneModalOpen(false);
+                      closeLoginModal();
+                      setNameInput('');
                       setPhoneInput('');
                     }}
                     className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800"
                   >
-                    Later
+                    Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleSavePhone}
                     className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                   >
-                    Save number
+                    Save & Continue
                   </button>
                 </div>
               </div>
