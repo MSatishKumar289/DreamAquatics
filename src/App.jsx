@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { supabase } from './lib/supabaseClient';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import Header from './components/Header';
@@ -8,6 +10,15 @@ import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 
 function App() {
+
+  useEffect(() => {
+    const test = async () => {
+      const { data, error } = await supabase.from('profiles').select('*').limit(1);
+      console.log('Supabase test:', { data, error });
+    };
+    test();
+  }, []);
+
   return (
     <CartProvider>
       <BrowserRouter>
