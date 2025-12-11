@@ -107,7 +107,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                 <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
-                  {user.phone && <p className="text-xs text-slate-600 break-words">Phone: {user.phone}</p>}
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
                   <button
                     type="button"
                     onClick={() => {
@@ -195,7 +195,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                 <div className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
-                  {user.phone && <p className="text-xs text-slate-600 break-words">Phone: {user.phone}</p>}
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
                   <button
                     type="button"
                     onClick={() => {
