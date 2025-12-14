@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { subcategoryData } from "../data/subcategoryData";
 
 const CATEGORY_TO_SUBCATEGORY_TITLES = {
@@ -8,7 +9,8 @@ const CATEGORY_TO_SUBCATEGORY_TITLES = {
   Tanks: ["Glass Aquarium 20L", "Glass Aquarium 50L", "Glass Aquarium 100L", "Premium Reef Tank"]
 };
 
-const AdminAddProduct = () => {
+const AdminAddProduct = ({ profile }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -20,6 +22,12 @@ const AdminAddProduct = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [imageError, setImageError] = useState("");
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!profile || profile.role !== "admin") {
+      navigate("/", { replace: true });
+    }
+  }, [profile, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -169,6 +177,16 @@ const AdminAddProduct = () => {
   const availableSubcategories = formData.category
     ? CATEGORY_TO_SUBCATEGORY_TITLES[formData.category] || []
     : [];
+
+  if (!profile || profile.role !== "admin") {
+    return (
+      <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow my-8">
+        <p className="text-base font-semibold text-gray-700">
+          You do not have access to this page.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow my-8">
