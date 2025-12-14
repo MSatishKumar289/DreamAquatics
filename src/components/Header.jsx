@@ -55,30 +55,37 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
             ))}
 
             {/* Profile / Login */}
-            <div className="relative">
+            <div className="relative flex items-center gap-2">
               {user ? (
-                <button
-                  type="button"
-                  onClick={() => setIsProfileOpen((prev) => !prev)}
-                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
-                  aria-label="Account menu"
-                >
-                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
-                  <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
-                  <svg
-                    className="relative h-5 w-5 text-slate-700"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileOpen((prev) => !prev)}
+                    className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    aria-label="Account menu"
                   >
-                    <circle cx="12" cy="8.5" r="3.25" />
-                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
-                  </svg>
-                </button>
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                    <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
+                    <svg
+                      className="relative h-5 w-5 text-slate-700"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <circle cx="12" cy="8.5" r="3.25" />
+                      <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                    </svg>
+                  </button>
+                  {user.role === 'admin' && (
+                    <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-2 py-1 rounded-md border border-sky-200">
+                      Admin
+                    </span>
+                  )}
+                </div>
               ) : (
                 <button
                   type="button"
@@ -107,7 +114,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                 <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
-                  {user.phone && <p className="text-xs text-slate-600 break-words">Phone: {user.phone}</p>}
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
                   <button
                     type="button"
                     onClick={() => {
@@ -143,30 +150,37 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
 
           {/* Mobile Menu Button & Cart */}
           <div className="flex lg:hidden items-center space-x-2.5 flex-shrink-0">
-            <div className="relative">
+            <div className="relative flex items-center gap-1.5">
               {user ? (
-                <button
-                  type="button"
-                  onClick={() => setIsProfileOpen((prev) => !prev)}
-                  className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
-                  aria-label="Account menu"
-                >
-                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
-                  <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
-                  <svg
-                    className="relative h-[16px] w-[16px] text-slate-700"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileOpen((prev) => !prev)}
+                    className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    aria-label="Account menu"
                   >
-                    <circle cx="12" cy="8.5" r="3.25" />
-                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
-                  </svg>
-                </button>
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                    <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
+                    <svg
+                      className="relative h-[16px] w-[16px] text-slate-700"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <circle cx="12" cy="8.5" r="3.25" />
+                      <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                    </svg>
+                  </button>
+                  {user.role === 'admin' && (
+                    <span className="text-[10px] font-semibold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 whitespace-nowrap">
+                      Admin
+                    </span>
+                  )}
+                </div>
               ) : (
                 <button
                   type="button"
@@ -195,7 +209,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                 <div className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
-                  {user.phone && <p className="text-xs text-slate-600 break-words">Phone: {user.phone}</p>}
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
                   <button
                     type="button"
                     onClick={() => {
