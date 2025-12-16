@@ -33,7 +33,7 @@ function AppContent() {
   }, [sessionUser, profile]);
 
   const welcomeText = useMemo(() => {
-    if (!authUser?.name) return null;
+    if (!sessionUser) return null;
     return `Welcome ${authUser.name}`;
   }, [authUser]);
 
@@ -44,7 +44,15 @@ function AppContent() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
-        setSessionUser(session?.user ?? null);
+
+        if (!session?.user) {
+          setSessionUser(null);
+          setProfile(null);
+          return;
+        }
+
+        setSessionUser(session.user);
+
         const { profile: initialProfile } = await fetchCurrentProfile();
         if (isMounted) {
           setProfile(initialProfile);
@@ -93,7 +101,9 @@ function AppContent() {
         }
     
         if (event === 'SIGNED_OUT') {
+          setSessionUser(null);
           setProfile(null);
+          return;
         }
       }
     );
@@ -109,6 +119,10 @@ function AppContent() {
 
   const handleLogout = useCallback(async () => {
     try {
+      // IMMEDIATELY reset local state
+      setSessionUser(null);
+      setProfile(null);
+      
       // Clear cart storage
       clearCart();
       clearCartStorage();
