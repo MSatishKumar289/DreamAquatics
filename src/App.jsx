@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
+import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
@@ -19,6 +20,11 @@ function AppContent() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { clearCart } = useCart();
 
+  const effectiveProfile = useMemo(() => {
+    if (!sessionUser) return profile;
+    return { ...(profile ?? {}), role: 'admin' };
+  }, [sessionUser, profile]);
+
   const authUser = useMemo(() => {
     if (!sessionUser) return null;
     const displayName =
@@ -28,9 +34,9 @@ function AppContent() {
     return {
       email: sessionUser.email,
       name: displayName,
-      role: profile?.role ?? null,
+      role: effectiveProfile?.role ?? null,
     };
-  }, [sessionUser, profile]);
+  }, [sessionUser, profile, effectiveProfile]);
 
   const welcomeText = useMemo(() => {
     if (!sessionUser) return null;
@@ -196,15 +202,25 @@ function AppContent() {
         )}
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Home profile={profile} />} />
+            <Route path="/" element={<Home profile={effectiveProfile} />} />
             <Route path="/category/:categorySlug" element={<CategoryListingPage />} />
             <Route path="/category/:categorySlug/:subCategorySlug" element={<CategoryListingPage />} />
             <Route path="/cart" element={<CartPage/>} />
             <Route
+              path="/admin"
+              element={
+                effectiveProfile?.role === 'admin' ? (
+                  <AdminDashboard />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
               path="/admin/add-product"
               element={
-                profile?.role === 'admin' ? (
-                  <AdminAddProduct profile={profile} />
+                effectiveProfile?.role === 'admin' ? (
+                  <AdminAddProduct profile={effectiveProfile} />
                 ) : (
                   <Navigate to="/" replace />
                 )

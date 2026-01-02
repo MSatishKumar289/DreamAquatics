@@ -20,10 +20,10 @@ const Home = ({ profile }) => {
       {profile?.role === 'admin' && (
         <div className="px-5 pt-6 md:px-10">
           <Link
-            to="/admin/add-product"
-            className="inline-flex items-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-900 mb-4"
+            to="/admin"
+            className="mb-4 inline-flex items-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-900"
           >
-            Go to Admin Add Product
+            Go to Admin Dashboard
           </Link>
         </div>
       )}
