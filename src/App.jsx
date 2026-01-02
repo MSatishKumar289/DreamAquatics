@@ -7,7 +7,6 @@ import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
-import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
@@ -210,7 +209,7 @@ function AppContent() {
               path="/admin"
               element={
                 effectiveProfile?.role === 'admin' ? (
-                  <AdminDashboard />
+                  <AdminAddProduct profile={effectiveProfile} />
                 ) : (
                   <Navigate to="/" replace />
                 )

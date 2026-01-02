@@ -16,17 +16,6 @@ const Home = ({ profile }) => {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white">
-      {/* TEMPORARY: Remove this button after development */}
-      {profile?.role === 'admin' && (
-        <div className="px-5 pt-6 md:px-10">
-          <Link
-            to="/admin"
-            className="mb-4 inline-flex items-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-900"
-          >
-            Go to Admin Dashboard
-          </Link>
-        </div>
-      )}
       <section className="relative overflow-hidden py-6 md:py-8">
         <div className="absolute inset-0">
           <div

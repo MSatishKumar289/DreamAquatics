@@ -13,6 +13,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
+  const isAdmin = user?.role === 'admin';
 
   const categories = [
     { label: 'Fishes', value: 'fishes' },
@@ -33,9 +34,9 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
           >
             <div className="flex items-baseline leading-none">
               <span className="text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">D</span>
-              <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">REAM</span>
+              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">REAM</span>
               <span className="ml-1 sm:ml-2 text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
-              <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
+              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
             </div>
           </Link>
 
@@ -113,6 +114,18 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/admin/add-product');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Admin
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
@@ -208,6 +221,18 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/admin/add-product');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Admin
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
