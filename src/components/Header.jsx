@@ -5,7 +5,6 @@ import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
 import close_ic from '../assets/Icons/close_ic.svg';
 import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
-import RayBrand from '../assets/Images/top.png';
 
 
 const Header = ({ user, onLogout, onRequestLogin }) => {
@@ -38,7 +37,6 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
               <span className="ml-1 sm:ml-2 text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
               <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
             </div>
-            <img src={RayBrand} alt="" className="h-9 w-auto opacity-90 sm:h-12 md:h-14" />
           </Link>
 
           {/* Desktop Navigation */}
