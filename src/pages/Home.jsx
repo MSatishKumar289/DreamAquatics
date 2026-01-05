@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { getProductsByCategory } from '../data/sampleProducts';
 import CategorySection from '../components/CategorySection';
 import BgImage from '../assets/Images/barca.png';
@@ -13,6 +13,7 @@ import HighlightVideo from '../assets/Videos/video.mp4';
 const Home = ({ profile }) => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
   const instagramUrl = 'https://www.instagram.com/dreamaquatics23/?hl=en';
+  const [activeImage, setActiveImage] = useState(null);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white">
@@ -31,7 +32,7 @@ const Home = ({ profile }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
         </div>
 
-        <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white md:grid-cols-[1.2fr_0.8fr] md:px-10">
+        <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white lg:grid-cols-[1.2fr_0.8fr] md:px-10">
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
             <div className="space-y-3 text-center md:text-left">
               <h1 className="text-[1.5rem] font-light leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem]">
@@ -60,14 +61,14 @@ const Home = ({ profile }) => {
             <div className="flex flex-wrap items-center justify-center gap-4 md:justify-center">
               <a
                 href="tel:0000000"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
                 Call us
               </a>
               <a
                 href="https://wa.me/0000000"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
                 WhatsApp
@@ -93,19 +94,35 @@ const Home = ({ profile }) => {
                   poster={HighlightOne}
                 />
               </div>
-              <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
-                <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-cover" />
-              </div>
-              <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
-                <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-cover" />
-              </div>
+              <button
+                type="button"
+                className="group relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                onClick={() => setActiveImage({ src: HighlightTwo, alt: 'Highlight koi' })}
+                aria-label="View highlight koi image"
+              >
+                <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-contain bg-black/10" />
+                <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white shadow">
+                  ⤢
+                </span>
+              </button>
+              <button
+                type="button"
+                className="group relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                onClick={() => setActiveImage({ src: HighlightThree, alt: 'Highlight detail' })}
+                aria-label="View highlight detail image"
+              >
+                <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-contain bg-black/10" />
+                <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white shadow">
+                  ⤢
+                </span>
+              </button>
             </div>
             <div className="mt-2 flex justify-center">
               <a
                 href={instagramUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="relative inline-flex items-center justify-center overflow-hidden rounded-full border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
+                className="relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
               >
                 <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
                 Follow us on Instagram
@@ -125,6 +142,34 @@ const Home = ({ profile }) => {
           />
         );
       })}
+
+      {activeImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setActiveImage(null);
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setActiveImage(null)}
+              className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow hover:bg-white"
+            >
+              Close
+            </button>
+            <img
+              src={activeImage.src}
+              alt={activeImage.alt}
+              className="max-h-[80vh] w-full rounded-xl object-contain"
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 };

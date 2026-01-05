@@ -29,7 +29,7 @@ const ProductTile = ({ product, onViewMore }) => {
       {/* View More Button */}
       <button
         onClick={() => onViewMore(product)}
-        className="mt-4 mx-4 mb-4 text-sm font-medium text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+        className="btn-primary mt-4 mx-4 mb-4"
         aria-label={`View details for ${product.title}`}
       >
         View More

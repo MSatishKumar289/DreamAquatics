@@ -1,22 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CartItem from '../components/CartItem';
 import OrderSummary from '../components/OrderSummary';
 
 const CartPage = () => {
-  const { cartItems, updateQty, removeItem, itemCount, subtotal } = useCart();
-
-  const handleIncrement = (itemId, currentQty) => {
-    updateQty(itemId, currentQty + 1);
-  };
-
-  const handleDecrement = (itemId, currentQty) => {
-    if (currentQty <= 1) return;
-    updateQty(itemId, currentQty - 1);
-  };
+  const { cartItems, removeItem, itemCount, subtotal } = useCart();
+  const navigate = useNavigate();
 
   const handleCheckout = () => {
-    console.info('Checkout clicked. Integrate payment flow here.');
+    navigate('/checkout');
   };
 
   const emptyState = cartItems.length === 0;
@@ -42,7 +34,7 @@ const CartPage = () => {
             </p>
             <Link
               to="/"
-              className="mt-6 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="btn-primary mt-6"
             >
               Continue shopping
             </Link>
@@ -58,8 +50,6 @@ const CartPage = () => {
                 <CartItem
                   key={item.id}
                   item={item}
-                  onIncrement={() => handleIncrement(item.id, item.qty)}
-                  onDecrement={() => handleDecrement(item.id, item.qty)}
                   onRemove={() => removeItem(item.id)}
                 />
               ))}

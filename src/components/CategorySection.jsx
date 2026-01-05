@@ -30,14 +30,12 @@ const CategorySection = ({ categoryName, products }) => {
               className="text-2xl sm:text-3xl font-bold text-gray-900"
             >
               {displayName}
-            </h2>
-            <button
-              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 via-blue-500 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            </h2>            <button
+              className="btn-primary"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
-              <span>View All</span>
-              <span className="text-lg text-white/80 transition group-hover:translate-x-0.5">→</span>
+              View All
             </button>
           </div>
 

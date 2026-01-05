@@ -1,9 +1,11 @@
 ﻿import { useEffect, useState } from 'react';
 import { getImageWithFallback } from '../assets';
 import close_ic from '../assets/Icons/close_ic.svg';
+import cartIcon from '../assets/Icons/cart_ic.svg';
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [qty, setQty] = useState(1);
 
   // Handle Escape key press
   useEffect(() => {
@@ -25,6 +27,13 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setQty(1);
+      setShowConfirmation(false);
+    }
+  }, [isOpen, product]);
+
   if (!isOpen || !product) {
     return null;
   }
@@ -38,7 +47,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
   const handleAddToCart = () => {
     if (showConfirmation) return;
-    onAddToCart(product);
+    onAddToCart(product, qty);
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
@@ -90,13 +99,35 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               )}
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
-              aria-label={`Add ${product.title} to cart`}
-            >
-              Add to Cart
-            </button>
+            <div className="flex w-full items-center gap-3">
+              <div className="flex w-1/2 items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2">
+                <button
+                  type="button"
+                  onClick={() => setQty((prev) => Math.max(1, prev - 1))}
+                  className="text-lg font-semibold text-slate-600 hover:text-slate-900"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <span className="text-base font-semibold text-slate-900">{qty}</span>
+                <button
+                  type="button"
+                  onClick={() => setQty((prev) => prev + 1)}
+                  className="text-lg font-semibold text-slate-600 hover:text-slate-900"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                onClick={handleAddToCart}
+                className="inline-flex w-1/2 items-center justify-center gap-2 rounded-xl border border-blue-600 bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 whitespace-nowrap"
+                aria-label={`Add ${product.title} to cart`}
+              >
+                <img src={cartIcon} alt="" className="h-4 w-4 brightness-0 invert" aria-hidden />
+                <span className="leading-none">Add to Cart</span>
+              </button>
+            </div>
           </div>
           <div className="space-y-4 md:w-1/2">
             <section className="space-y-4">

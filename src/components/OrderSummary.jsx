@@ -47,7 +47,7 @@ const OrderSummary = ({
         onClick={onCheckout}
         disabled={isDisabled}
         aria-label="Proceed to checkout"
-        className="mt-6 w-full rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-blue-200"
+        className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:bg-blue-200"
       >
         Checkout
       </button>

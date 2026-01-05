@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
+import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
@@ -36,11 +37,6 @@ function AppContent() {
       role: effectiveProfile?.role ?? null,
     };
   }, [sessionUser, profile, effectiveProfile]);
-
-  const welcomeText = useMemo(() => {
-    if (!sessionUser) return null;
-    return `Welcome ${authUser.name}`;
-  }, [authUser]);
 
   useEffect(() => {
     let isMounted = true;
@@ -165,11 +161,6 @@ function AppContent() {
     <BrowserRouter>
       <div className="App flex min-h-screen flex-col">
         <Header user={authUser} onLogout={handleLogout} onRequestLogin={openLoginModal} />
-        {welcomeText && (
-          <div className="bg-sky-50 text-sky-800 text-center text-sm font-semibold tracking-wide py-2">
-            {welcomeText}
-          </div>
-        )}
         {isLoginModalOpen && (
           <div 
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
@@ -201,10 +192,11 @@ function AppContent() {
         )}
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Home profile={effectiveProfile} />} />
+            <Route path="/" element={<Home profile={effectiveProfile} user={authUser} />} />
             <Route path="/category/:categorySlug" element={<CategoryListingPage />} />
             <Route path="/category/:categorySlug/:subCategorySlug" element={<CategoryListingPage />} />
             <Route path="/cart" element={<CartPage/>} />
+            <Route path="/checkout" element={<Checkout user={authUser} />} />
             <Route
               path="/admin"
               element={

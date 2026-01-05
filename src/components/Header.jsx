@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
@@ -14,6 +14,9 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin';
+  const profileDesktopRef = useRef(null);
+  const profileMobileRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   const categories = [
     { label: 'Fishes', value: 'fishes' },
@@ -21,6 +24,32 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
     { label: 'Accessories', value: 'accessories' },
     { label: 'Tank', value: 'tank' }
   ];
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (isProfileOpen) {
+        const inDesktop = profileDesktopRef.current?.contains(event.target);
+        const inMobile = profileMobileRef.current?.contains(event.target);
+        if (!inDesktop && !inMobile) {
+          setIsProfileOpen(false);
+        }
+      }
+      if (isMobileMenuOpen) {
+        const inMenu = mobileMenuRef.current?.contains(event.target);
+        if (!inMenu) {
+          setIsMobileMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [isProfileOpen, isMobileMenuOpen]);
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -34,9 +63,9 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
           >
             <div className="flex items-baseline leading-none">
               <span className="text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">D</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">REAM</span>
+              <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">REAM</span>
               <span className="ml-1 sm:ml-2 text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
+              <span className="text-[1.1rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
             </div>
           </Link>
 
@@ -54,7 +83,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
             ))}
 
             {/* Profile / Login */}
-            <div className="relative flex items-center gap-2">
+            <div ref={profileDesktopRef} className="relative flex items-center gap-2">
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
@@ -160,8 +189,9 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex lg:hidden items-center space-x-2.5 flex-shrink-0">
-            <div className="relative flex items-center gap-1.5">
+          <div ref={mobileMenuRef} className="relative lg:hidden">
+            <div className="flex items-center space-x-2.5 flex-shrink-0">
+              <div ref={profileMobileRef} className="relative flex items-center gap-1.5">
               {user ? (
                 <div className="flex items-center gap-1.5">
                   <button
@@ -247,57 +277,59 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                 </div>
               )}
             </div>
-            {/* Mobile Cart Icon */}
-            <Link
-              to={`/cart`}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-              aria-label={`Shopping cart with ${cartCount} items`}
-            >
-              <img src={mobile_cart_ic} alt="Cart" />
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
-                >
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+              {/* Mobile Cart Icon */}
+              <Link
+                to={`/cart`}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Shopping cart with ${cartCount} items`}
+              >
+                <img src={mobile_cart_ic} alt="Cart" />
+                {cartCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${cartCount} items in cart`}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
 
-            {/* Hamburger Menu Button */}
-            <button
-              className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-              aria-label="Toggle mobile menu"
-              aria-expanded={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <img src={close_ic} />
-              ) : (
-                <img src={hamburger_menu_ic} />
-              )}
-            </button>
+              {/* Hamburger Menu Button */}
+              <button
+                className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                aria-label="Toggle mobile menu"
+                aria-expanded={isMobileMenuOpen}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <img src={close_ic} />
+                ) : (
+                  <img src={hamburger_menu_ic} />
+                )}
+              </button>
+            </div>
+
+            {isMobileMenuOpen && (
+              <div className="absolute left-0 right-0 top-full z-40 mt-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-lg">
+                <div className="space-y-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category.value}
+                      onClick={() => {
+                        navigate(`/category/${category.value}`);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      aria-label={`View ${category.label} category`}
+                    >
+                      {category.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Mobile Menu Dropdown */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2">
-            {categories.map((category) => (
-              <button
-                key={category.value}
-                onClick={() => {
-                  navigate(`/category/${category.value}`);
-                  setIsMobileMenuOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                aria-label={`View ${category.label} category`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-        )}
       </nav>
     </header>
   );
