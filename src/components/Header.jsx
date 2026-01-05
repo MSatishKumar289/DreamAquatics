@@ -58,7 +58,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
           {/* Brand Title */}
           <Link
             to="/"
-            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none"
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
@@ -158,6 +158,8 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   <button
                     type="button"
                     onClick={() => {
+                      const confirmLogout = window.confirm('Are you sure you want to log out?');
+                      if (!confirmLogout) return;
                       setIsProfileOpen(false);
                       onLogout?.();
                       navigate('/');
@@ -266,6 +268,8 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   <button
                     type="button"
                     onClick={() => {
+                      const confirmLogout = window.confirm('Are you sure you want to log out?');
+                      if (!confirmLogout) return;
                       setIsProfileOpen(false);
                       onLogout?.();
                       navigate('/');

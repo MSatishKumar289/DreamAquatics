@@ -101,8 +101,8 @@ const Home = ({ profile }) => {
                 aria-label="View highlight koi image"
               >
                 <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-contain bg-black/10" />
-                <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white shadow">
-                  ⤢
+                <span className="pointer-events-none absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/40 bg-white/10 text-[11px] text-white/90">
+                  ↗
                 </span>
               </button>
               <button
@@ -112,8 +112,8 @@ const Home = ({ profile }) => {
                 aria-label="View highlight detail image"
               >
                 <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-contain bg-black/10" />
-                <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/50 bg-black/50 text-white shadow">
-                  ⤢
+                <span className="pointer-events-none absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/40 bg-white/10 text-[11px] text-white/90">
+                  ↗
                 </span>
               </button>
             </div>
