@@ -9,9 +9,11 @@ const Checkout = ({ user }) => {
     addressLine1: '',
     addressLine2: '',
     city: '',
+    pincode: '',
     landmark: '',
     mobile: '',
   });
+  const [errors, setErrors] = useState({});
   const showLoginPrompt = !user?.email;
 
   useEffect(() => {
@@ -31,6 +33,21 @@ const Checkout = ({ user }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    const nextErrors = {};
+    if (!formData.name.trim()) nextErrors.name = 'Name is required.';
+    if (!formData.email.trim()) {
+      nextErrors.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+    if (!formData.addressLine1.trim()) nextErrors.addressLine1 = 'Address line 1 is required.';
+    if (!formData.city.trim()) nextErrors.city = 'City is required.';
+    if (!/^\d{6}$/.test(formData.pincode)) nextErrors.pincode = 'Pin code must be 6 digits.';
+    if (!/^\d{10}$/.test(formData.mobile)) nextErrors.mobile = 'Mobile number must be 10 digits.';
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     console.info('Checkout address captured', formData);
   };
 
@@ -61,6 +78,7 @@ const Checkout = ({ user }) => {
                   placeholder="Your name"
                   className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
+                {errors.name && <span className="mt-1 block text-xs text-rose-600">{errors.name}</span>}
               </label>
 
               <label className="block text-sm font-semibold text-slate-700">
@@ -73,6 +91,7 @@ const Checkout = ({ user }) => {
                   placeholder="you@example.com"
                   className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
+                {errors.email && <span className="mt-1 block text-xs text-rose-600">{errors.email}</span>}
               </label>
             </div>
 
@@ -87,6 +106,9 @@ const Checkout = ({ user }) => {
                   placeholder="House number, street"
                   className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
+                {errors.addressLine1 && (
+                  <span className="mt-1 block text-xs text-rose-600">{errors.addressLine1}</span>
+                )}
               </label>
               <label className="block text-sm font-semibold text-slate-700 sm:col-span-2">
                 Address line 2
@@ -109,6 +131,25 @@ const Checkout = ({ user }) => {
                   placeholder="City"
                   className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
+                {errors.city && <span className="mt-1 block text-xs text-rose-600">{errors.city}</span>}
+              </label>
+              <label className="block text-sm font-semibold text-slate-700">
+                Pin code
+                <input
+                  type="text"
+                  name="pincode"
+                  value={formData.pincode}
+                  onChange={(event) => {
+                    const nextValue = event.target.value.replace(/\D/g, '').slice(0, 6);
+                    setFormData((prev) => ({ ...prev, pincode: nextValue }));
+                  }}
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  placeholder="Pin code"
+                  className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+                />
+                {errors.pincode && <span className="mt-1 block text-xs text-rose-600">{errors.pincode}</span>}
               </label>
               <label className="block text-sm font-semibold text-slate-700">
                 Landmark
@@ -129,10 +170,17 @@ const Checkout = ({ user }) => {
                 type="tel"
                 name="mobile"
                 value={formData.mobile}
-                onChange={handleChange}
+                onChange={(event) => {
+                  const nextValue = event.target.value.replace(/\D/g, '').slice(0, 10);
+                  setFormData((prev) => ({ ...prev, mobile: nextValue }));
+                }}
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength={10}
                 placeholder="Mobile number"
                 className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
               />
+              {errors.mobile && <span className="mt-1 block text-xs text-rose-600">{errors.mobile}</span>}
             </label>
 
             <div className="flex justify-center">
