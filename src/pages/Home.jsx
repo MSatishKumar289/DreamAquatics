@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { getProductsByCategory } from '../data/sampleProducts';
+import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { fetchAllProductsWithCategories } from '../lib/catalogApi';
 import CategorySection from '../components/CategorySection';
+import Spinner from '../components/Spinner';
 import BgImage from '../assets/Images/barca.png';
 import MobileBgImage from '../assets/Images/mbarca.png';
 import CallIcon from '../assets/Images/call.png';
@@ -12,8 +16,95 @@ import HighlightVideo from '../assets/Videos/video.mp4';
 
 const Home = ({ profile }) => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
+  const CATEGORY_SLUG_MAP = {
+    fishes: 'fish',
+    'live-plants': 'plants',
+    accessories: 'accessories',
+    tank: 'tanks',
+  };
   const instagramUrl = 'https://www.instagram.com/dreamaquatics23/?hl=en';
   const [activeImage, setActiveImage] = useState(null);
+  const [productsByCategory, setProductsByCategory] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const { data, error } = await fetchAllProductsWithCategories();
+        
+        if (error) {
+          console.error('Error fetching products:', error);
+          return;
+        }
+
+        const groupedBySubcategory = {
+          fishes: {},
+          'live-plants': {},
+          accessories: {},
+          tank: {},
+        };
+
+        if (data?.length) {
+          data.forEach((product) => {
+            const dbCategorySlug = product.subcategory?.category?.slug;
+            const subcategoryId = product.subcategory?.id;
+            const subcategoryName = product.subcategory?.name; 
+            
+            const uiCategoryKey = Object.keys(CATEGORY_SLUG_MAP).find(
+              (key) => CATEGORY_SLUG_MAP[key] === dbCategorySlug
+            );
+
+            if (!uiCategoryKey || !subcategoryId) return;
+
+            if (!groupedBySubcategory[uiCategoryKey][subcategoryId]) {
+              groupedBySubcategory[uiCategoryKey][subcategoryId] = [];
+            }
+
+            groupedBySubcategory[uiCategoryKey][subcategoryId].push(product);
+          });
+        }
+
+        const mapped = categories.reduce((acc, categoryKey) => {
+          const subcategoryGroups = Object.values(groupedBySubcategory[categoryKey] || {});
+
+          const subcategoryCards = subcategoryGroups
+            .map((group) => {
+              if (!group.length) return null;
+
+              const latestProduct = group.reduce((latest, current) => {
+                if (!latest) return current;
+                return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+              }, null);
+
+              const subcategory = latestProduct?.subcategory;
+              if (!subcategory?.id) return null;
+
+              return {
+                subcategoryId: subcategory.id,
+                subcategoryName: subcategory.name,
+                subcategorySlug: subcategory.slug,
+                latestProductDate: latestProduct?.created_at || '',
+                image: latestProduct?.product_images?.[0]?.url || '',
+              };
+            })
+            .filter(Boolean)
+            .sort((a, b) => new Date(b.latestProductDate) - new Date(a.latestProductDate))
+            .slice(0, 4);
+
+          acc[categoryKey] = subcategoryCards;
+          return acc;
+        }, {});
+
+        setProductsByCategory(mapped);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white">
@@ -132,44 +223,47 @@ const Home = ({ profile }) => {
         </div>
       </section>
 
-      {categories.map((category) => {
-        const categoryProducts = getProductsByCategory(category);
-        return (
-          <CategorySection
-            key={category}
-            categoryName={category}
-            products={categoryProducts}
-          />
-        );
-      })}
+{loading ? (
+  <Spinner />
+) : (
+  <>
+    {categories.map((category) => (
+      <CategorySection
+        key={category}
+        categoryName={category}
+        products={productsByCategory[category] || []}
+      />
+    ))}
 
-      {activeImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setActiveImage(null);
-            }
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setActiveImage(null)}
-              className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow hover:bg-white"
-            >
-              Close
-            </button>
-            <img
-              src={activeImage.src}
-              alt={activeImage.alt}
-              className="max-h-[80vh] w-full rounded-xl object-contain"
-            />
-          </div>
+    {activeImage && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            setActiveImage(null);
+          }
+        }}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="relative w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl">
+          <button
+            type="button"
+            onClick={() => setActiveImage(null)}
+            className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow hover:bg-white"
+          >
+            Close
+          </button>
+          <img
+            src={activeImage.src}
+            alt={activeImage.alt}
+            className="max-h-[80vh] w-full rounded-xl object-contain"
+          />
         </div>
-      )}
+      </div>
+    )}
+  </>
+)}
     </main>
   );
 };

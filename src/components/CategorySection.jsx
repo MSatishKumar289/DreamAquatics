@@ -18,6 +18,7 @@ const CategorySection = ({ categoryName, products }) => {
 
   // Take only the first 4 products for this category
   const displayProducts = products.slice(0, 4);
+  console.log(displayProducts);
 
   return (
     <section className="py-6 md:py-8" aria-labelledby={`category-${categoryName}`}>
@@ -42,7 +43,12 @@ const CategorySection = ({ categoryName, products }) => {
           {/* Product Grid */}
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 sm:gap-5 md:grid-cols-4 md:gap-5">
             {displayProducts.map((product) => (
-              <CategoryCard key={product.id} categoryName={categoryName} product={product} />
+              <CategoryCard
+                key={product.subcategoryId || product.id}
+                categoryName={categoryName}
+                product={product}
+                isSubCategory
+              />
             ))}
           </div>
         </div>

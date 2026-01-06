@@ -27,11 +27,24 @@ const CategoryListingPage = () => {
   };
   
   const categoryTitle = categorySlug;
-  const titleOfListingPage = subCategorySlug || categoryLabel[categorySlug];
+  
+  // Convert slug to title format (e.g., "neon-tetra" -> "Neon Tetra")
+  const slugToTitle = (slug) => {
+    if (!slug) return '';
+    return slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+  
+  const subCategoryTitle = subCategorySlug ? slugToTitle(subCategorySlug) : null;
+  const titleOfListingPage = subCategoryTitle || categoryLabel[categorySlug];
   
   // Filter products by category
   const products = getProductsByCategory(categorySlug);
-  const subProducts = getSubItems(subCategorySlug);
+  // getSubItems expects the exact title format, not slug
+  const subProducts = subCategoryTitle ? getSubItems('subCategoryTitle') : [];
+  // console.log("subProducts: ", subProducts, ",", subCategorySlug, "," , getSubItems(subCategorySlug));
   
   const productForIteration = subCategorySlug?.length > 0 ? subProducts : products;
   
@@ -77,7 +90,7 @@ const CategoryListingPage = () => {
                   {categoryTitle}
                 </Link>
                 <span className="mx-2 text-slate-400">/</span>
-                <span className="text-slate-700">{subCategorySlug}</span>
+                <span className="text-slate-700">{subCategoryTitle}</span>
               </>
             )}
           </nav>
