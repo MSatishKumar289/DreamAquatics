@@ -5,11 +5,22 @@ const CategoryCard = ({ categoryName, product, isSubCategory = false, handleSubC
 
   const navigate = useNavigate();
 
+  const productTitle = isSubCategory
+    ? product?.subcategoryName || product?.name || product?.title || 'Category'
+    : product?.name || product?.title || 'Product';
+  const productSubtitle = product?.subtitle || '';
+  
+  const productImage = isSubCategory
+    ? product?.image || product?.product_images?.[0]?.url || product?.image
+    : product?.product_images?.[0]?.url || product?.image;
+
   const handleClick = () => {
-    if(!isSubCategory){
-      // Placeholder for future navigation/click handling
-      navigate(`/category/${categoryName}/${product.title}`);
-    } else {
+    if (!isSubCategory) {
+      const slug = productTitle.toLowerCase().replace(/\s+/g, '-');
+      navigate(`/category/${categoryName}/${slug}`);
+    } else if (product?.subcategorySlug) {
+      navigate(`/category/${categoryName}/${product.subcategorySlug}`);
+    } else if (handleSubCategoryClick) {
       handleSubCategoryClick();
     }
   };
@@ -19,50 +30,53 @@ const CategoryCard = ({ categoryName, product, isSubCategory = false, handleSubC
   const isSoldOut = /sold/i.test(availabilityText);
 
   // Get image from src/assets/ with fallback to placeholder
-  const imageSrc = getImageWithFallback(product.image, product.title);
+  const imageSrc = getImageWithFallback(productImage, productTitle);
 
   return (
     <article
       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 cursor-pointer"
       tabIndex="0"
       role="button"
-      aria-label={`View details for ${product.title}`}
+      aria-label={`View details for ${productTitle}`}
       onClick={handleClick}
     >
       {/* Image Container with 4:3 aspect ratio */}
       <div className="w-full aspect-[4/3] bg-gray-200 overflow-hidden">
         <img
           src={imageSrc}
-          alt={`${product.title} - ${product.subtitle}`}
+          alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ''}`}
           className="w-full h-full object-cover"
           onError={(e) => {
             // Fallback placeholder if image doesn't load
-            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3E' + encodeURIComponent(product.title) + '%3C/text%3E%3C/svg%3E';
+            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3E' + encodeURIComponent(productTitle) + '%3C/text%3E%3C/svg%3E';
           }}
         />
       </div>
 
-      {/* Card Content */}
       <div className="p-4">
         <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
-          {product.title}
+          {productTitle}
         </h3>
-        <p className="text-sm text-gray-600 mb-2 line-clamp-1">
-          {product.subtitle}
-        </p>
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-base font-bold text-gray-900">
-            {'\u20B9'}
-            {Number(product?.price ?? 0).toLocaleString('en-IN')}
+        {!isSubCategory && productSubtitle && (
+          <p className="text-sm text-gray-600 mb-2 line-clamp-1">
+            {productSubtitle}
           </p>
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-white ${
-              isSoldOut ? 'bg-red-500/90' : 'bg-emerald-500/90'
-            }`}
-          >
-            {isSoldOut ? 'Sold Out' : 'In Stock'}
-          </span>
-        </div>
+        )}
+        {!isSubCategory && (
+          <div className="mt-2 flex items-center justify-between">
+            <p className="text-base font-bold text-gray-900">
+              {'\u20B9'}
+              {Number(product?.price ?? 0).toLocaleString('en-IN')}
+            </p>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-white ${
+                isSoldOut ? 'bg-red-500/90' : 'bg-emerald-500/90'
+              }`}
+            >
+              {isSoldOut ? 'Sold Out' : 'In Stock'}
+            </span>
+          </div>
+        )}
       </div>
     </article>
   );
