@@ -18,7 +18,7 @@ const CategorySection = ({ categoryName, products }) => {
 
   // Take only the first 4 products for this category
   const displayProducts = products.slice(0, 4);
-  console.log(displayProducts);
+  // console.log(displayProducts);
 
   return (
     <section className="py-6 md:py-8" aria-labelledby={`category-${categoryName}`}>
