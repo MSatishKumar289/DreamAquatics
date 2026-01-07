@@ -41,6 +41,7 @@ const Home = ({ profile }) => {
           tank: {},
         };
 
+        // console.log("data: ", data);
         if (data?.length) {
           data.forEach((product) => {
             const dbCategorySlug = product.subcategory?.category?.slug;
