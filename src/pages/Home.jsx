@@ -15,7 +15,7 @@ import HighlightVideo from '../assets/Videos/video.mp4';
 const Home = ({ profile }) => {
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
   const CATEGORY_SLUG_MAP = {
-    fishes: 'fish',
+    fishes: 'fishes',
     'live-plants': 'plants',
     accessories: 'accessories',
     tank: 'tanks',
