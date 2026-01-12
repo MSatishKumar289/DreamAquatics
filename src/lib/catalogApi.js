@@ -298,6 +298,60 @@ export async function deleteStorageFileByPublicUrl(publicUrl) {
   }
 }
 
+/** ===============================================================
+  * CRUD for Sub Categories
+
+  * Create subcategory
+ */
+export async function createSubcategory(payload) {
+  try {
+    const { data, error } = await supabase
+      .from("subcategories")
+      .insert(payload)
+      .select()
+      .single();
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+/**
+ * Update subcategory
+ */
+export async function updateSubcategory(subcategoryId, payload) {
+  try {
+    const { data, error } = await supabase
+      .from("subcategories")
+      .update(payload)
+      .eq("id", subcategoryId)
+      .select()
+      .single();
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+/**
+ * Delete subcategory
+ */
+export async function deleteSubcategory(subcategoryId) {
+  try {
+    const { error } = await supabase
+      .from("subcategories")
+      .delete()
+      .eq("id", subcategoryId);
+
+    return { error };
+  } catch (error) {
+    return { error };
+  }
+}
+
+
 
 
 
