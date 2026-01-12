@@ -231,5 +231,73 @@ export async function upsertProductPrimaryImage({ productId, file }) {
   }
 }
 
+// DELETE Product from DB
+export async function deleteProduct(productId) {
+  try {
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", productId);
+
+    return { error };
+  } catch (error) {
+    return { error };
+  }
+}
+
+// Fetch Product Image for cleanup
+export async function fetchProductImages(productId) {
+  try {
+    const { data, error } = await supabase
+      .from("product_images")
+      .select("id, url, position")
+      .eq("product_id", productId)
+      .order("position", { ascending: true });
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+// /Deleting the image row
+export async function deleteProductImageRow(imageId) {
+  try {
+    const { error } = await supabase
+      .from("product_images")
+      .delete()
+      .eq("id", imageId);
+
+    return { error };
+  } catch (error) {
+    return { error };
+  }
+}
+
+function extractStoragePathFromPublicUrl(publicUrl) {
+  // expected:
+  // https://<project>.supabase.co/storage/v1/object/public/product-images/<path>
+  const marker = "/storage/v1/object/public/product-images/";
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return publicUrl.substring(idx + marker.length);
+}
+
+export async function deleteStorageFileByPublicUrl(publicUrl) {
+  try {
+    const path = extractStoragePathFromPublicUrl(publicUrl);
+    if (!path) return { error: new Error("Invalid public url") };
+
+    const { error } = await supabase.storage
+      .from("product-images")
+      .remove([path]);
+
+    return { error };
+  } catch (error) {
+    return { error };
+  }
+}
+
+
 
 
