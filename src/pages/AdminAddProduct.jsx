@@ -7,7 +7,9 @@ import {
   uploadProductImage,
   fetchProducts,
   fetchCategories,
-  fetchSubcategories
+  fetchSubcategories, 
+  upsertProductPrimaryImage,
+  updateProduct
 } from "../lib/catalogApi.js";
 
 const CATEGORY_TO_SUBCATEGORY_TITLES = {
@@ -191,19 +193,24 @@ const AdminAddProduct = ({ profile }) => {
     setIsItemModalOpen(true);
   };
 
-  const handleOpenEditItem = (item) => {
-    setEditingItemId(item.id);
-    setItemDraft({
-      name: item.name || "",
-      price: item.price || "",
-      description: item.description || "",
-      availability: item.availability || "in-stock",
-      imageData: item.imageData || "",
-      imageName: item.imageName || ""
-    });
-    setItemError("");
-    setIsItemModalOpen(true);
-  };
+const handleOpenEditItem = (item) => {
+  setEditingItemId(item.id);
+
+  const availability = item.stock_count > 0 ? "in-stock" : "out-of-stock";
+
+  setItemDraft({
+    name: item.name || "",
+    price: item.price || "",
+    description: item.description || "",
+    availability, // ✅ derived from DB
+    imageData: item.imageData || "",
+    imageName: item.imageName || ""
+  });
+
+  setItemError("");
+  setIsItemModalOpen(true);
+};
+
 
   const handleCloseItemModal = () => {
     setIsItemModalOpen(false);
@@ -215,39 +222,96 @@ const AdminAddProduct = ({ profile }) => {
 
   const handleSaveItem = async (event) => {
     event.preventDefault();
-
+  
     if (!itemDraft.name.trim()) {
       setItemError("Item name is required.");
       return;
     }
-
-    const { data: product, error } = await createProduct({
-      name: itemDraft.name.trim(),
-      price: itemDraft.price,
-      description: itemDraft.description,
-      subcategory_id: selectedSubcategoryId
-    });
-
-    if (error) {
-      setItemError(error.message || "Failed to create product");
+  
+    if (!selectedSubcategoryId) {
+      setItemError("Subcategory not selected.");
       return;
     }
-
-    if (fileInputRef.current?.files?.[0]) {
-      await uploadProductImage({
-        productId: product.id,
-        file: fileInputRef.current.files[0]
+  
+    setItemError("");
+  
+    const hasNewImage = !!fileInputRef.current?.files?.[0];
+  
+    // ✅ stock toggle -> DB stock_count (boolean behavior)
+    const stock_count = itemDraft.availability === "out-of-stock" ? 0 : 1;
+  
+    // =========================
+    // EDIT MODE (UPDATE)
+    // =========================
+    if (editingItemId) {
+      const { error: updateError } = await updateProduct(editingItemId, {
+        name: itemDraft.name.trim(),
+        price: itemDraft.price,
+        description: itemDraft.description,
+        stock_count
       });
+  
+      if (updateError) {
+        setItemError(updateError.message || "Failed to update product");
+        return;
+      }
+  
+      // ✅ Replace existing product image (IMPORTANT FIX)
+      if (hasNewImage) {
+        const { error: imgErr } = await upsertProductPrimaryImage({
+          productId: editingItemId,
+          file: fileInputRef.current.files[0]
+        });
+  
+        if (imgErr) {
+          setItemError(imgErr.message || "Image update failed");
+          return;
+        }
+      }
+  
+    // =========================
+    // CREATE MODE
+    // =========================
+    } else {
+      const { data: product, error: createError } = await createProduct({
+        name: itemDraft.name.trim(),
+        price: itemDraft.price,
+        description: itemDraft.description,
+        subcategory_id: selectedSubcategoryId
+        // stock_count not sent here, DB default handles it
+      });
+  
+      if (createError) {
+        setItemError(createError.message || "Failed to create product");
+        return;
+      }
+  
+      if (hasNewImage) {
+        const { error: imgErr } = await uploadProductImage({
+          productId: product.id,
+          file: fileInputRef.current.files[0]
+        });
+  
+        if (imgErr) {
+          setItemError(imgErr.message || "Image upload failed");
+          return;
+        }
+      }
     }
-
+  
+    // =========================
+    // Refresh list
+    // =========================
     const { data } = await fetchProducts(selectedSubcategoryId);
     setItemsBySubcategory((prev) => ({
       ...prev,
       [selectedSubcategoryId]: normalizeProducts(data)
     }));
-
+  
     handleCloseItemModal();
   };
+  
+  
 
   const handleDeleteItem = (itemId) => {
     if (!selectedSubcategoryId) return;

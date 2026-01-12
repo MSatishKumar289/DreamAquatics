@@ -162,5 +162,74 @@ export async function uploadProductImage({ productId, file }) {
   }
 }
 
+export async function updateProduct(productId, payload) {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .update(payload)
+      .eq("id", productId)
+      .select()
+      .single();
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+// Update image from Edit modal
+export async function upsertProductPrimaryImage({ productId, file }) {
+  try {
+    // 1) upload file
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `${productId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicUrlData?.publicUrl;
+    if (!publicUrl) throw new Error("Public URL generation failed");
+
+    // 2) check existing image row
+    const { data: existing, error: existingErr } = await supabase
+      .from("product_images")
+      .select("id")
+      .eq("product_id", productId)
+      .order("position", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingErr) throw existingErr;
+
+    // 3) update or insert
+    if (existing?.id) {
+      const { error: updateErr } = await supabase
+        .from("product_images")
+        .update({ url: publicUrl, alt: file.name, position: 0 })
+        .eq("id", existing.id);
+
+      if (updateErr) throw updateErr;
+    } else {
+      const { error: insertErr } = await supabase
+        .from("product_images")
+        .insert({ product_id: productId, url: publicUrl, alt: file.name, position: 0 });
+
+      if (insertErr) throw insertErr;
+    }
+
+    return { error: null, publicUrl };
+  } catch (error) {
+    return { error };
+  }
+}
+
 
 
