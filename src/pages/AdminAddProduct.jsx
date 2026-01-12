@@ -9,7 +9,11 @@ import {
   fetchCategories,
   fetchSubcategories, 
   upsertProductPrimaryImage,
-  updateProduct
+  updateProduct,
+  deleteProduct,
+  fetchProductImages,
+  deleteProductImageRow,
+  deleteStorageFileByPublicUrl
 } from "../lib/catalogApi.js";
 
 const CATEGORY_TO_SUBCATEGORY_TITLES = {
@@ -313,15 +317,45 @@ const handleOpenEditItem = (item) => {
   
   
 
-  const handleDeleteItem = (itemId) => {
+  const handleDeleteItem = async (itemId) => {
     if (!selectedSubcategoryId) return;
+  
     const shouldDelete = window.confirm("Delete this item? This cannot be undone.");
     if (!shouldDelete) return;
-    setItemsBySubcategory((prev) => ({
+  
+    try {
+      // 1) get images linked to this product
+      const { data: imgs, error: imgFetchErr } = await fetchProductImages(itemId);
+      if (imgFetchErr) throw imgFetchErr;
+  
+      // 2) delete product (this removes product row)
+      const { error: delErr } = await deleteProduct(itemId);
+      if (delErr) throw delErr;
+  
+      // 3) cleanup: delete image rows + storage files
+      if (imgs?.length) {
+        for (const img of imgs) {
+          if (img?.url) {
+            await deleteStorageFileByPublicUrl(img.url);
+          }
+          if (img?.id) {
+            await deleteProductImageRow(img.id);
+          }
+        }
+      }
+  
+      // 4) refresh list
+      const { data } = await fetchProducts(selectedSubcategoryId);
+      setItemsBySubcategory((prev) => ({
         ...prev,
-        [selectedSubcategoryId]: (prev[selectedSubcategoryId] || []).filter((item) => item.id !== itemId)
-    }));
+        [selectedSubcategoryId]: normalizeProducts(data)
+      }));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert(err?.message || "Delete failed");
+    }
   };
+  
 
   const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
       const reader = new FileReader();
