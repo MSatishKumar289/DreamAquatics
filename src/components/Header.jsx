@@ -157,11 +157,9 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   )}
                   <button
                     type="button"
-                    onClick={() => {
-                      const confirmLogout = window.confirm('Are you sure you want to log out?');
-                      if (!confirmLogout) return;
+                    onClick={async () => {
                       setIsProfileOpen(false);
-                      onLogout?.();
+                      await onLogout();
                       navigate('/');
                     }}
                     className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
@@ -267,11 +265,9 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   )}
                   <button
                     type="button"
-                    onClick={() => {
-                      const confirmLogout = window.confirm('Are you sure you want to log out?');
-                      if (!confirmLogout) return;
+                    onClick={async () => {
                       setIsProfileOpen(false);
-                      onLogout?.();
+                      await onLogout();
                       navigate('/');
                     }}
                     className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
