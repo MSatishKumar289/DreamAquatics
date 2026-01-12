@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { getProductsByCategory } from '../data/sampleProducts';
-import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchAllProductsWithCategories } from '../lib/catalogApi';
 import CategorySection from '../components/CategorySection';
