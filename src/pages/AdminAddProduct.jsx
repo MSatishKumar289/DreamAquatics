@@ -13,7 +13,10 @@ import {
   deleteProduct,
   fetchProductImages,
   deleteProductImageRow,
-  deleteStorageFileByPublicUrl
+  deleteStorageFileByPublicUrl,
+  createSubcategory,
+  updateSubcategory,
+  deleteSubcategory
 } from "../lib/catalogApi.js";
 
 const CATEGORY_TO_SUBCATEGORY_TITLES = {
@@ -137,6 +140,9 @@ const AdminAddProduct = ({ profile }) => {
 
     (async () => {
       const { data } = await fetchSubcategories(selectedCategoryId);
+      console.log("DB SUBCATEGORIES:", data);
+      console.log("SUPABASE URL:", import.meta.env.VITE_SUPABASE_URL);
+
       setDbSubcategories(data || []);
       setSelectedSubcategoryId(data?.[0]?.id || "");
       setIsSubcategoriesLoading(false);
@@ -431,6 +437,134 @@ const handleOpenEditItem = (item) => {
       subcategoryFileInputRef.current.value = "";
     }
   };
+
+  // Create and Update Subcategories
+  const handleSaveSubcategory = async (event) => {
+    event.preventDefault();
+  
+    // ✅ validation FIRST (your old code had slugify before validation)
+    if (!subcategoryDraft.name.trim()) {
+      setSubcategoryError("Subcategory name is required.");
+      return;
+    }
+  
+    if (!selectedCategoryId) {
+      setSubcategoryError("Category not selected.");
+      return;
+    }
+  
+    setSubcategoryError("");
+  
+    // ✅ slug is REQUIRED by DB (NOT NULL)
+    const name = subcategoryDraft.name.trim();
+    const slug = slugify(name);
+  
+    try {
+      // =========================
+      // EDIT MODE
+      // =========================
+      if (editingSubcategoryId) {
+        const { error } = await updateSubcategory(editingSubcategoryId, {
+          name,
+          slug, // ✅ ADDED (required + keep sync when renaming)
+          description: subcategoryDraft.description.trim()
+        });
+  
+        if (error) {
+          setSubcategoryError(error.message || "Failed to update subcategory");
+          return;
+        }
+      }
+  
+      // =========================
+      // CREATE MODE
+      // =========================
+      else {
+        const { data, error } = await createSubcategory({
+          name,
+          slug, // ✅ ADDED (required)
+          description: subcategoryDraft.description.trim(),
+          category_id: selectedCategoryId
+        });
+  
+        if (error) {
+          setSubcategoryError(error.message || "Failed to create subcategory");
+          return;
+        }
+  
+        // ✅ auto select newly created subcategory
+        if (data?.id) setSelectedSubcategoryId(data.id);
+      }
+  
+      // ✅ refresh subcategories from DB
+      const { data: refreshed, error: refErr } = await fetchSubcategories(selectedCategoryId);
+      if (!refErr) {
+        setDbSubcategories(refreshed || []);
+  
+        // ✅ fallback: if create didn't return id for some reason
+        if (!editingSubcategoryId && !selectedSubcategoryId) {
+          setSelectedSubcategoryId(refreshed?.[0]?.id || "");
+        }
+      }
+  
+      handleCloseSubcategoryModal();
+    } catch (err) {
+      console.error(err);
+      setSubcategoryError(err.message || "Subcategory save failed");
+    }
+  };
+  
+
+  // DELETE SubCAtegory
+  const handleDeleteSubcategory = async (subcategoryId) => {
+    const shouldDelete = window.confirm(
+      "Delete this subcategory and its items? This cannot be undone."
+    );
+    if (!shouldDelete) return;
+  
+    try {
+      const { error } = await deleteSubcategory(subcategoryId);
+      if (error) throw error;
+  
+      // refresh list
+      const { data: refreshed } = await fetchSubcategories(selectedCategoryId);
+      setDbSubcategories(refreshed || []);
+  
+      // reset selection
+      if (selectedSubcategoryId === subcategoryId) {
+        setSelectedSubcategoryId(refreshed?.[0]?.id || "");
+      }
+  
+      // clear products cache (optional but clean)
+      setItemsBySubcategory({});
+    } catch (err) {
+      console.error("Delete subcategory failed:", err);
+      alert(err?.message || "Delete failed");
+    }
+  };
+  
+  const handleSubcategoryImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+  
+    setSubcategoryError("");
+  
+    try {
+      const dataUrl = await prepareImageData(file);
+  
+      setSubcategoryDraft((prev) => ({
+        ...prev,
+        imageData: dataUrl,
+        imageName: file.name
+      }));
+    } catch (error) {
+      console.error("Subcategory image upload failed", error);
+      setSubcategoryError("Unable to process the image. Try a smaller file.");
+    }
+  };
+  
+  
+  
 
 
   return (
