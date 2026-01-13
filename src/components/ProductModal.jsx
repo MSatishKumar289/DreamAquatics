@@ -1,36 +1,50 @@
-﻿import { useEffect, useState } from 'react';
-import { getImageWithFallback } from '../assets';
-import close_ic from '../assets/Icons/close_ic.svg';
+﻿import { useEffect, useMemo, useState } from "react";
+import { getImageWithFallback } from "../assets";
+import close_ic from "../assets/Icons/close_ic.svg";
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // ✅ always compute safe values (even when closed) to keep Hooks stable
+  const safeProduct = product || {};
+  const title = safeProduct?.title || safeProduct?.name || "Product";
+
+  const imageFromDb = safeProduct?.product_images?.[0]?.url || "";
+  const imageRaw = safeProduct?.image || imageFromDb;
+
+  const imageSrc = useMemo(() => {
+    if (!imageRaw) return getImageWithFallback("", title);
+
+    if (typeof imageRaw === "string") {
+      if (imageRaw.startsWith("http")) return imageRaw;
+      return getImageWithFallback(imageRaw, title);
+    }
+
+    return getImageWithFallback("", title);
+  }, [imageRaw, title]);
+
+  const priceValue = Number(safeProduct?.price ?? 0);
+
   // Handle Escape key press
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !product) {
-    return null;
-  }
-
   const handleOverlayClick = (e) => {
-    // Close only if clicking the overlay, not the modal content
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -38,7 +52,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
   const handleAddToCart = () => {
     if (showConfirmation) return;
-    onAddToCart(product);
+    onAddToCart(safeProduct);
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
@@ -46,12 +60,8 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     }, 2000);
   };
 
-  let imageSrc = product.image;
-  if (typeof product.image === 'string') {
-    imageSrc = product.image.startsWith('http')
-      ? product.image
-      : getImageWithFallback(product.image, product.title);
-  }
+  // ✅ return AFTER hooks
+  if (!isOpen || !product) return null;
 
   return (
     <div
@@ -75,16 +85,15 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
         <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row">
           <div className="space-y-4 md:w-1/2">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
-              <img
-                src={imageSrc}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={imageSrc} alt={title} className="w-full h-full object-cover" />
+
               {showConfirmation && (
                 <div className="pointer-events-none absolute inset-x-4 bottom-4 flex justify-center">
                   <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-white/95 px-3 py-2 text-emerald-600 shadow-lg">
                     <span className="text-base font-bold">✓</span>
-                    <span className="text-xs font-semibold uppercase tracking-[0.3em]">Added to cart</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.3em]">
+                      Added to cart
+                    </span>
                   </div>
                 </div>
               )}
@@ -93,24 +102,25 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
             <button
               onClick={handleAddToCart}
               className="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
-              aria-label={`Add ${product.title} to cart`}
+              aria-label={`Add ${title} to cart`}
             >
               Add to Cart
             </button>
           </div>
+
           <div className="space-y-4 md:w-1/2">
             <section className="space-y-4">
               <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
-                {product.title}
+                {title}
               </h2>
 
               <p className="text-2xl font-bold text-gray-900">
-                {'\u20B9'}
-                {product?.price?.toLocaleString('en-IN')}
+                {"\u20B9"}
+                {priceValue.toLocaleString("en-IN")}
               </p>
 
               <p className="text-md text-gray-700 leading-relaxed">
-                {product.description}
+                {safeProduct?.description || ""}
               </p>
             </section>
           </div>
