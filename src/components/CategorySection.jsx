@@ -33,7 +33,7 @@ const CategorySection = ({ categoryName, products }) => {
               {displayName}
             </h2>
             <button
-              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 via-blue-500 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 via-blue-500 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
@@ -50,6 +50,7 @@ const CategorySection = ({ categoryName, products }) => {
                 categoryName={categoryName}
                 product={product}
                 isSubCategory
+                showStockBadge={false}
               />
             ))}
           </div>

@@ -128,11 +128,24 @@ const CategoryListingPage = () => {
 
     if (!subCategorySlug) return [];
 
-    return dbProducts.filter((p) => {
+    const filtered = dbProducts.filter((p) => {
       const pCatSlug = p?.subcategory?.category?.slug;
       const pSubSlug = p?.subcategory?.slug;
 
       return pCatSlug === normalizedCategorySlug && pSubSlug === subCategorySlug;
+    });
+    const getStockFlag = (item) => {
+      const count = Number(item?.stock_count);
+      if (Number.isFinite(count)) return count > 0;
+      const status = String(item?.availability || item?.status || "").toLowerCase();
+      if (!status) return true;
+      return !/out|sold/.test(status);
+    };
+    return filtered.sort((a, b) => {
+      const aInStock = getStockFlag(a);
+      const bInStock = getStockFlag(b);
+      if (aInStock === bInStock) return 0;
+      return aInStock ? -1 : 1;
     });
   }, [dbProducts, normalizedCategorySlug, subCategorySlug]);
 
@@ -216,6 +229,7 @@ const CategoryListingPage = () => {
                   product={item}
                   isSubCategory={!isSubcategoryMode}
                   onAddToCart={handleAddToCart}
+                  showStockBadge={isSubcategoryMode}
                 />
               ))}
             </div>

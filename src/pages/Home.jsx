@@ -23,6 +23,7 @@ const Home = ({ profile }) => {
   const instagramUrl = 'https://www.instagram.com/dreamaquatics23/?hl=en';
   const [productsByCategory, setProductsByCategory] = useState({});
   const [loading, setLoading] = useState(true);
+  const [activeHighlight, setActiveHighlight] = useState(null);
 
   useEffect(() => {
     async function loadProducts() {
@@ -150,14 +151,14 @@ const Home = ({ profile }) => {
             <div className="flex flex-wrap items-center justify-center gap-4 md:justify-center">
               <a
                 href="tel:0000000"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
                 Call us
               </a>
               <a
                 href="https://wa.me/0000000"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
                 WhatsApp
@@ -183,19 +184,63 @@ const Home = ({ profile }) => {
                   poster={HighlightOne}
                 />
               </div>
-              <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
+              <button
+                type="button"
+                className="relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none"
+                onClick={() => setActiveHighlight(HighlightTwo)}
+                aria-label="Enlarge highlight image"
+              >
                 <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-cover" />
-              </div>
-              <div className="h-32 overflow-hidden rounded-2xl border border-white/10">
+                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 5h5v5" />
+                    <path d="M19 5l-7 7" />
+                    <path d="M10 19H5v-5" />
+                    <path d="M5 19l7-7" />
+                  </svg>
+                </span>
+              </button>
+              <button
+                type="button"
+                className="relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none"
+                onClick={() => setActiveHighlight(HighlightThree)}
+                aria-label="Enlarge highlight image"
+              >
                 <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-cover" />
-              </div>
+                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 5h5v5" />
+                    <path d="M19 5l-7 7" />
+                    <path d="M10 19H5v-5" />
+                    <path d="M5 19l7-7" />
+                  </svg>
+                </span>
+              </button>
             </div>
             <div className="mt-2 flex justify-center">
               <a
                 href={instagramUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="relative inline-flex items-center justify-center overflow-hidden rounded-full border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
+                className="relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
               >
                 <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
                 Follow us on Instagram
@@ -215,6 +260,32 @@ const Home = ({ profile }) => {
             products={productsByCategory[category] || []}
           />
         ))
+      )}
+      {activeHighlight && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setActiveHighlight(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setActiveHighlight(null)}
+              className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow hover:text-slate-900"
+              aria-label="Close image preview"
+            >
+              ×
+            </button>
+            <img
+              src={activeHighlight}
+              alt="Highlight preview"
+              className="max-h-[80vh] w-full object-contain"
+            />
+          </div>
+        </div>
       )}
     </main>
   );

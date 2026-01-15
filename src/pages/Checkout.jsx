@@ -7,6 +7,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const Checkout = ({ user, onRequestLogin }) => {
   const { cartItems, subtotal, clearCart } = useCart();
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderSnapshot, setOrderSnapshot] = useState(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -69,6 +70,11 @@ const Checkout = ({ user, onRequestLogin }) => {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
     console.info('Checkout details:', form);
+    setOrderSnapshot({
+      items: cartItems,
+      subtotal,
+      address: form,
+    });
     setOrderPlaced(true);
     clearCart();
   };
@@ -87,6 +93,16 @@ const Checkout = ({ user, onRequestLogin }) => {
   }, [form]);
 
   if (orderPlaced) {
+    const items = orderSnapshot?.items || [];
+    const orderSubtotal = orderSnapshot?.subtotal ?? subtotal;
+    const address = orderSnapshot?.address || form;
+    const addressLines = [
+      address.addressLine1?.trim(),
+      address.addressLine2?.trim() || null,
+      address.landmark?.trim() ? `Landmark: ${address.landmark.trim()}` : null,
+      `${address.city?.trim()} - ${address.pincode?.trim()}`,
+    ].filter(Boolean);
+
     return (
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -98,13 +114,13 @@ const Checkout = ({ user, onRequestLogin }) => {
             <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-gray-900">Items</h2>
-                {cartItems.length === 0 ? (
+                {items.length === 0 ? (
                   <p className="text-sm text-gray-600">
                     No items found in the cart.
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {cartItems.map((item) => {
+                    {items.map((item) => {
                       let imageSrc = item.image;
                       if (typeof item.image === 'string') {
                         if (!item.image.startsWith('http')) {
@@ -149,10 +165,10 @@ const Checkout = ({ user, onRequestLogin }) => {
                     Delivery Address
                   </h2>
                   <div className="mt-3 space-y-2 text-sm text-gray-700">
-                    <p className="font-semibold text-gray-900">{form.name}</p>
-                    <p>{form.email}</p>
-                    <p>{form.mobile}</p>
-                    {formattedAddress.map((line) => (
+                    <p className="font-semibold text-gray-900">{address.name}</p>
+                    <p>{address.email}</p>
+                    <p>{address.mobile}</p>
+                    {addressLines.map((line) => (
                       <p key={line}>{line}</p>
                     ))}
                   </div>
@@ -162,7 +178,7 @@ const Checkout = ({ user, onRequestLogin }) => {
                   <div className="flex items-center justify-between text-sm text-gray-700">
                     <span>Subtotal</span>
                     <span className="font-semibold text-gray-900">
-                      ₹{subtotal.toLocaleString('en-IN')}
+                      ₹{orderSubtotal.toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
