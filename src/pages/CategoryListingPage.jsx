@@ -154,8 +154,8 @@ const CategoryListingPage = () => {
     setSelectedProduct(null);
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product);
+  const handleAddToCart = (product, qty = 1) => {
+    addToCart(product, qty);
   };
 
   return (

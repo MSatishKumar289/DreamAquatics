@@ -3,20 +3,31 @@ import { CART_STORAGE, readCartFromStorage, persistCartToStorage, clearCartStora
 
 const CartContext = createContext(null);
 
-const normalizeItem = (item) => ({
-  id: item.id,
-  title: item.title,
-  price: item.price,
-  qty: item.qty ?? item.quantity ?? 1,
-  image: item.image,
-  meta: item.meta || item.subtitle || '',
-});
+const normalizeItem = (item) => {
+  const imageFromDb = item?.product_images?.[0]?.url || '';
+  const image = item.image || imageFromDb || '';
+
+  return {
+    id: item.id,
+    title: item.title || item.name || '',
+    price: item.price,
+    qty: item.qty ?? item.quantity ?? 1,
+    image,
+    meta: item.meta || item.subtitle || '',
+  };
+};
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     if (typeof window === 'undefined') return [];
     const { items } = readCartFromStorage();
-    return items.map(normalizeItem);
+    const normalizedItems = items.map(normalizeItem);
+    const hasIncomplete = normalizedItems.some((item) => !item.title);
+    if (hasIncomplete) {
+      clearCartStorage();
+      return [];
+    }
+    return normalizedItems;
   });
 
   useEffect(() => {

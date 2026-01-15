@@ -1,9 +1,11 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { getImageWithFallback } from "../assets";
 import close_ic from "../assets/Icons/close_ic.svg";
+import cart_ic from "../assets/Icons/cart_ic.svg";
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [qty, setQty] = useState(1);
 
   // ✅ always compute safe values (even when closed) to keep Hooks stable
   const safeProduct = product || {};
@@ -44,6 +46,12 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setQty(1);
+    }
+  }, [isOpen, product?.id]);
+
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -52,7 +60,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
   const handleAddToCart = () => {
     if (showConfirmation) return;
-    onAddToCart(safeProduct);
+    onAddToCart(safeProduct, qty);
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
@@ -84,7 +92,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
         <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row">
           <div className="space-y-4 md:w-1/2">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
               <img src={imageSrc} alt={title} className="w-full h-full object-cover" />
 
               {showConfirmation && (
@@ -99,13 +107,47 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               )}
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"
-              aria-label={`Add ${title} to cart`}
-            >
-              Add to Cart
-            </button>
+            <div className="flex w-full items-stretch gap-3">
+              <div
+                className="grid flex-1 grid-cols-[42px_1fr_42px] items-center overflow-hidden rounded-xl border border-gray-300 bg-white"
+                role="group"
+                aria-label={`Quantity control for ${title}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setQty((prev) => Math.max(1, prev - 1))}
+                  aria-label={`Decrease quantity for ${title}`}
+                  className="h-full text-lg font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  -
+                </button>
+                <span className="text-center text-base font-semibold text-gray-900">
+                  {qty}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQty((prev) => prev + 1)}
+                  aria-label={`Increase quantity for ${title}`}
+                  className="h-full text-lg font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                onClick={handleAddToCart}
+                className="inline-flex flex-[2] items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                aria-label={`Add ${title} to cart`}
+              >
+                <img
+                  src={cart_ic}
+                  alt=""
+                  className="h-4 w-4 brightness-0 invert"
+                  aria-hidden="true"
+                />
+                <span className="leading-tight">Add to Cart</span>
+              </button>
+            </div>
           </div>
 
           <div className="space-y-4 md:w-1/2">

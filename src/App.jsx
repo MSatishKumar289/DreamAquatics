@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
+import Checkout from './pages/Checkout.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
@@ -164,6 +165,12 @@ function AppContent() {
               element={<CategoryListingPage />}
             />
             <Route path="/cart" element={<CartPage />} />
+            <Route
+              path="/checkout"
+              element={
+                <Checkout user={authUser} onRequestLogin={openLoginModal} />
+              }
+            />
             <Route
               path="/admin/add-product"
               element={
