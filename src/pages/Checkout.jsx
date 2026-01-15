@@ -112,14 +112,20 @@ const Checkout = ({ user, onRequestLogin }) => {
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="space-y-4">
+              <div className="order-2 space-y-4 lg:order-1">
                 <h2 className="text-lg font-semibold text-gray-900">Items</h2>
                 {items.length === 0 ? (
                   <p className="text-sm text-gray-600">
                     No items found in the cart.
                   </p>
                 ) : (
-                  <div className="space-y-3">
+                  <div
+                    className={`space-y-3 ${
+                      items.length >= 3
+                        ? "max-h-[360px] overflow-y-auto pr-1"
+                        : ""
+                    }`}
+                  >
                     {items.map((item) => {
                       let imageSrc = item.image;
                       if (typeof item.image === 'string') {
@@ -134,22 +140,22 @@ const Checkout = ({ user, onRequestLogin }) => {
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                          className="flex items-center gap-5 rounded-2xl border border-gray-100 bg-gray-50 p-4"
                         >
                           <img
                             src={imageSrc}
                             alt={item.title}
-                            className="h-16 w-16 rounded-lg object-cover"
+                            className="h-20 w-20 rounded-xl object-cover"
                           />
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-base font-semibold text-gray-900">
                               {item.title}
                             </p>
-                            <p className="text-xs text-gray-600">
+                            <p className="text-sm text-gray-600">
                               Qty {item.qty}
                             </p>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-base font-semibold text-gray-900">
                             ₹{(item.price * item.qty).toLocaleString('en-IN')}
                           </p>
                         </div>
@@ -159,7 +165,7 @@ const Checkout = ({ user, onRequestLogin }) => {
                 )}
               </div>
 
-              <div className="space-y-4">
+              <div className="order-1 space-y-4 lg:order-2">
                 <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                   <h2 className="text-lg font-semibold text-gray-900">
                     Delivery Address

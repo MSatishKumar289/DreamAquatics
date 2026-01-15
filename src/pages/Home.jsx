@@ -122,7 +122,7 @@ const Home = ({ profile }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
         </div>
 
-        <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white md:grid-cols-[1.2fr_0.8fr] md:px-10">
+        <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white lg:grid-cols-[1.2fr_0.8fr] md:px-10">
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
             <div className="space-y-3 text-center md:text-left">
               <h1 className="text-[1.5rem] font-light leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem]">

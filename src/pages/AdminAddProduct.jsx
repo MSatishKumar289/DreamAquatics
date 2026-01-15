@@ -106,6 +106,7 @@ const AdminAddProduct = ({ profile }) => {
 
   const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   /* =========================
      FETCH CATEGORIES
@@ -321,13 +322,18 @@ const handleOpenEditItem = (item) => {
     handleCloseItemModal();
   };
   
-  
+
+
+  const requestDeleteItem = (item) => {
+    setPendingDelete({
+      type: "item",
+      id: item.id,
+      name: item.name || "this item"
+    });
+  };
 
   const handleDeleteItem = async (itemId) => {
     if (!selectedSubcategoryId) return;
-  
-    const shouldDelete = window.confirm("Delete this item? This cannot be undone.");
-    if (!shouldDelete) return;
   
     try {
       // 1) get images linked to this product
@@ -516,12 +522,15 @@ const handleOpenEditItem = (item) => {
   
 
   // DELETE SubCAtegory
+  const requestDeleteSubcategory = (subcategory) => {
+    setPendingDelete({
+      type: "subcategory",
+      id: subcategory.id,
+      name: subcategory.name || "this subcategory"
+    });
+  };
+
   const handleDeleteSubcategory = async (subcategoryId) => {
-    const shouldDelete = window.confirm(
-      "Delete this subcategory and its items? This cannot be undone."
-    );
-    if (!shouldDelete) return;
-  
     try {
       const { error } = await deleteSubcategory(subcategoryId);
       if (error) throw error;
@@ -633,7 +642,7 @@ const handleOpenEditItem = (item) => {
               <button
                 type="button"
                 onClick={handleOpenAddSubcategory}
-                className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
               >
                 Add
               </button>
@@ -666,11 +675,6 @@ const handleOpenEditItem = (item) => {
                       )}
                       <div>
                         <p className="text-sm font-semibold">{subcategory.name}</p>
-                        {subcategory.description && (
-                          <p className={`text-xs ${isActive ? "text-slate-200" : "text-slate-400"}`}>
-                            {subcategory.description}
-                          </p>
-                        )}
                       </div>
                     </button>
                     <div className="ml-2 flex items-center gap-2">
@@ -688,7 +692,7 @@ const handleOpenEditItem = (item) => {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteSubcategory(subcategory.id)}
+                        onClick={() => requestDeleteSubcategory(subcategory)}
                         className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${isActive
                           ? "hover:bg-white/10"
                           : "hover:bg-rose-50"
@@ -724,7 +728,7 @@ const handleOpenEditItem = (item) => {
                   type="button"
                   onClick={handleOpenAddItem}
                   disabled={!selectedSubcategoryId}
-                  className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="inline-flex min-w-[140px] items-center justify-center rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                 >
                   Add Item
                 </button>
@@ -742,9 +746,23 @@ const handleOpenEditItem = (item) => {
                   No items yet. Use “Add Item” to create one for this subcategory.
                 </p>
               ) : (
-                <div className="mt-4 divide-y divide-slate-100">
-                  {currentItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between gap-4 py-3">
+                <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1 sm:max-h-[420px] lg:max-h-[520px]">
+                  {currentItems.map((item) => {
+                    const count = Number(item.stock_count);
+                    const availabilityText = String(item.availability || "").toLowerCase();
+                    const isOut = Number.isFinite(count)
+                      ? count <= 0
+                      : availabilityText === "out-of-stock";
+                    const statusLabel = isOut ? "Out of stock" : "In stock";
+                    return (
+                      <div
+                        key={item.id}
+                        className={`flex items-center justify-between gap-4 rounded-lg px-3 py-3 ${
+                          isOut
+                            ? "bg-rose-50 text-rose-700"
+                            : "bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
                       <div className="flex items-center gap-3">
                         {item.imageData ? (
                           <img
@@ -759,7 +777,7 @@ const handleOpenEditItem = (item) => {
                           <p className="text-sm font-semibold text-slate-900">{item.name}</p>
                           <p className="text-xs text-slate-500">
                             {item.price ? `Price: ${item.price}` : "No price set"}
-                            {item.availability === "out-of-stock" ? " · Out of stock" : " · In stock"}
+                            {` · ${statusLabel}`}
                           </p>
                         </div>
                       </div>
@@ -775,7 +793,7 @@ const handleOpenEditItem = (item) => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDeleteItem(item.id)}
+                          onClick={() => requestDeleteItem(item)}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-rose-50"
                           aria-label={`Delete ${item.name}`}
                           title="Delete"
@@ -783,8 +801,9 @@ const handleOpenEditItem = (item) => {
                           <img src={deleteIcon} alt="" className="h-4 w-4" aria-hidden />
                         </button>
                       </div>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -994,6 +1013,47 @@ const handleOpenEditItem = (item) => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {pendingDelete && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setPendingDelete(null);
+            }}
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Confirm delete
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Delete {pendingDelete.name}? This cannot be undone.
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(null)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (pendingDelete.type === "subcategory") {
+                      await handleDeleteSubcategory(pendingDelete.id);
+                    } else {
+                      await handleDeleteItem(pendingDelete.id);
+                    }
+                    setPendingDelete(null);
+                  }}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         )}

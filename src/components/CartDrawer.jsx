@@ -6,6 +6,7 @@ import CartItem from './CartItem';
 const CartDrawer = ({ isOpen, onClose }) => {
   const { cartItems, removeItem, updateQty, itemCount, subtotal } = useCart();
   const navigate = useNavigate();
+  const [pendingDelete, setPendingDelete] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -72,10 +73,10 @@ const CartDrawer = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            className="rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
             aria-label="Close cart"
           >
-            x
+            Close
           </button>
         </header>
 
@@ -106,7 +107,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 <CartItem
                   key={item.id}
                   item={item}
-                  onRemove={() => removeItem(item.id)}
+                  onRemove={() => setPendingDelete(item)}
                   onIncrement={() => updateQty(item.id, item.qty + 1)}
                   onDecrement={() => updateQty(item.id, Math.max(1, item.qty - 1))}
                 />
@@ -131,6 +132,45 @@ const CartDrawer = ({ isOpen, onClose }) => {
               {itemCount} item{itemCount === 1 ? '' : 's'} in cart
             </p>
           </footer>
+        )}
+
+        {pendingDelete && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setPendingDelete(null);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Remove item?
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Remove {pendingDelete.title} from your cart?
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(null)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeItem(pendingDelete.id);
+                    setPendingDelete(null);
+                  }}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </aside>
     </div>

@@ -33,10 +33,10 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
-              <span className="text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">D</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">REAM</span>
-              <span className="ml-1 sm:ml-2 text-[1.35rem] sm:text-[2rem] md:text-[3rem] font-extrabold">A</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-4xl font-semibold tracking-wide">QUATICS</span>
+              <span className="text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.10em]">D</span>
+              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.10em]">REAM</span>
+              <span className="ml-1 sm:ml-2 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.10em]">A</span>
+              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.10em]">QUATICS</span>
             </div>
           </Link>
 
@@ -147,6 +147,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
               onClick={() => onCartOpen?.()}
               className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
               aria-label={`Shopping cart with ${cartCount} items`}
+              data-cart-target="cart"
             >
               <img src={cart_ic} alt="Cart" />
               {cartCount > 0 && (
@@ -254,6 +255,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
               onClick={() => onCartOpen?.()}
               className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
               aria-label={`Shopping cart with ${cartCount} items`}
+              data-cart-target="cart"
             >
               <img src={mobile_cart_ic} alt="Cart" />
               {cartCount > 0 && (

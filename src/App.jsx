@@ -21,7 +21,8 @@ function AppContent() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const { clearCart } = useCart();
+  const { clearCart, lastAddedAt } = useCart();
+  const [showAddedBanner, setShowAddedBanner] = useState(false);
 
   /* ================= AUTH LISTENER (SESSION ONLY) ================= */
 
@@ -85,6 +86,16 @@ function AppContent() {
       active = false;
     };
   }, [sessionUser]);
+
+  useEffect(() => {
+    if (!lastAddedAt) return;
+    setShowAddedBanner(true);
+    const timer = setTimeout(() => {
+      setShowAddedBanner(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [lastAddedAt]);
+
 
   /* ================= DERIVED USER ================= */
 
@@ -190,6 +201,14 @@ function AppContent() {
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
+
+        {showAddedBanner && (
+          <div className="fixed left-0 right-0 top-0 z-50 flex justify-center px-4">
+            <div className="w-full max-w-md -translate-y-2 animate-[slideDown_2s_ease-in-out] border border-emerald-200 bg-emerald-500 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.4em] text-white shadow-md">
+              Added to cart
+            </div>
+          </div>
+        )}
 
         <Footer />
       </div>

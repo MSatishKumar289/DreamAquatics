@@ -59,6 +59,7 @@ const CategoryCard = ({
   const handleAddToCart = (event) => {
     event?.stopPropagation();
     if (isSoldOut) return;
+    runFlyToCartAnimation();
     if (onAddToCart) {
       onAddToCart(product, qty);
     }
@@ -68,6 +69,75 @@ const CategoryCard = ({
     typeof productImage === "string" && productImage.startsWith("http")
       ? productImage
       : getImageWithFallback(productImage, productTitle);
+
+  const runFlyToCartAnimation = () => {
+    try {
+      const img = document.querySelector(
+        `img[alt="${productTitle.replace(/"/g, '\\"')}"]`
+      );
+      const cartTargets = Array.from(
+        document.querySelectorAll('[data-cart-target="cart"]')
+      );
+      const cartTarget = cartTargets.find((node) => {
+        const rect = node.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+
+      if (!img || !cartTarget) return;
+
+      const imgRect = img.getBoundingClientRect();
+      const cartRect = cartTarget.getBoundingClientRect();
+
+      const flyer = document.createElement("img");
+      flyer.src = imageSrc;
+      flyer.alt = "";
+      flyer.setAttribute("aria-hidden", "true");
+      flyer.style.position = "fixed";
+      flyer.style.left = `${imgRect.left}px`;
+      flyer.style.top = `${imgRect.top}px`;
+      flyer.style.width = `${imgRect.width}px`;
+      flyer.style.height = `${imgRect.height}px`;
+      flyer.style.borderRadius = "12px";
+      flyer.style.zIndex = "9999";
+      flyer.style.transition =
+        "transform 0.6s ease-in-out, opacity 0.6s ease-in-out";
+      flyer.style.transformOrigin = "center";
+      document.body.appendChild(flyer);
+
+      const targetX = cartRect.left + cartRect.width / 2 - imgRect.left - imgRect.width / 2;
+      const targetY = cartRect.top + cartRect.height / 2 - imgRect.top - imgRect.height / 2;
+
+      requestAnimationFrame(() => {
+        flyer.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.1)`;
+        flyer.style.opacity = "0.2";
+      });
+
+      const badge = document.createElement("div");
+      badge.style.position = "fixed";
+      badge.style.left = `${cartRect.left + cartRect.width / 2 - 6}px`;
+      badge.style.top = `${cartRect.top - 4}px`;
+      badge.style.width = "12px";
+      badge.style.height = "12px";
+      badge.style.borderRadius = "9999px";
+      badge.style.background = "#2563eb";
+      badge.style.zIndex = "10000";
+      badge.style.transform = "scale(0)";
+      badge.style.transition = "transform 0.25s ease-out, opacity 0.25s ease-out";
+      document.body.appendChild(badge);
+
+      setTimeout(() => {
+        badge.style.transform = "scale(1)";
+      }, 450);
+
+      setTimeout(() => {
+        flyer.remove();
+        badge.style.opacity = "0";
+        setTimeout(() => badge.remove(), 200);
+      }, 700);
+    } catch (error) {
+      console.error("fly-to-cart failed", error);
+    }
+  };
 
   return (
     <article
@@ -189,7 +259,8 @@ const CategoryCard = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center overflow-hidden rounded-full border border-blue-100 bg-blue-50">
+              <div className="flex-1">
+                <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-full border border-blue-100 bg-blue-50">
                 <button
                   type="button"
                   onClick={(event) => {
@@ -217,13 +288,14 @@ const CategoryCard = ({
                 >
                   +
                 </button>
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleAddToCart}
                 disabled={isSoldOut}
-                className="flex-1 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
               >
                 Add to cart
               </button>

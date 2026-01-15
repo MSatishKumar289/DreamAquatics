@@ -29,6 +29,7 @@ export const CartProvider = ({ children }) => {
     }
     return normalizedItems;
   });
+  const [lastAdded, setLastAdded] = useState(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -47,6 +48,10 @@ export const CartProvider = ({ children }) => {
         );
       }
       return [...prev, normalizeItem({ ...product, qty })];
+    });
+    setLastAdded({
+      item: normalizeItem({ ...product, qty }),
+      at: Date.now(),
     });
   };
 
@@ -81,13 +86,15 @@ export const CartProvider = ({ children }) => {
       updateQty,
       removeItem,
       clearCart,
+      lastAddedItem: lastAdded?.item || null,
+      lastAddedAt: lastAdded?.at || null,
       getItemCount,
       getSubtotal,
       itemCount: getItemCount(),
       subtotal: getSubtotal(),
       storageKey: CART_STORAGE.key,
     }),
-    [cartItems]
+    [cartItems, lastAdded]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
