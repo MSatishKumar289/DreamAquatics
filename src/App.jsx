@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import Header from './components/Header';
+import CartDrawer from './components/CartDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
@@ -18,6 +19,7 @@ function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { clearCart } = useCart();
 
@@ -123,6 +125,7 @@ function AppContent() {
           user={authUser}
           onLogout={handleLogout}
           onRequestLogin={openLoginModal}
+          onCartOpen={() => setIsCartOpen(true)}
         />
 
         {welcomeText && (
@@ -155,6 +158,11 @@ function AppContent() {
             </div>
           </div>
         )}
+
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+        />
 
         <main className="flex-1">
           <Routes>

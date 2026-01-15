@@ -1,0 +1,140 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import CartItem from './CartItem';
+
+const CartDrawer = ({ isOpen, onClose }) => {
+  const { cartItems, removeItem, updateQty, itemCount, subtotal } = useCart();
+  const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsVisible(false);
+      const frame = requestAnimationFrame(() => setIsVisible(true));
+      return () => cancelAnimationFrame(frame);
+    }
+    if (shouldRender) {
+      setIsVisible(false);
+      const timer = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, shouldRender]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isOpen, onClose]);
+
+  const handleCheckout = () => {
+    onClose();
+    navigate('/checkout');
+  };
+
+  const emptyState = cartItems.length === 0;
+
+  if (!shouldRender) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <aside
+        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+          isVisible ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <header className="flex items-center justify-between border-b border-blue-100 px-6 py-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+              Dream Aquatics
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-slate-900">Cart</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            aria-label="Close cart"
+          >
+            x
+          </button>
+        </header>
+
+        <div className="flex-1 px-6 py-4">
+          {emptyState ? (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+              <p className="text-sm font-semibold text-slate-800">
+                Your cart is empty
+              </p>
+              <p className="mt-2 text-xs text-slate-600">
+                Explore our collections and add items to your cart.
+              </p>
+              <Link
+                to="/"
+                onClick={onClose}
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                Continue shopping
+              </Link>
+            </div>
+          ) : (
+            <section
+              className="max-h-[600px] space-y-3 overflow-y-auto overscroll-contain pr-1 lg:max-h-[690px]"
+              role="list"
+              aria-label="Items in your cart"
+            >
+              {cartItems.map((item) => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  onRemove={() => removeItem(item.id)}
+                  onIncrement={() => updateQty(item.id, item.qty + 1)}
+                  onDecrement={() => updateQty(item.id, Math.max(1, item.qty - 1))}
+                />
+              ))}
+            </section>
+          )}
+        </div>
+
+        {!emptyState && (
+          <footer className="border-t border-blue-100 bg-blue-50 px-6 py-4">
+            <div className="text-center text-xs text-slate-600">
+              <span>Shipping calculated at checkout</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCheckout}
+              className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            >
+              Checkout -- INR {subtotal.toLocaleString('en-IN')}
+            </button>
+            <p className="mt-2 text-center text-xs text-slate-500">
+              {itemCount} item{itemCount === 1 ? '' : 's'} in cart
+            </p>
+          </footer>
+        )}
+      </aside>
+    </div>
+  );
+};
+
+export default CartDrawer;

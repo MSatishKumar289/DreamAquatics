@@ -7,7 +7,7 @@ const currencyFormatter = new Intl.NumberFormat('en-IN', {
   minimumFractionDigits: 0,
 });
 
-const CartItem = ({ item, onRemove }) => {
+const CartItem = ({ item, onRemove, onIncrement, onDecrement }) => {
   const lineTotal = item.price * item.qty;
 
   let imageSrc = item.image;
@@ -21,26 +21,50 @@ const CartItem = ({ item, onRemove }) => {
 
   return (
     <article
-      className="relative flex gap-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+      className="relative flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
       role="listitem"
       aria-label={item.title}
     >
       <img
         src={imageSrc}
         alt={item.title}
-        className="h-28 w-28 flex-shrink-0 rounded-xl border border-gray-200 bg-gray-50 object-cover sm:h-32 sm:w-32"
+        className="h-16 w-16 flex-shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 object-cover"
       />
 
       <div className="flex flex-1 flex-col justify-between gap-3">
-        <div className="space-y-2">
-          <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
           {item.meta && (
-            <p className="text-sm text-gray-500 line-clamp-1">{item.meta}</p>
+            <p className="text-xs text-slate-500 line-clamp-1">{item.meta}</p>
           )}
-          <p className="text-sm font-semibold text-gray-700">Qty {item.qty}</p>
-          <p className="text-sm font-semibold text-gray-700">
-            Total {currencyFormatter.format(lineTotal)}
-          </p>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700">
+            <div className="inline-flex items-center overflow-hidden rounded-full border border-blue-100 bg-blue-50">
+              <button
+                type="button"
+                onClick={onDecrement}
+                disabled={!onDecrement || item.qty <= 1}
+                className="px-2 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
+                aria-label={`Decrease quantity for ${item.title}`}
+              >
+                -
+              </button>
+              <span className="px-2 text-[11px] font-semibold text-blue-700">
+                {item.qty}
+              </span>
+              <button
+                type="button"
+                onClick={onIncrement}
+                disabled={!onIncrement}
+                className="px-2 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
+                aria-label={`Increase quantity for ${item.title}`}
+              >
+                +
+              </button>
+            </div>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1">
+              {currencyFormatter.format(lineTotal)}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -48,14 +72,12 @@ const CartItem = ({ item, onRemove }) => {
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${item.title} from cart`}
-        className="absolute bottom-4 right-4 rounded-full p-1 text-red-600 hover:bg-red-50 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        className="absolute right-3 top-3 rounded-full border border-red-100 bg-white p-1 text-red-600 shadow-sm hover:bg-red-50 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
       >
-        <img src={trash_ic} alt="Dlt" className="h-5 w-5" />
+        <img src={trash_ic} alt="Dlt" className="h-3.5 w-3.5" />
       </button>
     </article>
   );
 };
 
 export default CartItem;
-
-

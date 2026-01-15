@@ -72,6 +72,7 @@ export async function fetchAllProductsWithCategories() {
         name,
         price,
         description,
+        stock_count,
         is_active,
         created_at,
         subcategory:subcategories (

@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
-import ProductModal from "../components/ProductModal";
 import { useState, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
@@ -8,9 +7,6 @@ import { fetchAllProductsWithCategories } from "../lib/catalogApi";
 const CategoryListingPage = () => {
   const { categorySlug, subCategorySlug } = useParams();
   const { addToCart } = useCart();
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // DB state
   const [dbProducts, setDbProducts] = useState([]);
@@ -144,16 +140,6 @@ const CategoryListingPage = () => {
   const isSubcategoryMode = !!subCategorySlug;
   const listForGrid = isSubcategoryMode ? productsForIteration : subcategoryCards;
 
-  const handleViewMore = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProduct(null);
-  };
-
   const handleAddToCart = (product, qty = 1) => {
     addToCart(product, qty);
   };
@@ -199,7 +185,7 @@ const CategoryListingPage = () => {
                 {titleOfListingPage}
               </h1>
               <p className="mt-3 max-w-2xl text-base text-slate-600">
-                Explore carefully curated aquatic species ready to ship nationwide. Each card taps for full details and quick cart access.
+                Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.
               </p>
             </div>
 
@@ -228,12 +214,8 @@ const CategoryListingPage = () => {
                   key={item.id}
                   categoryName={categorySlug}
                   product={item}
-                  handleSubCategoryClick={() => {
-                    // Only needed for subcategory mode product click
-                    // but safe to keep as-is
-                    if (isSubcategoryMode) handleViewMore(item);
-                  }}
-                  isSubCategory={!isSubcategoryMode} // ✅ category page => subcategory cards
+                  isSubCategory={!isSubcategoryMode}
+                  onAddToCart={handleAddToCart}
                 />
               ))}
             </div>
@@ -247,13 +229,6 @@ const CategoryListingPage = () => {
         </section>
       </div>
 
-      {/* ✅ Modal only makes sense in product listing mode */}
-      <ProductModal
-        isOpen={isModalOpen}
-        product={selectedProduct}
-        onClose={handleCloseModal}
-        onAddToCart={handleAddToCart}
-      />
     </main>
   );
 };

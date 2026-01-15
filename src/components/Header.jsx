@@ -7,7 +7,7 @@ import close_ic from '../assets/Icons/close_ic.svg';
 import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
 
 
-const Header = ({ user, onLogout, onRequestLogin }) => {
+const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
   const { itemCount } = useCart();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,7 +29,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
           {/* Brand Title */}
           <Link
             to="/"
-            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
@@ -46,7 +46,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
               <Link
                 key={category.value}
                 to={`/category/${category.value}`}
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors focus:outline-none rounded px-2 py-1"
                 aria-label={`View ${category.label} category`}
               >
                 {category.label}
@@ -142,9 +142,10 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
             </div>
             
             {/* Cart Icon */}
-            <Link
-              to={`/cart`}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+            <button
+              type="button"
+              onClick={() => onCartOpen?.()}
+              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
               aria-label={`Shopping cart with ${cartCount} items`}
             >
               <img src={cart_ic} alt="Cart" />
@@ -156,7 +157,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   {cartCount}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
 
           {/* Mobile Menu Button & Cart */}
@@ -248,9 +249,10 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
               )}
             </div>
             {/* Mobile Cart Icon */}
-            <Link
-              to={`/cart`}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+            <button
+              type="button"
+              onClick={() => onCartOpen?.()}
+              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
               aria-label={`Shopping cart with ${cartCount} items`}
             >
               <img src={mobile_cart_ic} alt="Cart" />
@@ -262,11 +264,11 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   {cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* Hamburger Menu Button */}
             <button
-              className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
               aria-label="Toggle mobile menu"
               aria-expanded={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -290,7 +292,7 @@ const Header = ({ user, onLogout, onRequestLogin }) => {
                   navigate(`/category/${category.value}`);
                   setIsMobileMenuOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none"
                 aria-label={`View ${category.label} category`}
               >
                 {category.label}
