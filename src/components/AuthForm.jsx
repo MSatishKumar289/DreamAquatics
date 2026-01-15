@@ -107,11 +107,11 @@ const AuthForm = ({
             {authLoading ? 'Please wait...' : isRegisterMode ? 'Register' : 'Login'}
           </button>
         ) : (
-          <div className="mt-6 flex items-center justify-end gap-3">
+          <div className="mt-6 flex items-center justify-center gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800"
+              className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"
             >
               Cancel
             </button>
@@ -119,7 +119,7 @@ const AuthForm = ({
               type="button"
               onClick={isRegisterMode ? handleRegisterSubmit : handleLoginSubmit}
               disabled={authLoading}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 disabled:opacity-70"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 disabled:opacity-70"
             >
               {authLoading ? 'Please wait...' : isRegisterMode ? 'Register' : 'Login'}
             </button>

@@ -33,12 +33,24 @@ const CategorySection = ({ categoryName, products }) => {
               {displayName}
             </h2>
             <button
-              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 via-blue-500 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-3.5 w-3.5"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <rect x="4" y="4" width="6" height="6" rx="1" />
+                  <rect x="14" y="4" width="6" height="6" rx="1" />
+                  <rect x="4" y="14" width="6" height="6" rx="1" />
+                  <rect x="14" y="14" width="6" height="6" rx="1" />
+                </svg>
+              </span>
               <span>View All</span>
-              <span className="text-lg text-white/80 transition group-hover:translate-x-0.5">→</span>
             </button>
           </div>
 

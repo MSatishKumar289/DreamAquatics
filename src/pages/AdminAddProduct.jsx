@@ -107,6 +107,7 @@ const AdminAddProduct = ({ profile }) => {
   const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [itemSearch, setItemSearch] = useState("");
 
   /* =========================
      FETCH CATEGORIES
@@ -167,6 +168,16 @@ const AdminAddProduct = ({ profile }) => {
   const currentItems = selectedSubcategoryId
     ? itemsBySubcategory[selectedSubcategoryId] || []
     : [];
+
+  const filteredItems = useMemo(() => {
+    const query = itemSearch.trim().toLowerCase();
+    if (!query) return currentItems;
+    return currentItems.filter((item) => {
+      const name = String(item.name || "").toLowerCase();
+      const price = String(item.price || "").toLowerCase();
+      return name.includes(query) || price.includes(query);
+    });
+  }, [currentItems, itemSearch]);
 
   /* =========================
      FETCH PRODUCTS
@@ -736,18 +747,29 @@ const handleOpenEditItem = (item) => {
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-sm font-semibold text-slate-700">Items list</h3>
-                <span className="text-xs text-slate-400">{currentItems.length} items</span>
+                <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                  <input
+                    type="search"
+                    value={itemSearch}
+                    onChange={(event) => setItemSearch(event.target.value)}
+                    placeholder="Search items"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:max-w-[220px]"
+                  />
+                  <span className="text-xs text-slate-400">
+                    {filteredItems.length} items
+                  </span>
+                </div>
               </div>
 
-              {currentItems.length === 0 ? (
+              {filteredItems.length === 0 ? (
                 <p className="mt-4 text-sm text-slate-500">
                   No items yet. Use “Add Item” to create one for this subcategory.
                 </p>
               ) : (
                 <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1 sm:max-h-[420px] lg:max-h-[520px]">
-                  {currentItems.map((item) => {
+                  {filteredItems.map((item) => {
                     const count = Number(item.stock_count);
                     const availabilityText = String(item.availability || "").toLowerCase();
                     const isOut = Number.isFinite(count)

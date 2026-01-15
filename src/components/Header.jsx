@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
@@ -22,6 +22,18 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
     { label: 'Tank', value: 'tank' }
   ];
 
+  useEffect(() => {
+    if (!isProfileOpen) return;
+    const handleClickOutside = (event) => {
+      const inMenu = event.target.closest('[data-profile-menu]');
+      const inButton = event.target.closest('[data-profile-button]');
+      if (inMenu || inButton) return;
+      setIsProfileOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isProfileOpen]);
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <nav className="container mx-auto px-3 sm:px-6 lg:px-8" aria-label="Main navigation">
@@ -33,15 +45,15 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
-              <span className="text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.10em]">D</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.10em]">REAM</span>
-              <span className="ml-1 sm:ml-2 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.10em]">A</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.10em]">QUATICS</span>
+              <span className="text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.08em]">D</span>
+              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.08em]">REAM</span>
+              <span className="ml-1 sm:ml-2 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.08em]">A</span>
+              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.08em]">QUATICS</span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6 lg:space-x-8">
+          <div className="hidden xl:flex items-center space-x-6 xl:space-x-8">
             {categories.map((category) => (
               <Link
                 key={category.value}
@@ -60,24 +72,21 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   <button
                     type="button"
                     onClick={() => setIsProfileOpen((prev) => !prev)}
-                    className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    data-profile-button
+                    className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_0_0_6px_rgba(37,99,235,0.08)] transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-[0_0_0_8px_rgba(37,99,235,0.12)] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                     aria-label="Account menu"
                   >
                     <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
                     <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
-                    <svg
-                      className="relative h-5 w-5 text-slate-700"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                    >
-                      <circle cx="12" cy="8.5" r="3.25" />
-                      <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
-                    </svg>
+                    <span className="relative text-sm font-semibold text-slate-700">
+                      {(user?.name || "U")
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </span>
                   </button>
                   {user.role === 'admin' && (
                     <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-2 py-1 rounded-md border border-sky-200">
@@ -110,7 +119,10 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                 </button>
               )}
               {user && isProfileOpen && (
-                <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
+                  <div
+                    data-profile-menu
+                    className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                  >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
@@ -162,31 +174,28 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex lg:hidden items-center space-x-2.5 flex-shrink-0">
+          <div className="flex xl:hidden items-center space-x-2.5 flex-shrink-0">
             <div className="relative flex items-center gap-1.5">
               {user ? (
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => setIsProfileOpen((prev) => !prev)}
-                    className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    data-profile-button
+                    className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_0_0_5px_rgba(37,99,235,0.08)] transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-[0_0_0_7px_rgba(37,99,235,0.12)] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                     aria-label="Account menu"
                   >
                     <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
                     <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
-                    <svg
-                      className="relative h-[16px] w-[16px] text-slate-700"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                    >
-                      <circle cx="12" cy="8.5" r="3.25" />
-                      <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
-                    </svg>
+                    <span className="relative text-[11px] font-semibold text-slate-700">
+                      {(user?.name || "U")
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </span>
                   </button>
                   {user.role === 'admin' && (
                     <span className="text-[10px] font-semibold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 whitespace-nowrap">
@@ -219,7 +228,10 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                 </button>
               )}
               {user && isProfileOpen && (
-                <div className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
+                <div
+                  data-profile-menu
+                  className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
@@ -286,7 +298,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2">
+          <div className="xl:hidden pb-4 space-y-2">
             {categories.map((category) => (
               <button
                 key={category.value}
