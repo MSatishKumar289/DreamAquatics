@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import deleteIcon from "../assets/Images/delete.png";
-import editIcon from "../assets/Images/edit.png";
+import edit_ic from "../assets/icons/edit_ic.png";
+import bin_ic from "../assets/icons/bin_ic.png";
 import {
   createProduct,
   uploadProductImage,
   fetchProducts,
   fetchCategories,
-  fetchSubcategories, 
+  fetchSubcategories,
   upsertProductPrimaryImage,
   updateProduct,
   deleteProduct,
@@ -51,13 +51,78 @@ const normalizeProducts = (products = []) =>
   products.map((p) => ({
     ...p,
     imageData: p.product_images?.[0]?.url || ""
-
   }));
 
 const AdminAddProduct = ({ profile }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const subcategoryFileInputRef = useRef(null);
+
+  /* =========================
+     TOAST (MINIMAL + ANIMATED)
+  ========================= */
+  const getToastPrefix = (type) => (type === "error" ? "✖" : "✅");
+
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success" // "success" | "error"
+  });
+
+  const toastTimerRef = useRef(null);
+
+  const showToast = (message, type = "success") => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+
+    setToast({ show: true, message, type });
+
+    toastTimerRef.current = setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  /* =========================
+     CONFIRM POPUP (DELETE + ANIMATED)
+  ========================= */
+  const [confirmPopup, setConfirmPopup] = useState({
+    open: false,
+    title: "",
+    message: "",
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    onConfirm: null
+  });
+
+  const openConfirm = ({ title, message, onConfirm }) => {
+    setConfirmPopup({
+      open: true,
+      title,
+      message,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      onConfirm
+    });
+  };
+
+  const closeConfirm = () => {
+    setConfirmPopup((prev) => ({
+      ...prev,
+      open: false,
+      onConfirm: null
+    }));
+  };
+
+  const handleConfirmDelete = async () => {
+    const fn = confirmPopup.onConfirm;
+    closeConfirm();
+    if (typeof fn === "function") await fn();
+  };
 
   /* =========================
      CATEGORY (UI + DB)
@@ -123,26 +188,18 @@ const AdminAddProduct = ({ profile }) => {
 
     (async () => {
       const { data } = await fetchSubcategories(selectedCategoryId);
-      console.log("DB SUBCATEGORIES:", data);
-      console.log("SUPABASE URL:", import.meta.env.VITE_SUPABASE_URL);
-
       setDbSubcategories(data || []);
       setSelectedSubcategoryId(data?.[0]?.id || "");
       setIsSubcategoriesLoading(false);
     })();
   }, [selectedCategoryId]);
 
-
-  const currentSubcategories = useMemo(
-    () => dbSubcategories,
-    [dbSubcategories]
-  );
+  const currentSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
 
   const selectedSubcategory = useMemo(
     () =>
-      currentSubcategories.find(
-        (subcategory) => subcategory.id === selectedSubcategoryId
-      ) || null,
+      currentSubcategories.find((subcategory) => subcategory.id === selectedSubcategoryId) ||
+      null,
     [currentSubcategories, selectedSubcategoryId]
   );
 
@@ -160,7 +217,6 @@ const AdminAddProduct = ({ profile }) => {
 
     (async () => {
       const { data } = await fetchProducts(selectedSubcategoryId);
-      console.log("data: ", data)
       setItemsBySubcategory((prev) => ({
         ...prev,
         [selectedSubcategoryId]: normalizeProducts(data)
@@ -186,24 +242,23 @@ const AdminAddProduct = ({ profile }) => {
     setIsItemModalOpen(true);
   };
 
-const handleOpenEditItem = (item) => {
-  setEditingItemId(item.id);
+  const handleOpenEditItem = (item) => {
+    setEditingItemId(item.id);
 
-  const availability = item.stock_count > 0 ? "in-stock" : "out-of-stock";
+    const availability = item.stock_count > 0 ? "in-stock" : "out-of-stock";
 
-  setItemDraft({
-    name: item.name || "",
-    price: item.price || "",
-    description: item.description || "",
-    availability, // ✅ derived from DB
-    imageData: item.imageData || "",
-    imageName: item.imageName || ""
-  });
+    setItemDraft({
+      name: item.name || "",
+      price: item.price || "",
+      description: item.description || "",
+      availability,
+      imageData: item.imageData || "",
+      imageName: item.imageName || ""
+    });
 
-  setItemError("");
-  setIsItemModalOpen(true);
-};
-
+    setItemError("");
+    setIsItemModalOpen(true);
+  };
 
   const handleCloseItemModal = () => {
     setIsItemModalOpen(false);
@@ -215,27 +270,22 @@ const handleOpenEditItem = (item) => {
 
   const handleSaveItem = async (event) => {
     event.preventDefault();
-  
+
     if (!itemDraft.name.trim()) {
       setItemError("Item name is required.");
       return;
     }
-  
+
     if (!selectedSubcategoryId) {
       setItemError("Subcategory not selected.");
       return;
     }
-  
+
     setItemError("");
-  
+
     const hasNewImage = !!fileInputRef.current?.files?.[0];
-  
-    // ✅ stock toggle -> DB stock_count (boolean behavior)
     const stock_count = itemDraft.availability === "out-of-stock" ? 0 : 1;
-  
-    // =========================
-    // EDIT MODE (UPDATE)
-    // =========================
+
     if (editingItemId) {
       const { error: updateError } = await updateProduct(editingItemId, {
         name: itemDraft.name.trim(),
@@ -243,147 +293,145 @@ const handleOpenEditItem = (item) => {
         description: itemDraft.description,
         stock_count
       });
-  
+
       if (updateError) {
         setItemError(updateError.message || "Failed to update product");
         return;
       }
-  
-      // ✅ Replace existing product image (IMPORTANT FIX)
+
       if (hasNewImage) {
         const { error: imgErr } = await upsertProductPrimaryImage({
           productId: editingItemId,
           file: fileInputRef.current.files[0]
         });
-  
+
         if (imgErr) {
           setItemError(imgErr.message || "Image update failed");
           return;
         }
       }
-  
-    // =========================
-    // CREATE MODE
-    // =========================
+
+      showToast("Product updated successfully", "success");
     } else {
       const { data: product, error: createError } = await createProduct({
         name: itemDraft.name.trim(),
         price: itemDraft.price,
         description: itemDraft.description,
         subcategory_id: selectedSubcategoryId
-        // stock_count not sent here, DB default handles it
       });
-  
+
       if (createError) {
         setItemError(createError.message || "Failed to create product");
         return;
       }
-  
+
       if (hasNewImage) {
         const { error: imgErr } = await uploadProductImage({
           productId: product.id,
           file: fileInputRef.current.files[0]
         });
-  
+
         if (imgErr) {
           setItemError(imgErr.message || "Image upload failed");
           return;
         }
       }
+
+      showToast("Product added successfully", "success");
     }
-  
-    // =========================
-    // Refresh list
-    // =========================
+
     const { data } = await fetchProducts(selectedSubcategoryId);
     setItemsBySubcategory((prev) => ({
       ...prev,
       [selectedSubcategoryId]: normalizeProducts(data)
     }));
-  
+
     handleCloseItemModal();
   };
-  
-  
 
   const handleDeleteItem = async (itemId) => {
     if (!selectedSubcategoryId) return;
-  
-    const shouldDelete = window.confirm("Delete this item? This cannot be undone.");
-    if (!shouldDelete) return;
-  
-    try {
-      const { data: imgs, error: imgFetchErr } = await fetchProductImages(itemId);
-      if (imgFetchErr) throw imgFetchErr;
-  
-      const paths = (imgs || []).map((img) => img.path).filter(Boolean);
-  
-      const { error: storageErr } = await deleteStorageFiles(paths);
-      if (storageErr) throw storageErr;
-  
-      const { error: delErr } = await deleteProduct(itemId);
-      if (delErr) throw delErr;
-  
-      const { data } = await fetchProducts(selectedSubcategoryId);
-      setItemsBySubcategory((prev) => ({
-        ...prev,
-        [selectedSubcategoryId]: normalizeProducts(data)
-      }));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert(err?.message || "Delete failed");
-    }
-  };
-  
-  
-  
-  
 
-  const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+    openConfirm({
+      title: "Delete Product?",
+      message: "Delete this product? This cannot be undone.",
+      onConfirm: async () => {
+        try {
+          const { data: imgs, error: imgFetchErr } = await fetchProductImages(itemId);
+          if (imgFetchErr) throw imgFetchErr;
+
+          const paths = (imgs || []).map((img) => img.path).filter(Boolean);
+
+          const { error: storageErr } = await deleteStorageFiles(paths);
+          if (storageErr) throw storageErr;
+
+          const { error: delErr } = await deleteProduct(itemId);
+          if (delErr) throw delErr;
+
+          const { data } = await fetchProducts(selectedSubcategoryId);
+          setItemsBySubcategory((prev) => ({
+            ...prev,
+            [selectedSubcategoryId]: normalizeProducts(data)
+          }));
+
+          showToast("Product deleted successfully", "error");
+        } catch (err) {
+          console.error("Delete failed:", err);
+          alert(err?.message || "Delete failed");
+        }
+      }
+    });
+  };
+
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(file);
-  });
-  const resizeImageDataUrl = (dataUrl, maxDimension) => new Promise((resolve) => {
+    });
+
+  const resizeImageDataUrl = (dataUrl, maxDimension) =>
+    new Promise((resolve) => {
       const image = new Image();
       image.onload = () => {
-          const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.max(1, Math.floor(image.width * scale));
-          canvas.height = Math.max(1, Math.floor(image.height * scale));
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-          }
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.floor(image.width * scale));
+        canvas.height = Math.max(1, Math.floor(image.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
       };
       image.onerror = () => resolve(dataUrl);
       image.src = dataUrl;
-  });
+    });
+
   const prepareImageData = async (file) => {
-      const dataUrl = await readFileAsDataUrl(file);
-      if (file.size <= MAX_IMAGE_BYTES) return dataUrl;
-      return resizeImageDataUrl(dataUrl, MAX_IMAGE_DIMENSION);
+    const dataUrl = await readFileAsDataUrl(file);
+    if (file.size <= MAX_IMAGE_BYTES) return dataUrl;
+    return resizeImageDataUrl(dataUrl, MAX_IMAGE_DIMENSION);
   };
+
   const handleItemImageUpload = async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      setItemError("");
-      try {
-          const dataUrl = await prepareImageData(file);
-          setItemDraft((prev) => ({
-              ...prev,
-              imageData: dataUrl,
-              imageName: file.name
-          }));
-      } catch (error) {
-          console.error("Image upload failed", error);
-          setItemError("Unable to process the image. Try a smaller file.");
-      }
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setItemError("");
+    try {
+      const dataUrl = await prepareImageData(file);
+      setItemDraft((prev) => ({
+        ...prev,
+        imageData: dataUrl,
+        imageName: file.name
+      }));
+    } catch (error) {
+      console.error("Image upload failed", error);
+      setItemError("Unable to process the image. Try a smaller file.");
+    }
   };
+
   /* =========================
-     SUBCATEGORY HANDLERS (RESTORED)
+     SUBCATEGORY HANDLERS
   ========================= */
   const handleOpenAddSubcategory = () => {
     setEditingSubcategoryId(null);
@@ -409,125 +457,105 @@ const handleOpenEditItem = (item) => {
     setEditingSubcategoryId(null);
     setSubcategoryDraft(blankSubcategoryDraft);
     setSubcategoryError("");
-    if (subcategoryFileInputRef.current) {
-      subcategoryFileInputRef.current.value = "";
-    }
+    if (subcategoryFileInputRef.current) subcategoryFileInputRef.current.value = "";
   };
 
-  // Create and Update Subcategories
   const handleSaveSubcategory = async (event) => {
     event.preventDefault();
-  
-    // ✅ validation FIRST (your old code had slugify before validation)
+
     if (!subcategoryDraft.name.trim()) {
       setSubcategoryError("Subcategory name is required.");
       return;
     }
-  
+
     if (!selectedCategoryId) {
       setSubcategoryError("Category not selected.");
       return;
     }
-  
+
     setSubcategoryError("");
-  
-    // ✅ slug is REQUIRED by DB (NOT NULL)
+
     const name = subcategoryDraft.name.trim();
     const slug = slugify(name);
-  
+
     try {
-      // =========================
-      // EDIT MODE
-      // =========================
       if (editingSubcategoryId) {
         const { error } = await updateSubcategory(editingSubcategoryId, {
           name,
-          slug, // ✅ ADDED (required + keep sync when renaming)
+          slug,
           description: subcategoryDraft.description.trim()
         });
-  
+
         if (error) {
           setSubcategoryError(error.message || "Failed to update subcategory");
           return;
         }
-      }
-  
-      // =========================
-      // CREATE MODE
-      // =========================
-      else {
+
+        showToast("Subcategory updated successfully", "success");
+      } else {
         const { data, error } = await createSubcategory({
           name,
-          slug, // ✅ ADDED (required)
+          slug,
           description: subcategoryDraft.description.trim(),
           category_id: selectedCategoryId
         });
-  
+
         if (error) {
           setSubcategoryError(error.message || "Failed to create subcategory");
           return;
         }
-  
-        // ✅ auto select newly created subcategory
+
         if (data?.id) setSelectedSubcategoryId(data.id);
+
+        showToast("Subcategory added successfully", "success");
       }
-  
-      // ✅ refresh subcategories from DB
+
       const { data: refreshed, error: refErr } = await fetchSubcategories(selectedCategoryId);
-      if (!refErr) {
-        setDbSubcategories(refreshed || []);
-  
-        // ✅ fallback: if create didn't return id for some reason
-        if (!editingSubcategoryId && !selectedSubcategoryId) {
-          setSelectedSubcategoryId(refreshed?.[0]?.id || "");
-        }
-      }
-  
+      if (!refErr) setDbSubcategories(refreshed || []);
+
       handleCloseSubcategoryModal();
     } catch (err) {
       console.error(err);
       setSubcategoryError(err.message || "Subcategory save failed");
     }
   };
-  
 
-  // DELETE SubCAtegory
   const handleDeleteSubcategory = async (subcategoryId) => {
-    const shouldDelete = window.confirm(
-      "Delete this subcategory and its items? This cannot be undone."
-    );
-    if (!shouldDelete) return;
-  
-    try {
-      const { error } = await deleteSubcategoryCascade(subcategoryId);
-      if (error) throw error;
-  
-      // refresh list
-      const { data: refreshed } = await fetchSubcategories(selectedCategoryId);
-      setDbSubcategories(refreshed || []);
-  
-      // reset selection
-      if (selectedSubcategoryId === subcategoryId) {
-        setSelectedSubcategoryId(refreshed?.[0]?.id || "");
+    openConfirm({
+      title: "Delete Subcategory?",
+      message: "Delete this subcategory and its items? This cannot be undone.",
+      onConfirm: async () => {
+        try {
+          const { error } = await deleteSubcategoryCascade(subcategoryId);
+          if (error) throw error;
+
+          const { data: refreshed } = await fetchSubcategories(selectedCategoryId);
+          setDbSubcategories(refreshed || []);
+
+          if (selectedSubcategoryId === subcategoryId) {
+            setSelectedSubcategoryId(refreshed?.[0]?.id || "");
+          }
+
+          setItemsBySubcategory({});
+
+          showToast("Subcategory deleted successfully", "error");
+        } catch (err) {
+          console.error("Delete subcategory failed:", err);
+          alert(err?.message || "Delete failed");
+        }
       }
-  
-      // clear products cache (optional but clean)
-      setItemsBySubcategory({});
-    } catch (err) {
-      console.error("Delete subcategory failed:", err);
-      alert(err?.message || "Delete failed");
-    }
+    });
   };
-  
+
   const handleSubcategoryImageUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-  
+
     setSubcategoryError("");
-  
+
     try {
       const dataUrl = await prepareImageData(file);
-  
+
       setSubcategoryDraft((prev) => ({
         ...prev,
         imageData: dataUrl,
@@ -538,63 +566,114 @@ const handleOpenEditItem = (item) => {
       setSubcategoryError("Unable to process the image. Try a smaller file.");
     }
   };
-  
-  
-  
-
 
   return (
     <>
-      {isProductsLoading && (
-        <div className="flex items-center justify-center py-6">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+      {/* ✅ Toast UI (Animated) */}
+      {toast.show && (
+        <div className="fixed right-4 top-4 z-[9999]">
+          <div
+            className={`animate-[toastIn_220ms_ease-out] rounded-md px-4 py-3 text-sm font-semibold shadow-lg border ${
+              toast.type === "success"
+                ? "bg-emerald-600 text-white border-emerald-700"
+                : "bg-rose-600 text-white border-rose-700"
+            }`}
+          >
+            {`${getToastPrefix(toast.type)} ${toast.message}`}
+          </div>
+
+          <style>
+            {`
+              @keyframes toastIn {
+                0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+                100% { opacity: 1; transform: translateY(0) scale(1); }
+              }
+            `}
+          </style>
         </div>
       )}
 
-      {!isProductsLoading && currentItems.length === 0 && (
-        <p className="text-sm text-slate-500 text-center py-6">
-          No products found for this subcategory
-        </p>
-      )}
+      {/* ✅ Confirm Popup (Animated) */}
+      {confirmPopup.open && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 px-4 animate-[fadeIn_180ms_ease-out]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeConfirm();
+          }}
+        >
+          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl border border-slate-200 animate-[popIn_200ms_ease-out]">
+            <h3 className="text-base font-semibold text-slate-900">{confirmPopup.title}</h3>
+            <p className="mt-2 text-sm text-slate-600">{confirmPopup.message}</p>
 
+            <div className="mt-5 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeConfirm}
+                className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-800"
+              >
+                {confirmPopup.cancelText}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-rose-700"
+              >
+                {confirmPopup.confirmText}
+              </button>
+            </div>
+          </div>
+
+          <style>
+            {`
+              @keyframes fadeIn {
+                0% { opacity: 0; }
+                100% { opacity: 1; }
+              }
+              @keyframes popIn {
+                0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+                100% { opacity: 1; transform: translateY(0) scale(1); }
+              }
+            `}
+          </style>
+        </div>
+      )}
 
       <div className="min-h-screen bg-slate-50">
         <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+          <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admin</p>
               <h1 className="text-2xl font-semibold text-slate-900">Catalog Builder</h1>
             </div>
-            <div className="text-sm text-slate-500">Static categories, dynamic subcategories</div>
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 md:grid-cols-[220px_260px_1fr]">
+        <div className="container mx-auto grid max-w gap-6 px-4 py-6 md:grid-cols-[220px_260px_1fr]">
           <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-700">Categories</h2>
             <div className="mt-3 space-y-2">
-            {dbCategories.map((category) => {
-            const isActive = category.id === selectedCategoryId;
+              {dbCategories.map((category) => {
+                const isActive = category.id === selectedCategoryId;
 
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(category.name); // keep this if you still want name state
-                  setSelectedCategoryId(category.id); // this drives subcategory fetch
-                }}
-                className={`w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${
-                  isActive
-                    ? "bg-blue-600 text-white"
-                    : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                }`}
-              >
-                {category.name}
-              </button>
-            );
-          })}
-
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(category.name);
+                      setSelectedCategoryId(category.id);
+                    }}
+                    className={`w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${
+                      isActive
+                        ? "bg-blue-600 text-white"
+                        : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                );
+              })}
             </div>
           </aside>
 
@@ -619,10 +698,11 @@ const handleOpenEditItem = (item) => {
                 return (
                   <div
                     key={subcategory.id}
-                    className={`flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition ${isActive
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                      }`}
+                    className={`flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition ${
+                      isActive
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                    }`}
                   >
                     <button
                       type="button"
@@ -640,37 +720,30 @@ const handleOpenEditItem = (item) => {
                       )}
                       <div>
                         <p className="text-sm font-semibold">{subcategory.name}</p>
-                        {subcategory.description && (
-                          <p className={`text-xs ${isActive ? "text-slate-200" : "text-slate-400"}`}>
-                            {subcategory.description}
-                          </p>
-                        )}
                       </div>
                     </button>
                     <div className="ml-2 flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => handleOpenEditSubcategory(subcategory)}
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${isActive
-                          ? "hover:bg-white/10"
-                          : "hover:bg-slate-100"
-                          }`}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
+                          isActive ? "hover:bg-white/10" : "hover:bg-slate-100"
+                        }`}
                         aria-label={`Edit ${subcategory.name}`}
                         title="Edit"
                       >
-                        <img src={editIcon} alt="" className="h-4 w-4" aria-hidden />
+                        <img src={edit_ic} alt="" className="h-6 w-6" aria-hidden />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteSubcategory(subcategory.id)}
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${isActive
-                          ? "hover:bg-white/10"
-                          : "hover:bg-rose-50"
-                          }`}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
+                          isActive ? "hover:bg-white/10" : "hover:bg-rose-50"
+                        }`}
                         aria-label={`Delete ${subcategory.name}`}
                         title="Delete"
                       >
-                        <img src={deleteIcon} alt="" className="h-4 w-4" aria-hidden />
+                        <img src={bin_ic} alt="" className="h-6 w-6" aria-hidden />
                       </button>
                     </div>
                   </div>
@@ -691,7 +764,7 @@ const handleOpenEditItem = (item) => {
                     {selectedSubcategory ? selectedSubcategory.name : "Select a subcategory"}
                   </h2>
                   {selectedSubcategory?.description && (
-                    <p className="text-xs text-slate-400">{selectedSubcategory.description}</p>
+                    <p className="text-xs text-slate-400">Description: {selectedSubcategory.description}</p>
                   )}
                 </div>
                 <button
@@ -711,9 +784,13 @@ const handleOpenEditItem = (item) => {
                 <span className="text-xs text-slate-400">{currentItems.length} items</span>
               </div>
 
-              {currentItems.length === 0 ? (
-                <p className="mt-4 text-sm text-slate-500">
-                  No items yet. Use “Add Item” to create one for this subcategory.
+              {isProductsLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+                </div>
+              ) : currentItems.length === 0 ? (
+                <p className="text-sm text-slate-500 text-center py-6">
+                  No products found for this subcategory
                 </p>
               ) : (
                 <div className="mt-4 divide-y divide-slate-100">
@@ -729,14 +806,23 @@ const handleOpenEditItem = (item) => {
                         ) : (
                           <div className="h-12 w-12 rounded border border-dashed border-slate-200 bg-slate-50" />
                         )}
+
                         <div>
                           <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+
                           <p className="text-xs text-slate-500">
                             {item.price ? `Price: ${item.price}` : "No price set"}
                             {item.availability === "out-of-stock" ? " · Out of stock" : " · In stock"}
                           </p>
+
+                          {item.description && (
+                            <p className="text-xs text-slate-400">
+                              Descrption: {item.description}
+                            </p>
+                          )}
                         </div>
                       </div>
+
                       <div className="flex items-center gap-3">
                         <button
                           type="button"
@@ -745,8 +831,9 @@ const handleOpenEditItem = (item) => {
                           aria-label={`Edit ${item.name}`}
                           title="Edit"
                         >
-                          <img src={editIcon} alt="" className="h-4 w-4" aria-hidden />
+                          <img src={edit_ic} alt="" className="h-6 w-6" aria-hidden />
                         </button>
+
                         <button
                           type="button"
                           onClick={() => handleDeleteItem(item.id)}
@@ -754,7 +841,7 @@ const handleOpenEditItem = (item) => {
                           aria-label={`Delete ${item.name}`}
                           title="Delete"
                         >
-                          <img src={deleteIcon} alt="" className="h-4 w-4" aria-hidden />
+                          <img src={bin_ic} alt="" className="h-6 w-6" aria-hidden />
                         </button>
                       </div>
                     </div>
@@ -765,6 +852,9 @@ const handleOpenEditItem = (item) => {
           </section>
         </div>
 
+        {/* =========================
+           ITEM MODAL (UNCHANGED)
+        ========================= */}
         {isItemModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 px-4 py-8"
@@ -819,6 +909,7 @@ const handleOpenEditItem = (item) => {
                     placeholder="Description"
                   />
                 </div>
+
                 {editingItemId && (
                   <div>
                     <label className="block text-sm font-medium text-slate-700">Availability</label>
@@ -826,10 +917,11 @@ const handleOpenEditItem = (item) => {
                       <button
                         type="button"
                         onClick={() => setItemDraft((prev) => ({ ...prev, availability: "in-stock" }))}
-                        className={`flex-1 rounded-md px-3 py-2 text-sm font-semibold transition ${itemDraft.availability === "in-stock"
-                          ? "bg-emerald-600 text-white"
-                          : "text-slate-600 hover:bg-slate-100"
-                          }`}
+                        className={`flex-1 rounded-md px-3 py-2 text-sm font-semibold transition ${
+                          itemDraft.availability === "in-stock"
+                            ? "bg-emerald-600 text-white"
+                            : "text-slate-600 hover:bg-slate-100"
+                        }`}
                         aria-pressed={itemDraft.availability === "in-stock"}
                       >
                         In stock
@@ -837,10 +929,11 @@ const handleOpenEditItem = (item) => {
                       <button
                         type="button"
                         onClick={() => setItemDraft((prev) => ({ ...prev, availability: "out-of-stock" }))}
-                        className={`flex-1 rounded-md px-3 py-2 text-sm font-semibold transition ${itemDraft.availability === "out-of-stock"
-                          ? "bg-rose-600 text-white"
-                          : "text-slate-600 hover:bg-slate-100"
-                          }`}
+                        className={`flex-1 rounded-md px-3 py-2 text-sm font-semibold transition ${
+                          itemDraft.availability === "out-of-stock"
+                            ? "bg-rose-600 text-white"
+                            : "text-slate-600 hover:bg-slate-100"
+                        }`}
                         aria-pressed={itemDraft.availability === "out-of-stock"}
                       >
                         Out of stock
@@ -848,6 +941,7 @@ const handleOpenEditItem = (item) => {
                     </div>
                   </div>
                 )}
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700">Image Upload</label>
                   <input
@@ -867,7 +961,9 @@ const handleOpenEditItem = (item) => {
                     </div>
                   )}
                 </div>
+
                 {itemError && <p className="text-sm text-rose-600">{itemError}</p>}
+
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
@@ -888,6 +984,9 @@ const handleOpenEditItem = (item) => {
           </div>
         )}
 
+        {/* =========================
+           SUBCATEGORY MODAL (UNCHANGED)
+        ========================= */}
         {isSubcategoryModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 px-4 py-8"
@@ -922,16 +1021,20 @@ const handleOpenEditItem = (item) => {
                     placeholder="Subcategory name"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700">Description</label>
                   <textarea
                     rows={4}
                     value={subcategoryDraft.description}
-                    onChange={(e) => setSubcategoryDraft((prev) => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setSubcategoryDraft((prev) => ({ ...prev, description: e.target.value }))
+                    }
                     className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                     placeholder="Description"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700">Image Upload</label>
                   <input
@@ -951,7 +1054,9 @@ const handleOpenEditItem = (item) => {
                     </div>
                   )}
                 </div>
+
                 {subcategoryError && <p className="text-sm text-rose-600">{subcategoryError}</p>}
+
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
