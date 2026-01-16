@@ -12,28 +12,12 @@ import {
   updateProduct,
   deleteProduct,
   fetchProductImages,
-  deleteProductImageRow,
-  deleteStorageFileByPublicUrl,
+  deleteStorageFiles,
   createSubcategory,
   updateSubcategory,
-  deleteSubcategory
+  deleteSubcategoryCascade
 } from "../lib/catalogApi.js";
 
-const CATEGORY_TO_SUBCATEGORY_TITLES = {
-  Fishes: ["Neon Tetra", "Betta Fish", "Goldfish", "Angelfish"],
-  "Live Plants": ["Java Fern", "Anubias", "Amazon Sword", "Dwarf Hairgrass"],
-  Accessories: ["LED Aquarium Light", "Filter System", "Heater", "Air Pump"],
-  Tanks: ["Glass Aquarium 20L", "Glass Aquarium 50L", "Glass Aquarium 100L", "Premium Reef Tank"]
-};
-
-const CATEGORY_SLUG_MAP = {
-  Fishes: 'Fishes',
-  'Live Plants': 'Plants',
-  Accessories: 'Accessories',
-  Tanks: 'Tanks',
-};
-
-const STORAGE_KEY = "dream-aquatics-admin-data";
 const MAX_IMAGE_BYTES = 300 * 1024;
 const MAX_IMAGE_DIMENSION = 720;
 
@@ -97,7 +81,6 @@ const AdminAddProduct = ({ profile }) => {
   const [itemDraft, setItemDraft] = useState(blankItemDraft);
   const [editingItemId, setEditingItemId] = useState(null);
   const [itemError, setItemError] = useState("");
-  const [storageError, setStorageError] = useState("");
 
   const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
   const [subcategoryDraft, setSubcategoryDraft] = useState(blankSubcategoryDraft);
@@ -330,27 +313,17 @@ const handleOpenEditItem = (item) => {
     if (!shouldDelete) return;
   
     try {
-      // 1) get images linked to this product
       const { data: imgs, error: imgFetchErr } = await fetchProductImages(itemId);
       if (imgFetchErr) throw imgFetchErr;
   
-      // 2) delete product (this removes product row)
+      const paths = (imgs || []).map((img) => img.path).filter(Boolean);
+  
+      const { error: storageErr } = await deleteStorageFiles(paths);
+      if (storageErr) throw storageErr;
+  
       const { error: delErr } = await deleteProduct(itemId);
       if (delErr) throw delErr;
   
-      // 3) cleanup: delete image rows + storage files
-      if (imgs?.length) {
-        for (const img of imgs) {
-          if (img?.url) {
-            await deleteStorageFileByPublicUrl(img.url);
-          }
-          if (img?.id) {
-            await deleteProductImageRow(img.id);
-          }
-        }
-      }
-  
-      // 4) refresh list
       const { data } = await fetchProducts(selectedSubcategoryId);
       setItemsBySubcategory((prev) => ({
         ...prev,
@@ -361,6 +334,9 @@ const handleOpenEditItem = (item) => {
       alert(err?.message || "Delete failed");
     }
   };
+  
+  
+  
   
 
   const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
@@ -523,7 +499,7 @@ const handleOpenEditItem = (item) => {
     if (!shouldDelete) return;
   
     try {
-      const { error } = await deleteSubcategory(subcategoryId);
+      const { error } = await deleteSubcategoryCascade(subcategoryId);
       if (error) throw error;
   
       // refresh list
@@ -593,34 +569,32 @@ const handleOpenEditItem = (item) => {
           </div>
         </header>
 
-        {storageError && (
-          <div className="mx-auto max-w-6xl px-4 pt-4">
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              {storageError}
-            </div>
-          </div>
-        )}
-
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 md:grid-cols-[220px_260px_1fr]">
           <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-700">Categories</h2>
             <div className="mt-3 space-y-2">
-              {Object.keys(CATEGORY_TO_SUBCATEGORY_TITLES).map((category) => {
-                const isActive = category === (selectedCategory === "Plants" ? "Live Plants" : selectedCategory);
-                return (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => setSelectedCategory(CATEGORY_SLUG_MAP[category])}
-                    className={`w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${isActive
-                      ? "bg-blue-600 text-white"
-                      : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                      }`}
-                  >
-                    {category}
-                  </button>
-                );
-              })}
+            {dbCategories.map((category) => {
+            const isActive = category.id === selectedCategoryId;
+
+            return (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => {
+                  setSelectedCategory(category.name); // keep this if you still want name state
+                  setSelectedCategoryId(category.id); // this drives subcategory fetch
+                }}
+                className={`w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${
+                  isActive
+                    ? "bg-blue-600 text-white"
+                    : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                }`}
+              >
+                {category.name}
+              </button>
+            );
+          })}
+
             </div>
           </aside>
 
