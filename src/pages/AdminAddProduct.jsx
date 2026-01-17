@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import edit_ic from "../assets/icons/edit_ic.png";
-import bin_ic from "../assets/icons/bin_ic.png";
+import edit_ic from "../assets/Icons/edit_ic.png";
+import bin_ic from "../assets/Icons/bin_ic.png";
 import {
   createProduct,
   uploadProductImage,
