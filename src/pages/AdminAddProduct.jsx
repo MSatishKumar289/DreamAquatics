@@ -54,7 +54,7 @@ const normalizeProducts = (products = []) =>
     imageData: p.product_images?.[0]?.url || ""
   }));
 
-const AdminAddProduct = ({ profile }) => {
+const AdminAddProduct = ({ profile, authLoading }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const subcategoryFileInputRef = useRef(null);
@@ -251,10 +251,11 @@ const AdminAddProduct = ({ profile }) => {
   }, [selectedSubcategoryId]);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!profile || profile.role !== "admin") {
       navigate("/", { replace: true });
     }
-  }, [profile, navigate]);
+  }, [profile, authLoading, navigate]);
 
   /* =========================
      ITEM HANDLERS

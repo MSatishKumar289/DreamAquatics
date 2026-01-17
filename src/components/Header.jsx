@@ -12,6 +12,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin';
 
@@ -45,10 +46,10 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
             aria-label="Dream Aquatics home"
           >
             <div className="flex items-baseline leading-none">
-              <span className="text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.08em]">D</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.08em]">REAM</span>
-              <span className="ml-1 sm:ml-2 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.08em]">A</span>
-              <span className="text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.08em]">QUATICS</span>
+              <span className="text-[1.5rem] sm:text-[rem] md:text-[3rem] font-extrabold tracking-[0.04em]">D</span>
+              <span className="-ml-0.5 sm:-ml-1 text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.04em]">REAM</span>
+              <span className="ml-0.5 sm:ml-1 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.04em]">A</span>
+              <span className="-ml-0.5 sm:-ml-1 text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.04em]">QUATICS</span>
             </div>
           </Link>
 
@@ -140,12 +141,11 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   )}
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={() => {
                       setIsProfileOpen(false);
-                      await onLogout();
-                      navigate('/');
+                      setLogoutConfirmOpen(true);
                     }}
-                    className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    className="mt-3 w-full rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     Log out
                   </button>
@@ -249,12 +249,11 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   )}
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={() => {
                       setIsProfileOpen(false);
-                      await onLogout();
-                      navigate('/');
+                      setLogoutConfirmOpen(true);
                     }}
-                    className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    className="mt-3 w-full rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     Log out
                   </button>
@@ -294,6 +293,44 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
               )}
             </button>
           </div>
+
+          {logoutConfirmOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) setLogoutConfirmOpen(false);
+              }}
+            >
+              <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Confirm logout
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  Are you sure you want to log out?
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setLogoutConfirmOpen(false)}
+                    className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLogoutConfirmOpen(false);
+                      await onLogout();
+                      navigate('/');
+                    }}
+                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Dropdown */}

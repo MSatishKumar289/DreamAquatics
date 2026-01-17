@@ -18,6 +18,7 @@ import { clearCartStorage } from './helpers/storage';
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -27,6 +28,21 @@ function AppContent() {
   /* ================= AUTH LISTENER (SESSION ONLY) ================= */
 
   useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (!active) return;
+      if (error) {
+        setAuthLoading(false);
+        return;
+      }
+      if (data?.session?.user) {
+        setSessionUser(data.session.user);
+      }
+      setAuthLoading(false);
+    })();
+
     const { data: { subscription } } =
       supabase.auth.onAuthStateChange((event, session) => {
         console.log('AUTH EVENT:', event);
@@ -34,6 +50,7 @@ function AppContent() {
         if (event === 'SIGNED_OUT') {
           setSessionUser(null);
           setProfile(null);
+          setAuthLoading(false);
 
           // 🔒 Cart cleanup happens ONLY here
           clearCart();
@@ -44,10 +61,14 @@ function AppContent() {
 
         if (session?.user) {
           setSessionUser(session.user);
+          setAuthLoading(false);
         }
       });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, [clearCart]);
 
   /* ================= PROFILE FETCH + SAFE CREATION ================= */
@@ -188,7 +209,7 @@ function AppContent() {
               path="/admin/add-product"
               element={
                 profile?.role === 'admin'
-                  ? <AdminAddProduct profile={profile} />
+                  ? <AdminAddProduct profile={profile} authLoading={authLoading} />
                   : <Navigate to="/" replace />
               }
             />
