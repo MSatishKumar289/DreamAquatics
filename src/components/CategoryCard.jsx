@@ -19,8 +19,6 @@ const CategoryCard = ({
     : product?.name || product?.title || "Product";
 
   const productSubtitle = product?.subtitle || "";
-  const productDescription =
-    product?.description || product?.details || product?.summary || "";
 
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
@@ -239,11 +237,6 @@ const CategoryCard = ({
           <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
             {productTitle}
           </h3>
-          {isSubCategory && product?.subcategoryDescription && (
-            <p className="mt-1 text-sm text-slate-500 line-clamp-2">
-              {product.subcategoryDescription}
-            </p>
-          )}
           {!isSubCategory && productSubtitle && (
             <p className="mt-1 text-sm text-slate-500 line-clamp-1">
               {productSubtitle}
@@ -322,7 +315,7 @@ const CategoryCard = ({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={isSoldOut || qty < 1}
-                  className="w-full whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
+                  className="w-full whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5ff text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
                 >
                   Add to cart
                 </button>
@@ -359,35 +352,11 @@ const CategoryCard = ({
             >
               x
             </button>
-            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
-              <div className="w-full md:w-1/2">
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                  <img
-                    src={imageSrc}
-                    alt={productTitle}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </div>
-              <div className="flex w-full flex-col gap-3 md:w-1/2">
-                <h2 className="text-2xl font-semibold text-slate-900">
-                  {productTitle}
-                </h2>
-                <p className="text-lg font-semibold text-slate-900">
-                  {"\u20B9"}
-                  {Number(product?.price ?? 0).toLocaleString("en-IN")}
-                </p>
-                {productDescription ? (
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    {productDescription}
-                  </p>
-                ) : (
-                  <p className="text-sm text-slate-500">
-                    Product details will be available soon.
-                  </p>
-                )}
-              </div>
-            </div>
+            <img
+              src={imageSrc}
+              alt={productTitle}
+              className="max-h-[80vh] w-full object-contain"
+            />
           </div>
         </div>
       )}
