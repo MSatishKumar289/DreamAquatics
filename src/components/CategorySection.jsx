@@ -21,7 +21,7 @@ const CategorySection = ({ categoryName, products }) => {
   // console.log(displayProducts);
 
   return (
-    <section className="py-6 md:py-8" aria-labelledby={`category-${categoryName}`}>
+    <section className="px-4 pt-6 sm:px-6 container mx-auto" aria-labelledby={`category-${categoryName}`}>
       <div className="w-full px-0">
         <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}

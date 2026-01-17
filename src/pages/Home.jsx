@@ -106,8 +106,8 @@ const Home = ({ profile }) => {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white">
-      <section className="relative overflow-hidden py-6 md:py-8">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white pb-12">
+      <section className="relative overflow-hidden py-6 md:py-8 container mx-auto">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0 hidden scale-105 bg-cover bg-center blur-[2px] md:block"

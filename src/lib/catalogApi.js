@@ -145,14 +145,13 @@ export async function uploadProductImage({ productId, file }) {
     const publicUrl = publicUrlData?.publicUrl;
     if (!publicUrl) throw new Error("Public URL generation failed");
 
-    const { error: dbError } = await supabase
-      .from("product_images")
-      .insert({
-        product_id: productId,
-        url: publicUrl,
-        alt: file.name,
-        position: 0
-      });
+    const { error: dbError } = await supabase.from("product_images").insert({
+      product_id: productId,
+      url: publicUrl,
+      path: filePath, // ✅ ADD THIS
+      alt: file.name,
+      position: 0
+    });
 
     if (dbError) throw dbError;
 
@@ -162,6 +161,7 @@ export async function uploadProductImage({ productId, file }) {
     return { error };
   }
 }
+
 
 export async function updateProduct(productId, payload) {
   try {
@@ -181,28 +181,12 @@ export async function updateProduct(productId, payload) {
 // Update image from Edit modal
 export async function upsertProductPrimaryImage({ productId, file }) {
   try {
-    // 1) upload file
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    const filePath = `${productId}/${fileName}`;
+    const BUCKET = "product-images";
 
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, file, { cacheControl: "3600", upsert: false });
-
-    if (uploadError) throw uploadError;
-
-    const { data: publicUrlData } = supabase.storage
-      .from("product-images")
-      .getPublicUrl(filePath);
-
-    const publicUrl = publicUrlData?.publicUrl;
-    if (!publicUrl) throw new Error("Public URL generation failed");
-
-    // 2) check existing image row
+    // 1) check existing image row (need id + path)
     const { data: existing, error: existingErr } = await supabase
       .from("product_images")
-      .select("id")
+      .select("id, path")
       .eq("product_id", productId)
       .order("position", { ascending: true })
       .limit(1)
@@ -210,27 +194,65 @@ export async function upsertProductPrimaryImage({ productId, file }) {
 
     if (existingErr) throw existingErr;
 
-    // 3) update or insert
+    // 2) delete old storage file (if exists)
+    if (existing?.path) {
+      const { error: storageDelErr } = await supabase.storage
+        .from(BUCKET)
+        .remove([existing.path]);
+
+      if (storageDelErr) throw storageDelErr;
+    }
+
+    // 3) upload new file
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `${productId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage
+      .from(BUCKET)
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicUrlData?.publicUrl;
+    if (!publicUrl) throw new Error("Public URL generation failed");
+
+    // 4) update or insert product_images row
     if (existing?.id) {
       const { error: updateErr } = await supabase
         .from("product_images")
-        .update({ url: publicUrl, alt: file.name, position: 0 })
+        .update({
+          url: publicUrl,
+          path: filePath,          // ✅ important
+          alt: file.name,
+          position: 0
+        })
         .eq("id", existing.id);
 
       if (updateErr) throw updateErr;
     } else {
-      const { error: insertErr } = await supabase
-        .from("product_images")
-        .insert({ product_id: productId, url: publicUrl, alt: file.name, position: 0 });
+      const { error: insertErr } = await supabase.from("product_images").insert({
+        product_id: productId,
+        url: publicUrl,
+        path: filePath,            // ✅ important
+        alt: file.name,
+        position: 0
+      });
 
       if (insertErr) throw insertErr;
     }
 
     return { error: null, publicUrl };
   } catch (error) {
+    console.error("upsertProductPrimaryImage error:", error);
     return { error };
   }
 }
+
 
 // DELETE Product from DB
 export async function deleteProduct(productId) {
@@ -251,7 +273,7 @@ export async function fetchProductImages(productId) {
   try {
     const { data, error } = await supabase
       .from("product_images")
-      .select("id, url, position")
+      .select("id, url, path, position")
       .eq("product_id", productId)
       .order("position", { ascending: true });
 
@@ -260,6 +282,32 @@ export async function fetchProductImages(productId) {
     return { data: null, error };
   }
 }
+
+// /Deleting the image bucket
+export async function deleteStorageFiles(paths = []) {
+  try {
+    const BUCKET = "product-images";
+    const cleanPaths = paths.filter(Boolean);
+
+    console.log("Deleting paths:", cleanPaths);
+
+    if (!cleanPaths.length) return { error: null };
+
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .remove(cleanPaths);
+
+    if (error) console.error("Storage delete error:", error);
+
+
+    return { error };
+  } catch (error) {
+    return { error };
+  }
+}
+
+
+
 
 // /Deleting the image row
 export async function deleteProductImageRow(imageId) {
@@ -351,6 +399,100 @@ export async function deleteSubcategory(subcategoryId) {
     return { error };
   }
 }
+
+/**
+ * Delete subcategory Cascade (also delete products-images from storage)
+ */
+export async function deleteSubcategoryCascade(subcategoryId) {
+  try {
+    // 1) Fetch all product IDs under subcategory
+    const { data: products, error: prodErr } = await supabase
+      .from("products")
+      .select("id")
+      .eq("subcategory_id", subcategoryId);
+
+    if (prodErr) throw prodErr;
+
+    const productIds = (products || []).map((p) => p.id);
+
+    // 2) Fetch storage paths from product_images
+    if (productIds.length > 0) {
+      const { data: imgs, error: imgErr } = await supabase
+        .from("product_images")
+        .select("path")
+        .in("product_id", productIds);
+
+      if (imgErr) throw imgErr;
+
+      const paths = (imgs || []).map((x) => x.path).filter(Boolean);
+
+      // 3) Delete from storage bucket
+      if (paths.length > 0) {
+        const { error: storageErr } = await supabase.storage
+          .from("product-images")
+          .remove(paths);
+
+        if (storageErr) throw storageErr;
+      }
+    }
+
+    // 4) Delete subcategory (cascade deletes products + product_images rows)
+    const { error: delErr } = await supabase
+      .from("subcategories")
+      .delete()
+      .eq("id", subcategoryId);
+
+    if (delErr) throw delErr;
+
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function fetchPrimaryProductImage(productId) {
+  try {
+    const { data, error } = await supabase
+      .from("product_images")
+      .select("id, path")
+      .eq("product_id", productId)
+      .order("position", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+export async function deleteProductImageById({ imageId, path }) {
+  try {
+    const BUCKET = "product-images";
+
+    // 1) delete from storage
+    if (path) {
+      const { error: storageErr } = await supabase.storage
+        .from(BUCKET)
+        .remove([path]);
+
+      if (storageErr) throw storageErr;
+    }
+
+    // 2) delete DB row
+    const { error: dbErr } = await supabase
+      .from("product_images")
+      .delete()
+      .eq("id", imageId);
+
+    if (dbErr) throw dbErr;
+
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+}
+
 
 
 
