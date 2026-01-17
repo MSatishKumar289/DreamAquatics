@@ -79,6 +79,7 @@ export async function fetchAllProductsWithCategories() {
           id,
           name,
           slug,
+          description,
           category:categories (
             id,
             name,

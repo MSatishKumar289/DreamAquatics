@@ -59,11 +59,11 @@ const CartDrawer = ({ isOpen, onClose }) => {
       }}
     >
       <aside
-        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
           isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <header className="flex items-center justify-between border-b border-blue-100 px-6 py-4">
+        <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
               Dream Aquatics
@@ -80,7 +80,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
           </button>
         </header>
 
-        <div className="flex-1 px-6 py-4">
+        <div className="flex flex-1 min-h-0 flex-col px-6 py-4">
           {emptyState ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
               <p className="text-sm font-semibold text-slate-800">
@@ -99,7 +99,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <section
-              className="max-h-[600px] space-y-3 overflow-y-auto overscroll-contain pr-1 lg:max-h-[690px]"
+              className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1"
               role="list"
               aria-label="Items in your cart"
             >
@@ -117,7 +117,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
         </div>
 
         {!emptyState && (
-          <footer className="border-t border-blue-100 bg-blue-50 px-6 py-4">
+          <footer className="flex-none border-t border-blue-100 bg-blue-50 px-6 py-4">
             <div className="text-center text-xs text-slate-600">
               <span>Shipping calculated at checkout</span>
             </div>

@@ -10,14 +10,17 @@ const CategoryCard = ({
   showStockBadge
 }) => {
   const navigate = useNavigate();
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [showQtyHint, setShowQtyHint] = useState(false);
 
   const productTitle = isSubCategory
     ? product?.subcategoryName || product?.name || product?.title || "Category"
     : product?.name || product?.title || "Product";
 
   const productSubtitle = product?.subtitle || "";
+  const productDescription =
+    product?.description || product?.details || product?.summary || "";
 
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
@@ -56,12 +59,20 @@ const CategoryCard = ({
     };
   }, [isPreviewOpen]);
 
+  useEffect(() => {
+    if (!showQtyHint) return;
+    const timer = setTimeout(() => setShowQtyHint(false), 2000);
+    return () => clearTimeout(timer);
+  }, [showQtyHint]);
+
   const handleAddToCart = (event) => {
     event?.stopPropagation();
     if (isSoldOut) return;
+    if (qty < 1) return;
     runFlyToCartAnimation();
     if (onAddToCart) {
       onAddToCart(product, qty);
+      setQty(0);
     }
   };
 
@@ -228,6 +239,11 @@ const CategoryCard = ({
           <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
             {productTitle}
           </h3>
+          {isSubCategory && product?.subcategoryDescription && (
+            <p className="mt-1 text-sm text-slate-500 line-clamp-2">
+              {product.subcategoryDescription}
+            </p>
+          )}
           {!isSubCategory && productSubtitle && (
             <p className="mt-1 text-sm text-slate-500 line-clamp-1">
               {productSubtitle}
@@ -258,14 +274,14 @@ const CategoryCard = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="relative flex items-center gap-2">
               <div className="flex-1">
                 <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-full border border-blue-100 bg-blue-50">
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setQty((prev) => Math.max(1, prev - 1));
+                    setQty((prev) => Math.max(0, prev - 1));
                   }}
                   disabled={isSoldOut}
                   className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
@@ -283,7 +299,9 @@ const CategoryCard = ({
                     setQty((prev) => prev + 1);
                   }}
                   disabled={isSoldOut}
-                  className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
+                  className={`px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300 ${
+                    qty === 0 && !isSoldOut ? "plus-bounce" : ""
+                  }`}
                   aria-label={`Increase quantity for ${productTitle}`}
                 >
                   +
@@ -291,14 +309,33 @@ const CategoryCard = ({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={isSoldOut}
-                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+              <div
+                className="flex-1"
+                onPointerDown={() => {
+                  if (qty === 0 && !isSoldOut) {
+                    setShowQtyHint(true);
+                  }
+                }}
+                onMouseLeave={() => setShowQtyHint(false)}
               >
-                Add to cart
-              </button>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={isSoldOut || qty < 1}
+                  className="w-full whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
+                >
+                  Add to cart
+                </button>
+              </div>
+              {qty === 0 && !isSoldOut && (
+                <span
+                  className={`pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-200 transition-opacity ${
+                    showQtyHint ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  Increase quantity first.
+                </span>
+              )}
             </div>
           </>
         )}
@@ -322,11 +359,35 @@ const CategoryCard = ({
             >
               x
             </button>
-            <img
-              src={imageSrc}
-              alt={productTitle}
-              className="max-h-[80vh] w-full object-contain"
-            />
+            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
+              <div className="w-full md:w-1/2">
+                <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                  <img
+                    src={imageSrc}
+                    alt={productTitle}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="flex w-full flex-col gap-3 md:w-1/2">
+                <h2 className="text-2xl font-semibold text-slate-900">
+                  {productTitle}
+                </h2>
+                <p className="text-lg font-semibold text-slate-900">
+                  {"\u20B9"}
+                  {Number(product?.price ?? 0).toLocaleString("en-IN")}
+                </p>
+                {productDescription ? (
+                  <p className="text-sm leading-relaxed text-slate-600">
+                    {productDescription}
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    Product details will be available soon.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -109,6 +109,7 @@ const CategoryListingPage = () => {
         subcategoryId: sub.id,
         subcategoryName: sub.name,
         subcategorySlug: sub.slug,
+        subcategoryDescription: sub.description || "",
         latestProductDate: latestProduct?.created_at || "",
         image: latestProduct?.product_images?.[0]?.url || "",
       };
@@ -152,6 +153,28 @@ const CategoryListingPage = () => {
   // ✅ decide which list to render
   const isSubcategoryMode = !!subCategorySlug;
   const listForGrid = isSubcategoryMode ? productsForIteration : subcategoryCards;
+  const subcategoryDescription = useMemo(() => {
+    if (!isSubcategoryMode) return "";
+    const firstWithDescription = productsForIteration.find(
+      (item) => item?.subcategory?.description
+    );
+    if (firstWithDescription?.subcategory?.description) {
+      return firstWithDescription.subcategory.description;
+    }
+    const fallback = dbProducts.find(
+      (item) =>
+        item?.subcategory?.slug === subCategorySlug &&
+        item?.subcategory?.category?.slug === normalizedCategorySlug &&
+        item?.subcategory?.description
+    );
+    return fallback?.subcategory?.description || "";
+  }, [
+    isSubcategoryMode,
+    productsForIteration,
+    dbProducts,
+    subCategorySlug,
+    normalizedCategorySlug
+  ]);
 
   const handleAddToCart = (product, qty = 1) => {
     addToCart(product, qty);
@@ -198,7 +221,9 @@ const CategoryListingPage = () => {
                 {titleOfListingPage}
               </h1>
               <p className="mt-3 max-w-2xl text-base text-slate-600">
-                Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.
+                {subcategoryDescription
+                  ? subcategoryDescription
+                  : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards."}
               </p>
             </div>
 

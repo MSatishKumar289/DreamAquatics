@@ -107,7 +107,7 @@ const Home = ({ profile }) => {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white pb-12">
-      <section className="relative overflow-hidden py-6 md:py-8 container mx-auto">
+      <section className="relative overflow-hidden py-6 md:py-8">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0 hidden scale-105 bg-cover bg-center blur-[2px] md:block"
@@ -115,7 +115,7 @@ const Home = ({ profile }) => {
             aria-hidden
           />
           <div
-            className="absolute inset-0 scale-105 bg-cover bg-center blur-[2px] md:hidden"
+            className="absolute inset-0 left-1/2 w-screen -translate-x-1/2 scale-105 bg-cover bg-center blur-[2px] md:hidden"
             style={{ backgroundImage: `url(${MobileBgImage})` }}
             aria-hidden
           />
@@ -150,14 +150,14 @@ const Home = ({ profile }) => {
 
             <div className="flex flex-wrap items-center justify-center gap-4 md:justify-center">
               <a
-                href="tel:0000000"
+                href="tel:+918667419965"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
                 Call us
               </a>
               <a
-                href="https://wa.me/0000000"
+                href="https://wa.me/918667419965"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />

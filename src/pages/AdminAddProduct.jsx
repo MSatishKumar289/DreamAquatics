@@ -12,7 +12,8 @@ import {
   updateProduct,
   deleteProduct,
   fetchProductImages,
-  deleteStorageFiles,
+  deleteStorageFileByPublicUrl,
+  deleteProductImageRow,
   createSubcategory,
   updateSubcategory,
   deleteSubcategoryCascade
@@ -146,6 +147,8 @@ const AdminAddProduct = ({ profile }) => {
   const [itemDraft, setItemDraft] = useState(blankItemDraft);
   const [editingItemId, setEditingItemId] = useState(null);
   const [itemError, setItemError] = useState("");
+  const [isItemImageProcessing, setIsItemImageProcessing] = useState(false);
+  const [isSavingItem, setIsSavingItem] = useState(false);
 
   const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
   const [subcategoryDraft, setSubcategoryDraft] = useState(blankSubcategoryDraft);
@@ -197,6 +200,16 @@ const AdminAddProduct = ({ profile }) => {
   }, [selectedCategoryId]);
 
   const currentSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
+  const orderedCategories = useMemo(() => {
+    const order = ["Fishes", "Plants", "Accessories", "Tanks"];
+    const rank = new Map(order.map((name, index) => [name, index]));
+    return [...dbCategories].sort((a, b) => {
+      const aRank = rank.has(a.name) ? rank.get(a.name) : Number.MAX_SAFE_INTEGER;
+      const bRank = rank.has(b.name) ? rank.get(b.name) : Number.MAX_SAFE_INTEGER;
+      if (aRank !== bRank) return aRank - bRank;
+      return a.name.localeCompare(b.name);
+    });
+  }, [dbCategories]);
 
   const selectedSubcategory = useMemo(
     () =>
@@ -282,14 +295,18 @@ const AdminAddProduct = ({ profile }) => {
 
   const handleSaveItem = async (event) => {
     event.preventDefault();
+    if (isItemImageProcessing || isSavingItem) return;
+    setIsSavingItem(true);
 
     if (!itemDraft.name.trim()) {
       setItemError("Item name is required.");
+      setIsSavingItem(false);
       return;
     }
 
     if (!selectedSubcategoryId) {
       setItemError("Subcategory not selected.");
+      setIsSavingItem(false);
       return;
     }
 
@@ -308,6 +325,7 @@ const AdminAddProduct = ({ profile }) => {
 
       if (updateError) {
         setItemError(updateError.message || "Failed to update product");
+        setIsSavingItem(false);
         return;
       }
 
@@ -319,6 +337,7 @@ const AdminAddProduct = ({ profile }) => {
 
         if (imgErr) {
           setItemError(imgErr.message || "Image update failed");
+          setIsSavingItem(false);
           return;
         }
       }
@@ -334,6 +353,7 @@ const AdminAddProduct = ({ profile }) => {
 
       if (createError) {
         setItemError(createError.message || "Failed to create product");
+        setIsSavingItem(false);
         return;
       }
 
@@ -345,6 +365,7 @@ const AdminAddProduct = ({ profile }) => {
 
         if (imgErr) {
           setItemError(imgErr.message || "Image upload failed");
+          setIsSavingItem(false);
           return;
         }
       }
@@ -359,6 +380,7 @@ const AdminAddProduct = ({ profile }) => {
     }));
 
     handleCloseItemModal();
+    setIsSavingItem(false);
   };
   
 
@@ -441,6 +463,7 @@ const AdminAddProduct = ({ profile }) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setItemError("");
+    setIsItemImageProcessing(true);
     try {
       const dataUrl = await prepareImageData(file);
       setItemDraft((prev) => ({
@@ -451,6 +474,8 @@ const AdminAddProduct = ({ profile }) => {
     } catch (error) {
       console.error("Image upload failed", error);
       setItemError("Unable to process the image. Try a smaller file.");
+    } finally {
+      setIsItemImageProcessing(false);
     }
   };
 
@@ -556,7 +581,7 @@ const AdminAddProduct = ({ profile }) => {
 
   const handleDeleteSubcategory = async (subcategoryId) => {
     try {
-      const { error } = await deleteSubcategory(subcategoryId);
+      const { error } = await deleteSubcategoryCascade(subcategoryId);
       if (error) throw error;
   
       // refresh list
@@ -600,9 +625,9 @@ const AdminAddProduct = ({ profile }) => {
     <>
       {/* ✅ Toast UI (Animated) */}
       {toast.show && (
-        <div className="fixed right-4 top-4 z-[9999]">
+        <div className="fixed left-1/2 top-4 z-[9999] -translate-x-1/2">
           <div
-            className={`animate-[toastIn_220ms_ease-out] rounded-md px-4 py-3 text-sm font-semibold shadow-lg border ${
+            className={`animate-[toastIn_220ms_ease-out] rounded-md px-4 py-3 text-center text-sm font-semibold shadow-lg border ${
               toast.type === "success"
                 ? "bg-emerald-600 text-white border-emerald-700"
                 : "bg-rose-600 text-white border-rose-700"
@@ -682,7 +707,7 @@ const AdminAddProduct = ({ profile }) => {
           <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-700">Categories</h2>
             <div className="mt-3 space-y-2">
-              {dbCategories.map((category) => {
+              {orderedCategories.map((category) => {
                 const isActive = category.id === selectedCategoryId;
 
                 return (
@@ -738,15 +763,6 @@ const AdminAddProduct = ({ profile }) => {
                       onClick={() => setSelectedSubcategoryId(subcategory.id)}
                       className="flex flex-1 items-center gap-3 text-left"
                     >
-                      {subcategory.imageData ? (
-                        <img
-                          src={subcategory.imageData}
-                          alt={subcategory.name}
-                          className="h-8 w-8 rounded border border-slate-200 object-cover"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded border border-dashed border-slate-200 bg-slate-50" />
-                      )}
                       <div>
                         <p className="text-sm font-semibold">{subcategory.name}</p>
                       </div>
@@ -1020,13 +1036,14 @@ const AdminAddProduct = ({ profile }) => {
                   <button
                     type="button"
                     onClick={handleCloseItemModal}
-                    className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-800"
+                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800"
+                    disabled={isItemImageProcessing || isSavingItem}
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                   >
                     Save
                   </button>
@@ -1087,39 +1104,19 @@ const AdminAddProduct = ({ profile }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Image Upload</label>
-                  <input
-                    ref={subcategoryFileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleSubcategoryImageUpload}
-                    className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  />
-                  {subcategoryDraft.imageData && (
-                    <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
-                      <img
-                        src={subcategoryDraft.imageData}
-                        alt={subcategoryDraft.imageName || "Preview"}
-                        className="h-32 w-full rounded object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-
                 {subcategoryError && <p className="text-sm text-rose-600">{subcategoryError}</p>}
 
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
                     onClick={handleCloseSubcategoryModal}
-                    className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-800"
+                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800"
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
                   >
                     Save
                   </button>

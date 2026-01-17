@@ -8,6 +8,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   const { cartItems, subtotal, clearCart } = useCart();
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderSnapshot, setOrderSnapshot] = useState(null);
+  const [showReview, setShowReview] = useState(false);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -21,7 +22,8 @@ const Checkout = ({ user, onRequestLogin }) => {
   const [errors, setErrors] = useState({});
 
   const isLoggedIn = !!user?.email;
-  const submitLabel = 'Place your order';
+  const submitLabel = 'Review your order';
+  const STANDARD_SHIPPING = 100;
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -31,6 +33,11 @@ const Checkout = ({ user, onRequestLogin }) => {
       email: user?.email || '',
     }));
   }, [isLoggedIn, user?.name, user?.email]);
+
+  useEffect(() => {
+    if (!orderPlaced) return;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [orderPlaced]);
 
   const handleChange = (field) => (event) => {
     const value = event.target.value;
@@ -65,10 +72,7 @@ const Checkout = ({ user, onRequestLogin }) => {
     return next;
   }, [form]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+  const placeOrder = () => {
     console.info('Checkout details:', form);
     setOrderSnapshot({
       items: cartItems,
@@ -77,6 +81,13 @@ const Checkout = ({ user, onRequestLogin }) => {
     });
     setOrderPlaced(true);
     clearCart();
+  };
+
+  const handleReview = (event) => {
+    event.preventDefault();
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+    setShowReview(true);
   };
 
   const formattedAddress = useMemo(() => {
@@ -95,6 +106,8 @@ const Checkout = ({ user, onRequestLogin }) => {
   if (orderPlaced) {
     const items = orderSnapshot?.items || [];
     const orderSubtotal = orderSnapshot?.subtotal ?? subtotal;
+    const STANDARD_SHIPPING = 100;
+    const orderTotal = orderSubtotal + STANDARD_SHIPPING;
     const address = orderSnapshot?.address || form;
     const addressLines = [
       address.addressLine1?.trim(),
@@ -107,7 +120,7 @@ const Checkout = ({ user, onRequestLogin }) => {
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
               Your order has been placed successfully.
             </div>
 
@@ -180,13 +193,26 @@ const Checkout = ({ user, onRequestLogin }) => {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                  <div className="flex items-center justify-between text-sm text-gray-700">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                  <div className="flex items-center justify-between">
                     <span>Subtotal</span>
                     <span className="font-semibold text-gray-900">
                       ₹{orderSubtotal.toLocaleString('en-IN')}
                     </span>
                   </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span>Standard shipping</span>
+                    <span className="font-semibold text-gray-900">
+                      ₹{STANDARD_SHIPPING}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3 font-semibold text-gray-900">
+                    <span>Total (shipping included)</span>
+                    <span>₹{orderTotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Final shipping may vary based on delivery distance. We will confirm before dispatch.
+                  </p>
                 </div>
               </div>
             </div>
@@ -211,7 +237,7 @@ const Checkout = ({ user, onRequestLogin }) => {
               the email and mobile number below.
             </div>
           )}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleReview}>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block text-sm font-semibold text-gray-700">
                 Name *
@@ -332,7 +358,8 @@ const Checkout = ({ user, onRequestLogin }) => {
 
             <div className="flex flex-col items-center gap-4">
               <button
-                type="submit"
+                type="button"
+                onClick={handleReview}
                 className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
               >
                 {submitLabel}
@@ -354,6 +381,122 @@ const Checkout = ({ user, onRequestLogin }) => {
           </form>
         </section>
       </div>
+
+      {showReview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setShowReview(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex h-full w-full max-h-[calc(100dvh-2rem)] flex-col rounded-none bg-white p-6 shadow-2xl md:h-auto md:max-h-[85vh] md:max-w-2xl md:rounded-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-900">Review your order</h2>
+              <button
+                type="button"
+                onClick={() => setShowReview(false)}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-1 flex-col gap-5 md:grid md:grid-cols-[0.8fr_1.2fr] md:items-start">
+              <div className="order-2 space-y-3 md:order-1">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Items
+                </h3>
+                <div
+                  className={`space-y-3 ${
+                    cartItems.length >= 2
+                      ? "max-h-[240px] overflow-y-auto pr-1"
+                      : ""
+                  } md:max-h-[360px] md:overflow-y-auto md:pr-1`}
+                >
+                  {cartItems.map((item) => {
+                    let imageSrc = item.image;
+                    if (typeof item.image === 'string' && !item.image.startsWith('http')) {
+                      imageSrc = getImageWithFallback(item.image, item.title);
+                    }
+                    if (!imageSrc) imageSrc = getImageWithFallback('', item.title);
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-3"
+                      >
+                        <img
+                          src={imageSrc}
+                          alt={item.title}
+                          className="h-14 w-14 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-slate-900">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-slate-500">Qty {item.qty}</p>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          ₹{(item.price * item.qty).toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="order-1 space-y-4 md:order-2">
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    Delivery
+                  </h3>
+                  <div className="mt-3 space-y-1 text-sm text-slate-700">
+                    <p className="font-semibold text-slate-900">{form.name}</p>
+                    <p>{form.email}</p>
+                    <p>{form.mobile}</p>
+                    {formattedAddress.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span>Subtotal</span>
+                    <span className="font-semibold text-slate-900">
+                      ₹{subtotal.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span>Standard shipping</span>
+                    <span className="font-semibold text-slate-900">₹{STANDARD_SHIPPING}</span>
+                  </div>
+                  <div className="mt-3 border-t border-slate-200 pt-3 flex items-center justify-between text-sm font-semibold text-slate-900">
+                    <span>Total (shipping included)</span>
+                    <span>₹{(subtotal + STANDARD_SHIPPING).toLocaleString('en-IN')}</span>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Final shipping may vary based on delivery distance. We will confirm before dispatch.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReview(false);
+                    placeOrder();
+                  }}
+                  className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                >
+                  Place your order
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 };

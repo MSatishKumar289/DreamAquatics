@@ -139,12 +139,6 @@ function AppContent() {
           onCartOpen={() => setIsCartOpen(true)}
         />
 
-        {welcomeText && (
-          <div className="bg-sky-50 text-sky-800 text-center text-sm font-semibold tracking-wide py-2">
-            {welcomeText}
-          </div>
-        )}
-
         {isLoginModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
