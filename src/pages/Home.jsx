@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { fetchAllProductsWithCategories } from '../lib/catalogApi';
 import CategorySection from '../components/CategorySection';
 import Spinner from '../components/Spinner';
-import BgImage from '../assets/Images/barca.png';
+import BgImage from '../assets/Images/homebgnew.png';
 import MobileBgImage from '../assets/Images/mbarca.png';
 import CallIcon from '../assets/Images/call.png';
 import WhatsIcon from '../assets/Images/whatsapp.jpeg';
