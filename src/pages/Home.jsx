@@ -150,14 +150,14 @@ const Home = ({ profile }) => {
 
             <div className="flex flex-wrap items-center justify-center gap-4 md:justify-center">
               <a
-                href="tel:+918667419965"
+                href="tel:+918667418965"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
                 Call us
               </a>
               <a
-                href="https://wa.me/918667419965"
+                href="https://wa.me/918667418965"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
               >
                 <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
