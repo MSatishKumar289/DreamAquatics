@@ -198,7 +198,7 @@ const CategoryCard = ({
   return (
     <article
       className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
-        isSubCategory ? "cursor-pointer pb-16 hover:shadow-lg" : "hover:shadow-md"
+        isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
       } ${!isSubCategory && isSoldOut ? "cursor-not-allowed opacity-60 grayscale" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
@@ -239,7 +239,7 @@ const CategoryCard = ({
             </span>
           </div>
         )}
-        <div className="relative aspect-[4/3] w-full border-b border-slate-200/60">
+        <div className="relative aspect-[5/4] sm:aspect-[4/3] w-full border-b border-slate-200/60">
           {isSubCategory && (
             <>
               <span
@@ -314,7 +314,7 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-4 ${isSubCategory ? "flex h-full flex-col gap-3" : "space-y-3"}`}>
+      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex h-full flex-col gap-2 sm:gap-3" : "space-y-3"}`}>
         <div className={`text-center ${isSubCategory ? "flex-1" : ""}`}>
           <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
             {productTitle}
@@ -410,7 +410,7 @@ const CategoryCard = ({
             event.stopPropagation();
             handleClick();
           }}
-          className="absolute inset-x-3 bottom-3 rounded-xl bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+          className="absolute inset-x-0 bottom-0 rounded-none bg-blue-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:px-4 sm:py-2.5"
         >
           View Product
         </button>
