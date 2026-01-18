@@ -11,6 +11,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   const [orderSnapshot, setOrderSnapshot] = useState(null);
   const [showReviewScreen, setShowReviewScreen] = useState(false);
   const [confirmStep, setConfirmStep] = useState('summary');
+  const [showCelebration, setShowCelebration] = useState(false);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -40,6 +41,11 @@ const Checkout = ({ user, onRequestLogin }) => {
     if (!orderPlaced) return;
     window.scrollTo({ top: 0, behavior: 'auto' });
     setConfirmStep('summary');
+    setShowCelebration(true);
+    const timer = setTimeout(() => {
+      setShowCelebration(false);
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [orderPlaced]);
 
   const handleChange = (field) => (event) => {
@@ -83,6 +89,7 @@ const Checkout = ({ user, onRequestLogin }) => {
       address: form,
     });
     setOrderPlaced(true);
+    setShowCelebration(true);
     clearCart();
   };
 
@@ -152,6 +159,11 @@ const Checkout = ({ user, onRequestLogin }) => {
                 >
                   Back to home
                 </button>
+              </div>
+            )}
+            {orderPlaced && showCelebration && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                <div className="celebrate-pop text-5xl">🎉</div>
               </div>
             )}
 
@@ -321,9 +333,16 @@ const Checkout = ({ user, onRequestLogin }) => {
                   10% { opacity: 1; }
                   100% { transform: translateY(-460px) scale(1.15); opacity: 0; }
                 }
+                @keyframes celebratePop {
+                  0% { transform: scale(0.6); opacity: 0; }
+                  20% { opacity: 1; }
+                  60% { transform: scale(1.15); }
+                  100% { transform: scale(1); opacity: 0; }
+                }
                 .animate-bubble-slow { animation: bubbleRise 3.8s ease-in infinite; }
                 .animate-bubble-mid { animation: bubbleRise 3s ease-in infinite; }
                 .animate-bubble-fast { animation: bubbleRise 2.4s ease-in infinite; }
+                .celebrate-pop { animation: celebratePop 1.6s ease-out forwards; }
               `}</style>
             )}
           </section>
