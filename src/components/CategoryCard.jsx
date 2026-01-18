@@ -271,7 +271,9 @@ const CategoryCard = ({
           <img
             src={imageSrc}
             alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={`h-full w-full transition-transform duration-300 group-hover:scale-105 ${
+              isSubCategory ? "object-cover" : "object-contain bg-white"
+            }`}
             onClick={(event) => {
               if (isSubCategory) return;
               if (isSoldOut) return;
@@ -440,7 +442,7 @@ const CategoryCard = ({
                   <img
                     src={imageSrc}
                     alt={productTitle}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain bg-white"
                   />
                 </div>
               </div>
