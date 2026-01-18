@@ -316,9 +316,9 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex h-full flex-col gap-2 sm:gap-3" : "space-y-3"}`}>
-        <div className={`text-center ${isSubCategory ? "flex-1" : ""}`}>
-          <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
+      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[180px] flex-col gap-3 sm:min-h-[200px]"}`}>
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-slate-900 line-clamp-3">
             {productTitle}
           </h3>
           {!isSubCategory && productSubtitle && (
@@ -326,19 +326,20 @@ const CategoryCard = ({
               {productSubtitle}
             </p>
           )}
-          {/* Label strip for subcategory cards */}
-        </div>
-
-        {!isSubCategory && (
-          <>
-            <div className="flex items-center justify-center">
+          {!isSubCategory && (
+            <div className="mt-3 flex items-center justify-center">
               <p className="text-lg font-semibold text-slate-900">
                 {"\u20B9"}
                 {Number(product?.price ?? 0).toLocaleString("en-IN")}
               </p>
             </div>
+          )}
+          {/* Label strip for subcategory cards */}
+        </div>
 
-            <div className="relative flex items-center gap-2">
+        {!isSubCategory && (
+          <>
+            <div className="relative mt-auto flex items-center gap-2">
               <div className="flex-1">
                 <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-full border border-blue-100 bg-blue-50">
                 <button
