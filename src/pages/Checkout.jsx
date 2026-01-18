@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { getImageWithFallback } from '../assets';
+import editIc from '../assets/Icons/edit_ic.png';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -8,7 +9,8 @@ const Checkout = ({ user, onRequestLogin }) => {
   const { cartItems, subtotal, clearCart } = useCart();
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderSnapshot, setOrderSnapshot] = useState(null);
-  const [showReview, setShowReview] = useState(false);
+  const [showReviewScreen, setShowReviewScreen] = useState(false);
+  const [confirmStep, setConfirmStep] = useState('summary');
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -37,6 +39,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   useEffect(() => {
     if (!orderPlaced) return;
     window.scrollTo({ top: 0, behavior: 'auto' });
+    setConfirmStep('summary');
   }, [orderPlaced]);
 
   const handleChange = (field) => (event) => {
@@ -87,7 +90,12 @@ const Checkout = ({ user, onRequestLogin }) => {
     event.preventDefault();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
-    setShowReview(true);
+    setOrderSnapshot({
+      items: cartItems,
+      subtotal,
+      address: form,
+    });
+    setShowReviewScreen(true);
   };
 
   const formattedAddress = useMemo(() => {
@@ -103,8 +111,8 @@ const Checkout = ({ user, onRequestLogin }) => {
     return parts;
   }, [form]);
 
-  if (orderPlaced) {
-    const items = orderSnapshot?.items || [];
+  if (orderPlaced || showReviewScreen) {
+    const items = orderSnapshot?.items || cartItems;
     const orderSubtotal = orderSnapshot?.subtotal ?? subtotal;
     const STANDARD_SHIPPING = 100;
     const orderTotal = orderSubtotal + STANDARD_SHIPPING;
@@ -119,103 +127,179 @@ const Checkout = ({ user, onRequestLogin }) => {
     return (
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
-              Your order has been placed successfully.
-            </div>
+          <section className="min-h-[calc(100dvh-1.5rem)] rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:min-h-0">
+            {orderPlaced ? (
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
+                Your order has been placed successfully.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Review</p>
+                  <h2 className="text-xl font-semibold text-slate-900">Review your order</h2>
+                </div>
+              </div>
+            )}
+            {orderPlaced && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = "/";
+                  }}
+                  className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                >
+                  Back to home
+                </button>
+              </div>
+            )}
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="order-2 space-y-4 lg:order-1">
-                <h2 className="text-lg font-semibold text-gray-900">Items</h2>
-                {items.length === 0 ? (
-                  <p className="text-sm text-gray-600">
-                    No items found in the cart.
-                  </p>
-                ) : (
-                  <div
-                    className={`space-y-3 ${
-                      items.length >= 3
-                        ? "max-h-[360px] overflow-y-auto pr-1"
-                        : ""
-                    }`}
-                  >
-                    {items.map((item) => {
-                      let imageSrc = item.image;
-                      if (typeof item.image === 'string') {
-                        if (!item.image.startsWith('http')) {
-                          imageSrc = getImageWithFallback(item.image, item.title);
-                        }
-                      }
-                      if (!imageSrc) {
-                        imageSrc = getImageWithFallback('', item.title);
-                      }
+            <div className="mt-6 space-y-4">
+              <div className="inline-flex w-full overflow-hidden rounded-full border border-gray-200 bg-gray-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => setConfirmStep('summary')}
+                  className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                    confirmStep === 'summary'
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Summary
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmStep('items')}
+                  className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                    confirmStep === 'items'
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Items
+                </button>
+              </div>
 
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-5 rounded-2xl border border-gray-100 bg-gray-50 p-4"
+              {confirmStep === 'summary' ? (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        Delivery Address
+                      </h2>
+                      {!orderPlaced && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowReviewScreen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-50"
+                          aria-label="Edit delivery address"
+                          title="Edit address"
                         >
-                          <img
-                            src={imageSrc}
-                            alt={item.title}
-                            className="h-20 w-20 rounded-xl object-cover"
-                          />
-                          <div className="flex-1">
+                          <img src={editIc} alt="" className="h-5 w-5" aria-hidden />
+                        </button>
+                      )}
+                    </div>
+                    <div className="mt-3 space-y-2 text-sm text-gray-700">
+                      <p className="font-semibold text-gray-900">{address.name}</p>
+                      <p>{address.email}</p>
+                      <p>{address.mobile}</p>
+                      {addressLines.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                    <div className="flex items-center justify-between">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-gray-900">
+                        {"\u20B9"}{orderSubtotal.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span>Standard shipping</span>
+                      <span className="font-semibold text-gray-900">
+                        {"\u20B9"}{STANDARD_SHIPPING}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3 font-semibold text-gray-900">
+                      <span>Total (shipping included)</span>
+                      <span>{"\u20B9"}{orderTotal.toLocaleString('en-IN')}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Final shipping may vary based on delivery distance. We will confirm before dispatch.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Items</h2>
+                  {items.length === 0 ? (
+                    <p className="text-sm text-gray-600">
+                      No items found in the cart.
+                    </p>
+                  ) : (
+                    <div
+                      className={`space-y-3 ${
+                        items.length >= 3
+                          ? "max-h-[360px] overflow-y-auto pr-1"
+                          : ""
+                      }`}
+                    >
+                      {items.map((item) => {
+                        let imageSrc = item.image;
+                        if (typeof item.image === 'string') {
+                          if (!item.image.startsWith('http')) {
+                            imageSrc = getImageWithFallback(item.image, item.title);
+                          }
+                        }
+                        if (!imageSrc) {
+                          imageSrc = getImageWithFallback('', item.title);
+                        }
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="flex items-center gap-5 rounded-2xl border border-gray-100 bg-gray-50 p-4"
+                          >
+                            <img
+                              src={imageSrc}
+                              alt={item.title}
+                              className="h-20 w-20 rounded-xl object-cover"
+                            />
+                            <div className="flex-1">
+                              <p className="text-base font-semibold text-gray-900">
+                                {item.title}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Qty {item.qty}
+                              </p>
+                            </div>
                             <p className="text-base font-semibold text-gray-900">
-                              {item.title}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              Qty {item.qty}
+                              {"\u20B9"}{(item.price * item.qty).toLocaleString('en-IN')}
                             </p>
                           </div>
-                          <p className="text-base font-semibold text-gray-900">
-                            ₹{(item.price * item.qty).toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <div className="order-1 space-y-4 lg:order-2">
-                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Delivery Address
-                  </h2>
-                  <div className="mt-3 space-y-2 text-sm text-gray-700">
-                    <p className="font-semibold text-gray-900">{address.name}</p>
-                    <p>{address.email}</p>
-                    <p>{address.mobile}</p>
-                    {addressLines.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-
-                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
-                  <div className="flex items-center justify-between">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-gray-900">
-                      ₹{orderSubtotal.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span>Standard shipping</span>
-                    <span className="font-semibold text-gray-900">
-                      ₹{STANDARD_SHIPPING}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3 font-semibold text-gray-900">
-                    <span>Total (shipping included)</span>
-                    <span>₹{orderTotal.toLocaleString('en-IN')}</span>
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500">
-                    Final shipping may vary based on delivery distance. We will confirm before dispatch.
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
+            {!orderPlaced && (
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={placeOrder}
+                  className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                >
+                  Confirm order
+                </button>
+              </div>
+            )}
           </section>
         </div>
       </main>
@@ -382,121 +466,6 @@ const Checkout = ({ user, onRequestLogin }) => {
         </section>
       </div>
 
-      {showReview && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-4"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setShowReview(false);
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="flex h-full w-full max-h-[calc(100dvh-2rem)] flex-col rounded-none bg-white p-6 shadow-2xl md:h-auto md:max-h-[85vh] md:max-w-2xl md:rounded-2xl">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">Review your order</h2>
-              <button
-                type="button"
-                onClick={() => setShowReview(false)}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="mt-4 flex flex-1 flex-col gap-5 md:grid md:grid-cols-[0.8fr_1.2fr] md:items-start">
-              <div className="order-2 space-y-3 md:order-1">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Items
-                </h3>
-                <div
-                  className={`space-y-3 ${
-                    cartItems.length >= 2
-                      ? "max-h-[240px] overflow-y-auto pr-1"
-                      : ""
-                  } md:max-h-[360px] md:overflow-y-auto md:pr-1`}
-                >
-                  {cartItems.map((item) => {
-                    let imageSrc = item.image;
-                    if (typeof item.image === 'string' && !item.image.startsWith('http')) {
-                      imageSrc = getImageWithFallback(item.image, item.title);
-                    }
-                    if (!imageSrc) imageSrc = getImageWithFallback('', item.title);
-
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-3"
-                      >
-                        <img
-                          src={imageSrc}
-                          alt={item.title}
-                          className="h-14 w-14 rounded-lg object-cover"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-900">
-                            {item.title}
-                          </p>
-                          <p className="text-xs text-slate-500">Qty {item.qty}</p>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          ₹{(item.price * item.qty).toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="order-1 space-y-4 md:order-2">
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                    Delivery
-                  </h3>
-                  <div className="mt-3 space-y-1 text-sm text-slate-700">
-                    <p className="font-semibold text-slate-900">{form.name}</p>
-                    <p>{form.email}</p>
-                    <p>{form.mobile}</p>
-                    {formattedAddress.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
-                  <div className="flex items-center justify-between">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-slate-900">
-                      ₹{subtotal.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span>Standard shipping</span>
-                    <span className="font-semibold text-slate-900">₹{STANDARD_SHIPPING}</span>
-                  </div>
-                  <div className="mt-3 border-t border-slate-200 pt-3 flex items-center justify-between text-sm font-semibold text-slate-900">
-                    <span>Total (shipping included)</span>
-                    <span>₹{(subtotal + STANDARD_SHIPPING).toLocaleString('en-IN')}</span>
-                  </div>
-                  <p className="mt-2 text-xs text-slate-500">
-                    Final shipping may vary based on delivery distance. We will confirm before dispatch.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowReview(false);
-                    placeOrder();
-                  }}
-                  className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                >
-                  Place your order
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 };
