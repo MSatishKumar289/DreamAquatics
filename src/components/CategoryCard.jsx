@@ -13,6 +13,8 @@ const CategoryCard = ({
   const [qty, setQty] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [showQtyHint, setShowQtyHint] = useState(false);
+  const [showViewHint, setShowViewHint] = useState(false);
+  const [showExpandHint, setShowExpandHint] = useState(false);
 
   const productTitle = isSubCategory
     ? product?.subcategoryName || product?.name || product?.title || "Category"
@@ -64,6 +66,36 @@ const CategoryCard = ({
     const timer = setTimeout(() => setShowQtyHint(false), 2000);
     return () => clearTimeout(timer);
   }, [showQtyHint]);
+
+  // One-time hint to nudge users to view product details (subcategories only)
+  useEffect(() => {
+    if (!isSubCategory) return;
+    if (typeof window === "undefined") return;
+    const storageKey = "da-view-hint-shown";
+    const alreadyShown = window.localStorage.getItem(storageKey);
+    if (alreadyShown) return;
+
+    let timer;
+
+    const triggerHint = () => {
+      setShowViewHint(true);
+      timer = setTimeout(() => setShowViewHint(false), 1600);
+      window.localStorage.setItem(storageKey, "1");
+      window.removeEventListener("pointerdown", onFirstTap);
+    };
+
+    const onFirstTap = (event) => {
+      if (event.pointerType !== "touch") return;
+      triggerHint();
+    };
+
+    window.addEventListener("pointerdown", onFirstTap, { passive: true });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("pointerdown", onFirstTap);
+    };
+  }, [isSubCategory]);
 
   const handleAddToCart = (event) => {
     event?.stopPropagation();
@@ -150,10 +182,23 @@ const CategoryCard = ({
     }
   };
 
+  // One-time hint for product image expand (products only)
+  useEffect(() => {
+    if (isSubCategory) return;
+    if (typeof window === "undefined") return;
+    const storageKey = "da-expand-hint-shown";
+    const alreadyShown = window.localStorage.getItem(storageKey);
+    if (alreadyShown) return;
+    setShowExpandHint(true);
+    const timer = setTimeout(() => setShowExpandHint(false), 1600);
+    window.localStorage.setItem(storageKey, "1");
+    return () => clearTimeout(timer);
+  }, [isSubCategory]);
+
   return (
     <article
-      className={`group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
-        isSubCategory ? "cursor-pointer hover:shadow-lg" : "hover:shadow-md"
+      className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
+        isSubCategory ? "cursor-pointer pb-16 hover:shadow-lg" : "hover:shadow-md"
       } ${!isSubCategory && isSoldOut ? "cursor-not-allowed opacity-60 grayscale" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
@@ -195,6 +240,34 @@ const CategoryCard = ({
           </div>
         )}
         <div className="relative aspect-[4/3] w-full border-b border-slate-200/60">
+          {isSubCategory && (
+            <>
+              <span
+                className="pointer-events-none absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white sm:opacity-0 sm:transition sm:group-hover:opacity-100"
+                aria-hidden="true"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </span>
+              <span
+                className={`pointer-events-none absolute left-2 top-2 z-10 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
+                  showViewHint ? "opacity-100" : ""
+                }`}
+              >
+                Tap to view
+              </span>
+            </>
+          )}
           <img
             src={imageSrc}
             alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
@@ -213,29 +286,36 @@ const CategoryCard = ({
             }}
           />
           {!isSubCategory && (
-            <div className="pointer-events-none absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M14 5h5v5" />
-                <path d="M19 5l-7 7" />
-                <path d="M10 19H5v-5" />
-                <path d="M5 19l7-7" />
-              </svg>
-            </div>
+            <>
+              <div className="pointer-events-none absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M14 5h5v5" />
+                  <path d="M19 5l-7 7" />
+                  <path d="M10 19H5v-5" />
+                  <path d="M5 19l7-7" />
+                </svg>
+              </div>
+              {showExpandHint && (
+                <span className="pointer-events-none absolute bottom-12 right-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md sm:hidden">
+                  Tap to enlarge
+                </span>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      <div className="space-y-3 p-4">
-        <div className="text-center">
+      <div className={`p-4 ${isSubCategory ? "flex h-full flex-col gap-3" : "space-y-3"}`}>
+        <div className={`text-center ${isSubCategory ? "flex-1" : ""}`}>
           <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
             {productTitle}
           </h3>
@@ -244,20 +324,7 @@ const CategoryCard = ({
               {productSubtitle}
             </p>
           )}
-          {isSubCategory && (
-            <div className="mt-3 flex justify-center">
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleClick();
-                }}
-                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-              >
-                View Product
-              </button>
-            </div>
-          )}
+          {/* Label strip for subcategory cards */}
         </div>
 
         {!isSubCategory && (
@@ -335,6 +402,19 @@ const CategoryCard = ({
           </>
         )}
       </div>
+
+      {isSubCategory && (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleClick();
+          }}
+          className="absolute inset-x-3 bottom-3 rounded-xl bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+        >
+          View Product
+        </button>
+      )}
 
       {isPreviewOpen && (
         <div
