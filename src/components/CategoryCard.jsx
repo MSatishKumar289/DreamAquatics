@@ -429,10 +429,10 @@ const CategoryCard = ({
             <button
               type="button"
               onClick={() => setIsPreviewOpen(false)}
-              className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow hover:text-slate-900"
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
               aria-label="Close image preview"
             >
-              x
+              X
             </button>
             <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
               <div className="w-full md:w-1/2">
@@ -444,7 +444,7 @@ const CategoryCard = ({
                   />
                 </div>
               </div>
-              <div className="flex w-full flex-col gap-3 md:w-1/2">
+              <div className="flex w-full flex-col gap-3 pr-12 md:w-1/2">
                 <h2 className="text-2xl font-semibold text-slate-900">
                   {productTitle}
                 </h2>

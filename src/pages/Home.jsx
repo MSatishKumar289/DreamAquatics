@@ -272,13 +272,13 @@ const Home = ({ profile }) => {
         >
           <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
             <button
-              type="button"
-              onClick={() => setActiveHighlight(null)}
-              className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow hover:text-slate-900"
-              aria-label="Close image preview"
-            >
-              ×
-            </button>
+  type="button"
+  onClick={() => setActiveHighlight(null)}
+  className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+  aria-label="Close image preview"
+>
+  X
+</button>
             <img
               src={activeHighlight}
               alt="Highlight preview"

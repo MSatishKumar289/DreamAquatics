@@ -810,9 +810,6 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                   <h2 className="text-xl font-semibold text-slate-900">
                     {selectedSubcategory ? selectedSubcategory.name : "Select a subcategory"}
                   </h2>
-                  {selectedSubcategory?.description && (
-                    <p className="text-xs text-slate-400">Description: {selectedSubcategory.description}</p>
-                  )}
                 </div>
                 <button
                   type="button"
@@ -883,11 +880,6 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                             {` · ${statusLabel}`}
                           </p>
 
-                          {item.description && (
-                            <p className="text-xs text-slate-400">
-                              Descrption: {item.description}
-                            </p>
-                          )}
                         </div>
                       </div>
 

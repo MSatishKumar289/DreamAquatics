@@ -83,10 +83,10 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
         <div className="mb-4 flex justify-end">
           <button
             onClick={onClose}
-            className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 !bg-red-600 !text-white"
             aria-label="Close modal"
           >
-            <img width={18} height={18} src={close_ic} alt="Close" />
+            <span className="text-base font-semibold leading-none">X</span>
           </button>
         </div>
 
