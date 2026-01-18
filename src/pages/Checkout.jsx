@@ -127,7 +127,7 @@ const Checkout = ({ user, onRequestLogin }) => {
     return (
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <section className="min-h-[calc(100dvh-1.5rem)] rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:min-h-0">
+          <section className="relative min-h-[calc(100dvh-1.5rem)] overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:min-h-0">
             {orderPlaced ? (
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
                 Your order has been placed successfully.
@@ -299,6 +299,28 @@ const Checkout = ({ user, onRequestLogin }) => {
                   Confirm order
                 </button>
               </div>
+            )}
+            {orderPlaced && (
+              <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -bottom-10 left-6 h-7 w-7 animate-bubble-slow rounded-full bg-sky-300/80 shadow-[0_0_12px_rgba(56,189,248,0.45)]" />
+                <div className="absolute -bottom-12 left-20 h-4 w-4 animate-bubble-mid rounded-full bg-sky-200/90 shadow-[0_0_10px_rgba(186,230,253,0.6)]" />
+                <div className="absolute -bottom-16 left-32 h-5 w-5 animate-bubble-fast rounded-full bg-sky-200/90 shadow-[0_0_12px_rgba(125,211,252,0.55)]" />
+                <div className="absolute -bottom-10 right-10 h-6 w-6 animate-bubble-mid rounded-full bg-sky-300/80 shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+                <div className="absolute -bottom-14 right-24 h-4 w-4 animate-bubble-slow rounded-full bg-sky-200/90 shadow-[0_0_10px_rgba(186,230,253,0.6)]" />
+                <div className="absolute -bottom-20 right-36 h-5 w-5 animate-bubble-fast rounded-full bg-sky-300/80 shadow-[0_0_12px_rgba(56,189,248,0.5)]" />
+              </div>
+            )}
+            {orderPlaced && (
+              <style>{`
+                @keyframes bubbleRise {
+                  0% { transform: translateY(0) scale(0.9); opacity: 0; }
+                  10% { opacity: 1; }
+                  100% { transform: translateY(-460px) scale(1.15); opacity: 0; }
+                }
+                .animate-bubble-slow { animation: bubbleRise 3.8s ease-in infinite; }
+                .animate-bubble-mid { animation: bubbleRise 3s ease-in infinite; }
+                .animate-bubble-fast { animation: bubbleRise 2.4s ease-in infinite; }
+              `}</style>
             )}
           </section>
         </div>
