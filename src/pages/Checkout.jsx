@@ -96,6 +96,7 @@ const Checkout = ({ user, onRequestLogin }) => {
       address: form,
     });
     setShowReviewScreen(true);
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const formattedAddress = useMemo(() => {
@@ -182,6 +183,9 @@ const Checkout = ({ user, onRequestLogin }) => {
 
               {confirmStep === 'summary' ? (
                 <div className="space-y-4">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center text-sm text-blue-900">
+                    Payment details will be shared via WhatsApp after you place the order.
+                  </div>
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="text-lg font-semibold text-gray-900">
@@ -290,11 +294,11 @@ const Checkout = ({ user, onRequestLogin }) => {
               )}
             </div>
             {!orderPlaced && (
-              <div className="mt-6">
+              <div className="mt-6 flex justify-center">
                 <button
                   type="button"
                   onClick={placeOrder}
-                  className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                 >
                   Confirm order
                 </button>
