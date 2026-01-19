@@ -35,8 +35,21 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [isProfileOpen]);
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleClickOutside = (event) => {
+      const inMenu = event.target.closest('[data-mobile-menu]');
+      const inButton = event.target.closest('[data-mobile-menu-button]');
+      if (inMenu || inButton) return;
+      setIsMobileMenuOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMobileMenuOpen]);
+
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <>
+    <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
       <nav className="container mx-auto px-3 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex items-center justify-between gap-2 h-16 md:h-20">
           {/* Brand Title */}
@@ -284,6 +297,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
               className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
               aria-label="Toggle mobile menu"
               aria-expanded={isMobileMenuOpen}
+              data-mobile-menu-button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
@@ -335,7 +349,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="xl:hidden pb-4 space-y-2">
+          <div className="xl:hidden pb-4 space-y-2" data-mobile-menu>
             {categories.map((category) => (
               <button
                 key={category.value}
@@ -353,6 +367,8 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
         )}
       </nav>
     </header>
+    <div className="h-16 md:h-20" aria-hidden />
+    </>
   );
 };
 
