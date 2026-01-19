@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import edit_ic from "../assets/icons/edit_ic.png";
-import bin_ic from "../assets/icons/bin_ic.png";
+import edit_ic from "../assets/Icons/edit_ic.png";
+import bin_ic from "../assets/Icons/bin_ic.png";
 import {
   createProduct,
   uploadProductImage,
@@ -12,7 +12,8 @@ import {
   updateProduct,
   deleteProduct,
   fetchProductImages,
-  deleteStorageFiles,
+  deleteStorageFileByPublicUrl,
+  deleteProductImageRow,
   createSubcategory,
   updateSubcategory,
   deleteSubcategoryCascade
@@ -53,7 +54,7 @@ const normalizeProducts = (products = []) =>
     imageData: p.product_images?.[0]?.url || ""
   }));
 
-const AdminAddProduct = ({ profile }) => {
+const AdminAddProduct = ({ profile, authLoading }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const subcategoryFileInputRef = useRef(null);
@@ -146,6 +147,8 @@ const AdminAddProduct = ({ profile }) => {
   const [itemDraft, setItemDraft] = useState(blankItemDraft);
   const [editingItemId, setEditingItemId] = useState(null);
   const [itemError, setItemError] = useState("");
+  const [isItemImageProcessing, setIsItemImageProcessing] = useState(false);
+  const [isSavingItem, setIsSavingItem] = useState(false);
 
   const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
   const [subcategoryDraft, setSubcategoryDraft] = useState(blankSubcategoryDraft);
@@ -154,6 +157,8 @@ const AdminAddProduct = ({ profile }) => {
 
   const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [itemSearch, setItemSearch] = useState("");
 
   /* =========================
      FETCH CATEGORIES
@@ -195,6 +200,16 @@ const AdminAddProduct = ({ profile }) => {
   }, [selectedCategoryId]);
 
   const currentSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
+  const orderedCategories = useMemo(() => {
+    const order = ["Fishes", "Plants", "Accessories", "Tanks"];
+    const rank = new Map(order.map((name, index) => [name, index]));
+    return [...dbCategories].sort((a, b) => {
+      const aRank = rank.has(a.name) ? rank.get(a.name) : Number.MAX_SAFE_INTEGER;
+      const bRank = rank.has(b.name) ? rank.get(b.name) : Number.MAX_SAFE_INTEGER;
+      if (aRank !== bRank) return aRank - bRank;
+      return a.name.localeCompare(b.name);
+    });
+  }, [dbCategories]);
 
   const selectedSubcategory = useMemo(
     () =>
@@ -206,6 +221,16 @@ const AdminAddProduct = ({ profile }) => {
   const currentItems = selectedSubcategoryId
     ? itemsBySubcategory[selectedSubcategoryId] || []
     : [];
+
+  const filteredItems = useMemo(() => {
+    const query = itemSearch.trim().toLowerCase();
+    if (!query) return currentItems;
+    return currentItems.filter((item) => {
+      const name = String(item.name || "").toLowerCase();
+      const price = String(item.price || "").toLowerCase();
+      return name.includes(query) || price.includes(query);
+    });
+  }, [currentItems, itemSearch]);
 
   /* =========================
      FETCH PRODUCTS
@@ -226,10 +251,11 @@ const AdminAddProduct = ({ profile }) => {
   }, [selectedSubcategoryId]);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!profile || profile.role !== "admin") {
       navigate("/", { replace: true });
     }
-  }, [profile, navigate]);
+  }, [profile, authLoading, navigate]);
 
   /* =========================
      ITEM HANDLERS
@@ -270,14 +296,18 @@ const AdminAddProduct = ({ profile }) => {
 
   const handleSaveItem = async (event) => {
     event.preventDefault();
+    if (isItemImageProcessing || isSavingItem) return;
+    setIsSavingItem(true);
 
     if (!itemDraft.name.trim()) {
       setItemError("Item name is required.");
+      setIsSavingItem(false);
       return;
     }
 
     if (!selectedSubcategoryId) {
       setItemError("Subcategory not selected.");
+      setIsSavingItem(false);
       return;
     }
 
@@ -296,6 +326,7 @@ const AdminAddProduct = ({ profile }) => {
 
       if (updateError) {
         setItemError(updateError.message || "Failed to update product");
+        setIsSavingItem(false);
         return;
       }
 
@@ -307,6 +338,7 @@ const AdminAddProduct = ({ profile }) => {
 
         if (imgErr) {
           setItemError(imgErr.message || "Image update failed");
+          setIsSavingItem(false);
           return;
         }
       }
@@ -322,6 +354,7 @@ const AdminAddProduct = ({ profile }) => {
 
       if (createError) {
         setItemError(createError.message || "Failed to create product");
+        setIsSavingItem(false);
         return;
       }
 
@@ -333,6 +366,7 @@ const AdminAddProduct = ({ profile }) => {
 
         if (imgErr) {
           setItemError(imgErr.message || "Image upload failed");
+          setIsSavingItem(false);
           return;
         }
       }
@@ -347,40 +381,53 @@ const AdminAddProduct = ({ profile }) => {
     }));
 
     handleCloseItemModal();
+    setIsSavingItem(false);
+  };
+  
+
+
+  const requestDeleteItem = (item) => {
+    setPendingDelete({
+      type: "item",
+      id: item.id,
+      name: item.name || "this item"
+    });
   };
 
   const handleDeleteItem = async (itemId) => {
     if (!selectedSubcategoryId) return;
-
-    openConfirm({
-      title: "Delete Product?",
-      message: "Delete this product? This cannot be undone.",
-      onConfirm: async () => {
-        try {
-          const { data: imgs, error: imgFetchErr } = await fetchProductImages(itemId);
-          if (imgFetchErr) throw imgFetchErr;
-
-          const paths = (imgs || []).map((img) => img.path).filter(Boolean);
-
-          const { error: storageErr } = await deleteStorageFiles(paths);
-          if (storageErr) throw storageErr;
-
-          const { error: delErr } = await deleteProduct(itemId);
-          if (delErr) throw delErr;
-
-          const { data } = await fetchProducts(selectedSubcategoryId);
-          setItemsBySubcategory((prev) => ({
-            ...prev,
-            [selectedSubcategoryId]: normalizeProducts(data)
-          }));
-
-          showToast("Product deleted successfully", "error");
-        } catch (err) {
-          console.error("Delete failed:", err);
-          alert(err?.message || "Delete failed");
+  
+    try {
+      // 1) get images linked to this product
+      const { data: imgs, error: imgFetchErr } = await fetchProductImages(itemId);
+      if (imgFetchErr) throw imgFetchErr;
+  
+      // 2) delete product (this removes product row)
+      const { error: delErr } = await deleteProduct(itemId);
+      if (delErr) throw delErr;
+  
+      // 3) cleanup: delete image rows + storage files
+      if (imgs?.length) {
+        for (const img of imgs) {
+          if (img?.url) {
+            await deleteStorageFileByPublicUrl(img.url);
+          }
+          if (img?.id) {
+            await deleteProductImageRow(img.id);
+          }
         }
       }
-    });
+  
+      // 4) refresh list
+      const { data } = await fetchProducts(selectedSubcategoryId);
+      setItemsBySubcategory((prev) => ({
+        ...prev,
+        [selectedSubcategoryId]: normalizeProducts(data)
+      }));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert(err?.message || "Delete failed");
+    }
   };
 
   const readFileAsDataUrl = (file) =>
@@ -417,6 +464,7 @@ const AdminAddProduct = ({ profile }) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setItemError("");
+    setIsItemImageProcessing(true);
     try {
       const dataUrl = await prepareImageData(file);
       setItemDraft((prev) => ({
@@ -427,6 +475,8 @@ const AdminAddProduct = ({ profile }) => {
     } catch (error) {
       console.error("Image upload failed", error);
       setItemError("Unable to process the image. Try a smaller file.");
+    } finally {
+      setIsItemImageProcessing(false);
     }
   };
 
@@ -519,32 +569,37 @@ const AdminAddProduct = ({ profile }) => {
       setSubcategoryError(err.message || "Subcategory save failed");
     }
   };
+  
+
+  // DELETE SubCAtegory
+  const requestDeleteSubcategory = (subcategory) => {
+    setPendingDelete({
+      type: "subcategory",
+      id: subcategory.id,
+      name: subcategory.name || "this subcategory"
+    });
+  };
 
   const handleDeleteSubcategory = async (subcategoryId) => {
-    openConfirm({
-      title: "Delete Subcategory?",
-      message: "Delete this subcategory and its items? This cannot be undone.",
-      onConfirm: async () => {
-        try {
-          const { error } = await deleteSubcategoryCascade(subcategoryId);
-          if (error) throw error;
-
-          const { data: refreshed } = await fetchSubcategories(selectedCategoryId);
-          setDbSubcategories(refreshed || []);
-
-          if (selectedSubcategoryId === subcategoryId) {
-            setSelectedSubcategoryId(refreshed?.[0]?.id || "");
-          }
-
-          setItemsBySubcategory({});
-
-          showToast("Subcategory deleted successfully", "error");
-        } catch (err) {
-          console.error("Delete subcategory failed:", err);
-          alert(err?.message || "Delete failed");
-        }
+    try {
+      const { error } = await deleteSubcategoryCascade(subcategoryId);
+      if (error) throw error;
+  
+      // refresh list
+      const { data: refreshed } = await fetchSubcategories(selectedCategoryId);
+      setDbSubcategories(refreshed || []);
+  
+      // reset selection
+      if (selectedSubcategoryId === subcategoryId) {
+        setSelectedSubcategoryId(refreshed?.[0]?.id || "");
       }
-    });
+  
+      // clear products cache (optional but clean)
+      setItemsBySubcategory({});
+    } catch (err) {
+      console.error("Delete subcategory failed:", err);
+      alert(err?.message || "Delete failed");
+    }
   };
 
   const handleSubcategoryImageUpload = async (event) => {
@@ -571,9 +626,9 @@ const AdminAddProduct = ({ profile }) => {
     <>
       {/* ✅ Toast UI (Animated) */}
       {toast.show && (
-        <div className="fixed right-4 top-4 z-[9999]">
+        <div className="fixed left-1/2 top-4 z-[9999] -translate-x-1/2">
           <div
-            className={`animate-[toastIn_220ms_ease-out] rounded-md px-4 py-3 text-sm font-semibold shadow-lg border ${
+            className={`animate-[toastIn_220ms_ease-out] rounded-md px-4 py-3 text-center text-sm font-semibold shadow-lg border ${
               toast.type === "success"
                 ? "bg-emerald-600 text-white border-emerald-700"
                 : "bg-rose-600 text-white border-rose-700"
@@ -653,7 +708,7 @@ const AdminAddProduct = ({ profile }) => {
           <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-700">Categories</h2>
             <div className="mt-3 space-y-2">
-              {dbCategories.map((category) => {
+              {orderedCategories.map((category) => {
                 const isActive = category.id === selectedCategoryId;
 
                 return (
@@ -686,7 +741,7 @@ const AdminAddProduct = ({ profile }) => {
               <button
                 type="button"
                 onClick={handleOpenAddSubcategory}
-                className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
               >
                 Add
               </button>
@@ -709,15 +764,6 @@ const AdminAddProduct = ({ profile }) => {
                       onClick={() => setSelectedSubcategoryId(subcategory.id)}
                       className="flex flex-1 items-center gap-3 text-left"
                     >
-                      {subcategory.imageData ? (
-                        <img
-                          src={subcategory.imageData}
-                          alt={subcategory.name}
-                          className="h-8 w-8 rounded border border-slate-200 object-cover"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded border border-dashed border-slate-200 bg-slate-50" />
-                      )}
                       <div>
                         <p className="text-sm font-semibold">{subcategory.name}</p>
                       </div>
@@ -736,10 +782,11 @@ const AdminAddProduct = ({ profile }) => {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteSubcategory(subcategory.id)}
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
-                          isActive ? "hover:bg-white/10" : "hover:bg-rose-50"
-                        }`}
+                        onClick={() => requestDeleteSubcategory(subcategory)}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${isActive
+                          ? "hover:bg-white/10"
+                          : "hover:bg-rose-50"
+                          }`}
                         aria-label={`Delete ${subcategory.name}`}
                         title="Delete"
                       >
@@ -763,15 +810,12 @@ const AdminAddProduct = ({ profile }) => {
                   <h2 className="text-xl font-semibold text-slate-900">
                     {selectedSubcategory ? selectedSubcategory.name : "Select a subcategory"}
                   </h2>
-                  {selectedSubcategory?.description && (
-                    <p className="text-xs text-slate-400">Description: {selectedSubcategory.description}</p>
-                  )}
                 </div>
                 <button
                   type="button"
                   onClick={handleOpenAddItem}
                   disabled={!selectedSubcategoryId}
-                  className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="inline-flex min-w-[140px] items-center justify-center rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                 >
                   Add Item
                 </button>
@@ -779,23 +823,44 @@ const AdminAddProduct = ({ profile }) => {
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-sm font-semibold text-slate-700">Items list</h3>
-                <span className="text-xs text-slate-400">{currentItems.length} items</span>
+                <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                  <input
+                    type="search"
+                    value={itemSearch}
+                    onChange={(event) => setItemSearch(event.target.value)}
+                    placeholder="Search items"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:max-w-[220px]"
+                  />
+                  <span className="text-xs text-slate-400">
+                    {filteredItems.length} items
+                  </span>
+                </div>
               </div>
 
-              {isProductsLoading ? (
-                <div className="flex items-center justify-center py-6">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
-                </div>
-              ) : currentItems.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-6">
-                  No products found for this subcategory
+              {filteredItems.length === 0 ? (
+                <p className="mt-4 text-sm text-slate-500">
+                  No items yet. Use “Add Item” to create one for this subcategory.
                 </p>
               ) : (
-                <div className="mt-4 divide-y divide-slate-100">
-                  {currentItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between gap-4 py-3">
+                <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1 sm:max-h-[420px] lg:max-h-[520px]">
+                  {filteredItems.map((item) => {
+                    const count = Number(item.stock_count);
+                    const availabilityText = String(item.availability || "").toLowerCase();
+                    const isOut = Number.isFinite(count)
+                      ? count <= 0
+                      : availabilityText === "out-of-stock";
+                    const statusLabel = isOut ? "Out of stock" : "In stock";
+                    return (
+                      <div
+                        key={item.id}
+                        className={`flex items-center justify-between gap-4 rounded-lg px-3 py-3 ${
+                          isOut
+                            ? "bg-rose-50 text-rose-700"
+                            : "bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
                       <div className="flex items-center gap-3">
                         {item.imageData ? (
                           <img
@@ -812,14 +877,9 @@ const AdminAddProduct = ({ profile }) => {
 
                           <p className="text-xs text-slate-500">
                             {item.price ? `Price: ${item.price}` : "No price set"}
-                            {item.availability === "out-of-stock" ? " · Out of stock" : " · In stock"}
+                            {` · ${statusLabel}`}
                           </p>
 
-                          {item.description && (
-                            <p className="text-xs text-slate-400">
-                              Descrption: {item.description}
-                            </p>
-                          )}
                         </div>
                       </div>
 
@@ -836,7 +896,7 @@ const AdminAddProduct = ({ profile }) => {
 
                         <button
                           type="button"
-                          onClick={() => handleDeleteItem(item.id)}
+                          onClick={() => requestDeleteItem(item)}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-rose-50"
                           aria-label={`Delete ${item.name}`}
                           title="Delete"
@@ -844,8 +904,9 @@ const AdminAddProduct = ({ profile }) => {
                           <img src={bin_ic} alt="" className="h-6 w-6" aria-hidden />
                         </button>
                       </div>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -968,13 +1029,14 @@ const AdminAddProduct = ({ profile }) => {
                   <button
                     type="button"
                     onClick={handleCloseItemModal}
-                    className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-800"
+                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800"
+                    disabled={isItemImageProcessing || isSavingItem}
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                   >
                     Save
                   </button>
@@ -1035,44 +1097,65 @@ const AdminAddProduct = ({ profile }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Image Upload</label>
-                  <input
-                    ref={subcategoryFileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleSubcategoryImageUpload}
-                    className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  />
-                  {subcategoryDraft.imageData && (
-                    <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
-                      <img
-                        src={subcategoryDraft.imageData}
-                        alt={subcategoryDraft.imageName || "Preview"}
-                        className="h-32 w-full rounded object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-
                 {subcategoryError && <p className="text-sm text-rose-600">{subcategoryError}</p>}
 
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
                     onClick={handleCloseSubcategoryModal}
-                    className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-800"
+                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800"
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
                   >
                     Save
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {pendingDelete && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setPendingDelete(null);
+            }}
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Confirm delete
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Delete {pendingDelete.name}? This cannot be undone.
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(null)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (pendingDelete.type === "subcategory") {
+                      await handleDeleteSubcategory(pendingDelete.id);
+                    } else {
+                      await handleDeleteItem(pendingDelete.id);
+                    }
+                    setPendingDelete(null);
+                  }}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         )}

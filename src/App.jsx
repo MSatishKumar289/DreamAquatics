@@ -2,12 +2,15 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import Header from './components/Header';
+import CartDrawer from './components/CartDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
+import Checkout from './pages/Checkout.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
+import Terms from './pages/Terms';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
@@ -16,13 +19,31 @@ import { clearCartStorage } from './helpers/storage';
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const { clearCart } = useCart();
+  const { clearCart, lastAddedAt } = useCart();
+  const [showAddedBanner, setShowAddedBanner] = useState(false);
 
   /* ================= AUTH LISTENER (SESSION ONLY) ================= */
 
   useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (!active) return;
+      if (error) {
+        setAuthLoading(false);
+        return;
+      }
+      if (data?.session?.user) {
+        setSessionUser(data.session.user);
+      }
+      setAuthLoading(false);
+    })();
+
     const { data: { subscription } } =
       supabase.auth.onAuthStateChange((event, session) => {
         console.log('AUTH EVENT:', event);
@@ -30,6 +51,7 @@ function AppContent() {
         if (event === 'SIGNED_OUT') {
           setSessionUser(null);
           setProfile(null);
+          setAuthLoading(false);
 
           // 🔒 Cart cleanup happens ONLY here
           clearCart();
@@ -40,10 +62,14 @@ function AppContent() {
 
         if (session?.user) {
           setSessionUser(session.user);
+          setAuthLoading(false);
         }
       });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, [clearCart]);
 
   /* ================= PROFILE FETCH + SAFE CREATION ================= */
@@ -82,6 +108,16 @@ function AppContent() {
       active = false;
     };
   }, [sessionUser]);
+
+  useEffect(() => {
+    if (!lastAddedAt) return;
+    setShowAddedBanner(true);
+    const timer = setTimeout(() => {
+      setShowAddedBanner(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [lastAddedAt]);
+
 
   /* ================= DERIVED USER ================= */
 
@@ -122,13 +158,8 @@ function AppContent() {
           user={authUser}
           onLogout={handleLogout}
           onRequestLogin={openLoginModal}
+          onCartOpen={() => setIsCartOpen(true)}
         />
-
-        {welcomeText && (
-          <div className="bg-sky-50 text-sky-800 text-center text-sm font-semibold tracking-wide py-2">
-            {welcomeText}
-          </div>
-        )}
 
         {isLoginModalOpen && (
           <div
@@ -155,6 +186,11 @@ function AppContent() {
           </div>
         )}
 
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+        />
+
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home profile={profile} />} />
@@ -165,16 +201,31 @@ function AppContent() {
             />
             <Route path="/cart" element={<CartPage />} />
             <Route
+              path="/checkout"
+              element={
+                <Checkout user={authUser} onRequestLogin={openLoginModal} />
+              }
+            />
+            <Route path="/terms" element={<Terms />} />
+            <Route
               path="/admin/add-product"
               element={
                 profile?.role === 'admin'
-                  ? <AdminAddProduct profile={profile} />
+                  ? <AdminAddProduct profile={profile} authLoading={authLoading} />
                   : <Navigate to="/" replace />
               }
             />
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
+
+        {showAddedBanner && (
+          <div className="fixed left-0 right-0 top-0 z-50 flex justify-center px-4">
+            <div className="w-full max-w-md -translate-y-2 animate-[slideDown_2s_ease-in-out] border border-emerald-200 bg-emerald-500 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.4em] text-white shadow-md">
+              Added to cart
+            </div>
+          </div>
+        )}
 
         <Footer />
       </div>

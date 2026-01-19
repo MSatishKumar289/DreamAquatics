@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
-import ProductModal from "../components/ProductModal";
 import { useState, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
@@ -8,9 +7,6 @@ import { fetchAllProductsWithCategories } from "../lib/catalogApi";
 const CategoryListingPage = () => {
   const { categorySlug, subCategorySlug } = useParams();
   const { addToCart } = useCart();
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // DB state
   const [dbProducts, setDbProducts] = useState([]);
@@ -113,6 +109,7 @@ const CategoryListingPage = () => {
         subcategoryId: sub.id,
         subcategoryName: sub.name,
         subcategorySlug: sub.slug,
+        subcategoryDescription: sub.description || "",
         latestProductDate: latestProduct?.created_at || "",
         image: latestProduct?.product_images?.[0]?.url || "",
       };
@@ -132,30 +129,55 @@ const CategoryListingPage = () => {
 
     if (!subCategorySlug) return [];
 
-    return dbProducts.filter((p) => {
+    const filtered = dbProducts.filter((p) => {
       const pCatSlug = p?.subcategory?.category?.slug;
       const pSubSlug = p?.subcategory?.slug;
 
       return pCatSlug === normalizedCategorySlug && pSubSlug === subCategorySlug;
+    });
+    const getStockFlag = (item) => {
+      const count = Number(item?.stock_count);
+      if (Number.isFinite(count)) return count > 0;
+      const status = String(item?.availability || item?.status || "").toLowerCase();
+      if (!status) return true;
+      return !/out|sold/.test(status);
+    };
+    return filtered.sort((a, b) => {
+      const aInStock = getStockFlag(a);
+      const bInStock = getStockFlag(b);
+      if (aInStock === bInStock) return 0;
+      return aInStock ? -1 : 1;
     });
   }, [dbProducts, normalizedCategorySlug, subCategorySlug]);
 
   // ✅ decide which list to render
   const isSubcategoryMode = !!subCategorySlug;
   const listForGrid = isSubcategoryMode ? productsForIteration : subcategoryCards;
+  const subcategoryDescription = useMemo(() => {
+    if (!isSubcategoryMode) return "";
+    const firstWithDescription = productsForIteration.find(
+      (item) => item?.subcategory?.description
+    );
+    if (firstWithDescription?.subcategory?.description) {
+      return firstWithDescription.subcategory.description;
+    }
+    const fallback = dbProducts.find(
+      (item) =>
+        item?.subcategory?.slug === subCategorySlug &&
+        item?.subcategory?.category?.slug === normalizedCategorySlug &&
+        item?.subcategory?.description
+    );
+    return fallback?.subcategory?.description || "";
+  }, [
+    isSubcategoryMode,
+    productsForIteration,
+    dbProducts,
+    subCategorySlug,
+    normalizedCategorySlug
+  ]);
 
-  const handleViewMore = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProduct(null);
-  };
-
-  const handleAddToCart = (product) => {
-    addToCart(product);
+  const handleAddToCart = (product, qty = 1) => {
+    addToCart(product, qty);
   };
 
   return (
@@ -199,7 +221,9 @@ const CategoryListingPage = () => {
                 {titleOfListingPage}
               </h1>
               <p className="mt-3 max-w-2xl text-base text-slate-600">
-                Explore carefully curated aquatic species ready to ship nationwide. Each card taps for full details and quick cart access.
+                {subcategoryDescription
+                  ? subcategoryDescription
+                  : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards."}
               </p>
             </div>
 
@@ -228,12 +252,9 @@ const CategoryListingPage = () => {
                   key={item.id}
                   categoryName={categorySlug}
                   product={item}
-                  handleSubCategoryClick={() => {
-                    // Only needed for subcategory mode product click
-                    // but safe to keep as-is
-                    if (isSubcategoryMode) handleViewMore(item);
-                  }}
-                  isSubCategory={!isSubcategoryMode} // ✅ category page => subcategory cards
+                  isSubCategory={!isSubcategoryMode}
+                  onAddToCart={handleAddToCart}
+                  showStockBadge={isSubcategoryMode}
                 />
               ))}
             </div>
@@ -247,13 +268,6 @@ const CategoryListingPage = () => {
         </section>
       </div>
 
-      {/* ✅ Modal only makes sense in product listing mode */}
-      <ProductModal
-        isOpen={isModalOpen}
-        product={selectedProduct}
-        onClose={handleCloseModal}
-        onAddToCart={handleAddToCart}
-      />
     </main>
   );
 };

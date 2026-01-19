@@ -4,11 +4,36 @@
 
 @font-face {
   font-family: 'Trajan Pro';
-  src: url('../assets/Font/Trajan Pro Regular.ttf') format('truetype');
+  src: url('../assets/Font/Trajan Pro Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-140%);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(12px);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(12px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-140%);
+    opacity: 0;
+  }
+}
+
+.plus-bounce {
+  border-radius: 9999px;
+  animation: none;
+}
+
 
 @layer base {
   html,
