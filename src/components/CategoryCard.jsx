@@ -207,38 +207,25 @@ const CategoryCard = ({
       }
       onClick={handleClick}
     >
+      {!isSubCategory && shouldShowStockBadge && (
+        <div className="absolute left-0 top-0 z-10">
+          <div
+            className={`h-8 w-8 ${
+              isSoldOut ? "bg-red-600" : "bg-emerald-600"
+            }`}
+            style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+            aria-hidden="true"
+          />
+          <div
+            className={`absolute left-0 top-0 whitespace-nowrap rounded-br-md px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm ${
+              isSoldOut ? "bg-red-600" : "bg-emerald-600"
+            }`}
+          >
+            {isSoldOut ? "Out Of Stock" : "In Stock"}
+          </div>
+        </div>
+      )}
       <div className="relative w-full overflow-hidden rounded-b-none bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        {shouldShowStockBadge && !isSoldOut && (
-          <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-emerald-200 bg-white/90 px-2.5 py-1 shadow-sm">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white">
-              <svg
-                viewBox="0 0 20 20"
-                className="h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 10l3 3 7-7" />
-              </svg>
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-              In Stock
-            </span>
-          </div>
-        )}
-        {shouldShowStockBadge && isSoldOut && (
-          <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-red-200 bg-white/90 px-2.5 py-1 shadow-sm">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-bold text-white">
-              x
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-red-700">
-              Out of Stock
-            </span>
-          </div>
-        )}
         <div className="relative aspect-[5/4] sm:aspect-[4/3] w-full border-b border-slate-200/60">
           {isSubCategory && (
             <>
