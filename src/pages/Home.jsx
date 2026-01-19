@@ -236,15 +236,26 @@ const Home = ({ profile }) => {
               </button>
             </div>
             <div className="mt-2 flex justify-center">
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
-              >
-                <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
-                Follow us on Instagram
-              </a>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
+                >
+                  <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
+                  Follow us on Instagram
+                </a>
+                <a
+                  href="https://chat.whatsapp.com/DiUn2Tr4sP8LuKAUoq1xpx"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/80 bg-white/10 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5"
+                >
+                  <img src={WhatsIcon} alt="" className="h-4 w-4 rounded-full object-contain" aria-hidden />
+                  Join community
+                </a>
+              </div>
             </div>
           </div>
         </div>
