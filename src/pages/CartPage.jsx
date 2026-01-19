@@ -10,6 +10,7 @@ const CartPage = () => {
 
   const handleCheckout = () => {
     navigate('/checkout');
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const emptyState = cartItems.length === 0;

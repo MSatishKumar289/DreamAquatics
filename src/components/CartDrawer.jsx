@@ -43,6 +43,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
   const handleCheckout = () => {
     onClose();
     navigate('/checkout');
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const emptyState = cartItems.length === 0;

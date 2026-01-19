@@ -210,7 +210,7 @@ const Checkout = ({ user, onRequestLogin }) => {
                             setShowReviewScreen(false);
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-50"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 shadow-sm hover:bg-blue-700"
                           aria-label="Edit delivery address"
                           title="Edit address"
                         >
