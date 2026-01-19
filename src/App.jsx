@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
+import Terms from './pages/Terms';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
@@ -205,6 +206,7 @@ function AppContent() {
                 <Checkout user={authUser} onRequestLogin={openLoginModal} />
               }
             />
+            <Route path="/terms" element={<Terms />} />
             <Route
               path="/admin/add-product"
               element={

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { getImageWithFallback } from '../assets';
 import editIc from '../assets/Icons/edit_ic.png';
@@ -195,7 +196,7 @@ const Checkout = ({ user, onRequestLogin }) => {
 
               {confirmStep === 'summary' ? (
                 <div className="space-y-4">
-                  <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center text-sm text-blue-900">
+                  <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-900 shadow-[0_0_18px_rgba(37,99,235,0.35)]">
                     Payment details will be shared via WhatsApp after you place the order.
                   </div>
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">

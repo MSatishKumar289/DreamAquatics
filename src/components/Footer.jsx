@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="bg-gradient-to-r from-sky-800 via-sky-700 to-sky-900 text-white py-10 shadow-inner">
@@ -12,6 +14,14 @@ const Footer = () => {
           <p className="text-sky-100/80 text-sm">
             Exclusive and Exotics
           </p>
+          <div className="mt-3">
+            <Link
+              to="/terms"
+              className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-100/80 hover:text-white"
+            >
+              Terms & Conditions
+            </Link>
+          </div>
           <p className="text-sky-100/60 text-xs mt-4">
             (c) {new Date().getFullYear()} Dream Aquatics. All rights reserved.
           </p>
