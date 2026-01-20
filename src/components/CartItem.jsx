@@ -1,4 +1,6 @@
 import trash_ic from "../assets/Icons/trash_ic.svg";
+import incPlusIcon from "../assets/Icons/iplus.png";
+import incMinusIcon from "../assets/Icons/iminus.png";
 import { getImageWithFallback } from "../assets";
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -38,27 +40,27 @@ const CartItem = ({ item, onRemove, onIncrement, onDecrement }) => {
             {item.meta && (
               <p className="text-sm text-slate-500 line-clamp-1">{item.meta}</p>
             )}
-            <div className="inline-flex items-center overflow-hidden rounded-full border border-blue-100 bg-blue-50">
+            <div className="mt-2 inline-flex h-10 min-w-[140px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2.5 shadow-sm">
               <button
                 type="button"
                 onClick={onDecrement}
                 disabled={!onDecrement || item.qty <= 1}
-                className="px-3 py-1.5 text-base font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
+                className="h-8 w-8 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
                 aria-label={`Decrease quantity for ${item.title}`}
               >
-                -
+                <img src={incMinusIcon} alt="" className="h-8 w-8" />
               </button>
-              <span className="px-3 text-sm font-semibold text-blue-700">
+              <span className="px-3 text-base font-semibold text-blue-700">
                 {item.qty}
               </span>
               <button
                 type="button"
                 onClick={onIncrement}
                 disabled={!onIncrement}
-                className="px-3 py-1.5 text-base font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
+                className="h-8 w-8 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
                 aria-label={`Increase quantity for ${item.title}`}
               >
-                +
+                <img src={incPlusIcon} alt="" className="h-8 w-8" />
               </button>
             </div>
           </div>

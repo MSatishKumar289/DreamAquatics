@@ -11,6 +11,7 @@ const CategoryListingPage = () => {
   // DB state
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -175,6 +176,10 @@ const CategoryListingPage = () => {
     subCategorySlug,
     normalizedCategorySlug
   ]);
+  const descriptionText = subcategoryDescription
+    ? subcategoryDescription
+    : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
+  const hasLongDescription = descriptionText.trim().length > 160;
 
   const handleAddToCart = (product, qty = 1) => {
     addToCart(product, qty);
@@ -212,30 +217,42 @@ const CategoryListingPage = () => {
             )}
           </nav>
 
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.4em] text-blue-600">
-                Collection
-              </p>
-              <h1 className="text-4xl font-bold text-slate-900 sm:text-5xl">
-                {titleOfListingPage}
-              </h1>
-              <p className="mt-3 max-w-2xl text-base text-slate-600">
-                {subcategoryDescription
-                  ? subcategoryDescription
-                  : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards."}
-              </p>
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="flex flex-row items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm uppercase tracking-[0.4em] text-blue-600">
+                  Collection
+                </p>
+                <h1 className="text-4xl font-bold text-slate-900 line-clamp-2 sm:text-5xl">
+                  {titleOfListingPage}
+                </h1>
+              </div>
+
+              <div className="flex flex-none gap-3">
+                <div className="rounded-2xl border border-blue-100 bg-white/90 px-4 py-3 text-center shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                    Listings
+                  </p>
+                  <p className="text-2xl font-semibold text-slate-900">
+                    {loading ? "-" : listForGrid.length}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-3">
-              <div className="rounded-2xl border border-blue-100 bg-white/90 px-4 py-3 text-center shadow-sm">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                  Listings
-                </p>
-                <p className="text-2xl font-semibold text-slate-900">
-                  {loading ? "-" : listForGrid.length}
-                </p>
-              </div>
+            <div>
+              <p className="max-w-none text-base text-slate-600 line-clamp-3">
+                {descriptionText}
+              </p>
+              {hasLongDescription && (
+                <button
+                  type="button"
+                  onClick={() => setShowDescriptionModal(true)}
+                  className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                >
+                  View more
+                </button>
+              )}
             </div>
           </div>
         </section>
@@ -267,6 +284,43 @@ const CategoryListingPage = () => {
           )}
         </section>
       </div>
+
+      {showDescriptionModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowDescriptionModal(false);
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Collection
+                </p>
+                <h2 className="text-xl font-semibold text-slate-900">
+                  {titleOfListingPage}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDescriptionModal(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                aria-label="Close description"
+              >
+                X
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto px-5 py-4 text-base text-slate-600">
+              {descriptionText}
+            </div>
+          </div>
+        </div>
+      )}
 
     </main>
   );

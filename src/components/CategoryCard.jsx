@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { getImageWithFallback } from "../assets";
+import plusIcon from "../assets/Icons/plus.png";
+import incPlusIcon from "../assets/Icons/iplus.png";
+import incMinusIcon from "../assets/Icons/iminus.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
@@ -307,13 +310,11 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[160px] flex-col gap-2 sm:min-h-[180px]"}`}>
+      <div className={`p-2 sm:p-3 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[150px] flex-col gap-1 sm:min-h-[170px] sm:gap-1.5"}`}>
         <div
-          className={`text-center ${
-            !isSubCategory ? "flex min-h-[90px] flex-col" : ""
-          }`}
+          className={`text-center ${!isSubCategory ? "flex flex-1 flex-col" : ""}`}
         >
-          <h3 className="text-sm font-semibold text-slate-900 line-clamp-3">
+          <h3 className="text-sm sm:text-base font-semibold text-slate-900 line-clamp-3">
             {productTitle}
           </h3>
           {!isSubCategory && productSubtitle && (
@@ -323,7 +324,7 @@ const CategoryCard = ({
           )}
           {!isSubCategory && (
             <div className="mt-0.5 flex items-center justify-center">
-              <p className="text-lg font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-slate-900">
                 {"\u20B9"}
                 {Number(product?.price ?? 0).toLocaleString("en-IN")}
               </p>
@@ -334,56 +335,56 @@ const CategoryCard = ({
 
         {!isSubCategory && (
           <>
-            <div className="relative mt-auto">
+            <div className="relative mt-auto pt-1">
               {currentQty === 0 ? (
                 <div className="flex justify-center">
                   <button
                     type="button"
                     onClick={handleAddToCart}
                     disabled={isSoldOut}
-                    className="group w-full max-w-[180px] whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
+                    className="group inline-flex h-9 w-full max-w-[180px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/15 text-xs">+</span>
-                      Add to cart
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                      <img src={plusIcon} alt="" className="h-5 w-5" />
                     </span>
+                    Add to cart
                   </button>
                 </div>
               ) : (
                 <div className="flex justify-center">
                   <div className="w-full max-w-[180px]">
-                    <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (currentQty <= 1) {
-                            setPendingRemove(true);
-                            return;
-                          }
-                          updateQty?.(product?.id, currentQty - 1);
-                        }}
-                        disabled={isSoldOut}
-                        className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                        aria-label={`Decrease quantity for ${productTitle}`}
-                      >
-                        -
-                      </button>
-                      <span className="px-3 text-sm font-semibold text-blue-700">
+                    <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (currentQty <= 1) {
+                              setPendingRemove(true);
+                              return;
+                            }
+                            updateQty?.(product?.id, currentQty - 1);
+                          }}
+                          disabled={isSoldOut}
+                          className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+                          aria-label={`Decrease quantity for ${productTitle}`}
+                        >
+                          <img src={incMinusIcon} alt="" className="h-7 w-7" />
+                        </button>
+                      <span className="text-sm font-semibold text-blue-700">
                         {currentQty}
                       </span>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          updateQty?.(product?.id, currentQty + 1);
-                        }}
-                        disabled={isSoldOut}
-                        className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                        aria-label={`Increase quantity for ${productTitle}`}
-                      >
-                        +
-                      </button>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            updateQty?.(product?.id, currentQty + 1);
+                          }}
+                          disabled={isSoldOut}
+                          className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+                          aria-label={`Increase quantity for ${productTitle}`}
+                        >
+                          <img src={incPlusIcon} alt="" className="h-7 w-7" />
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -420,7 +421,7 @@ const CategoryCard = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
             <button
               type="button"
               onClick={() => setIsPreviewOpen(false)}
@@ -429,7 +430,7 @@ const CategoryCard = ({
             >
               X
             </button>
-            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
+            <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-start">
               <div className="w-full md:w-1/2">
                 <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                   <img
@@ -438,24 +439,77 @@ const CategoryCard = ({
                     className="h-full w-full object-contain bg-white"
                   />
                 </div>
+                <div className="mt-4 flex flex-col items-center text-center gap-3">
+                  <div className="pt-1">
+                    {currentQty === 0 ? (
+                      <button
+                        type="button"
+                        onClick={handleAddToCart}
+                        disabled={isSoldOut}
+                        className="group mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                      >
+                        <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
+                          <img src={plusIcon} alt="" className="h-4 w-4" />
+                        </span>
+                        Add to cart
+                      </button>
+                    ) : (
+                      <div className="mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (currentQty <= 1) {
+                              setPendingRemove(true);
+                              return;
+                            }
+                            updateQty?.(product?.id, currentQty - 1);
+                          }}
+                          disabled={isSoldOut}
+                          className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                          aria-label={`Decrease quantity for ${productTitle}`}
+                        >
+                          <img src={incMinusIcon} alt="" className="h-9 w-9" />
+                        </button>
+                        <span className="px-3 text-base font-semibold text-blue-700">
+                          {currentQty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            updateQty?.(product?.id, currentQty + 1);
+                          }}
+                          disabled={isSoldOut}
+                          className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                          aria-label={`Increase quantity for ${productTitle}`}
+                        >
+                          <img src={incPlusIcon} alt="" className="h-9 w-9" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <h2 className="text-2xl font-semibold text-slate-900">
+                    {productTitle}
+                  </h2>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {"\u20B9"}
+                    {Number(product?.price ?? 0).toLocaleString("en-IN")}
+                  </p>
+                </div>
               </div>
-              <div className="flex w-full flex-col gap-3 pr-12 md:w-1/2">
-                <h2 className="text-2xl font-semibold text-slate-900">
-                  {productTitle}
-                </h2>
-                <p className="text-lg font-semibold text-slate-900">
-                  {"\u20B9"}
-                  {Number(product?.price ?? 0).toLocaleString("en-IN")}
-                </p>
-                {productDescription ? (
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    {productDescription}
-                  </p>
-                ) : (
-                  <p className="text-sm text-slate-500">
-                    Product details will be available soon.
-                  </p>
-                )}
+              <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
+                <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:max-h-none md:pr-0 md:overflow-visible">
+                  {productDescription ? (
+                    <p className="text-sm leading-relaxed text-slate-600">
+                      {productDescription}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-500">
+                      Product details will be available soon.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

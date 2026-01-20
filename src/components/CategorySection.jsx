@@ -25,7 +25,7 @@ const CategorySection = ({ categoryName, products }) => {
       <div className="w-full px-0">
         <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="relative mb-6 pr-28 sm:pr-32">
             <h2
               id={`category-${categoryName}`}
               className="text-2xl sm:text-3xl font-bold text-gray-900"
@@ -33,7 +33,7 @@ const CategorySection = ({ categoryName, products }) => {
               {displayName}
             </h2>
             <button
-              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none"
+              className="group absolute right-0 top-0 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
