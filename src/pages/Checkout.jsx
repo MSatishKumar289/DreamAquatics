@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useProfile } from '../context/ProfileContext';
 import { useCart } from '../context/CartContext';
 import { getImageWithFallback } from '../assets';
 import editIc from '../assets/Icons/edit_ic.png';
@@ -8,6 +9,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Checkout = ({ user, onRequestLogin }) => {
   const { cartItems, subtotal, clearCart } = useCart();
+  const { addresses } = useProfile();
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderSnapshot, setOrderSnapshot] = useState(null);
   const [showReviewScreen, setShowReviewScreen] = useState(false);
@@ -37,6 +39,31 @@ const Checkout = ({ user, onRequestLogin }) => {
       email: user?.email || '',
     }));
   }, [isLoggedIn, user?.name, user?.email]);
+
+  useEffect(() => {
+    if (!addresses?.length) return;
+    const defaultAddress = addresses.find((addr) => addr.isDefault) || addresses[0];
+    if (!defaultAddress) return;
+    setForm((prev) => {
+      const hasValues =
+        prev.addressLine1.trim() ||
+        prev.city.trim() ||
+        prev.pincode.trim() ||
+        prev.mobile.trim();
+      if (hasValues) return prev;
+      return {
+        ...prev,
+        name: defaultAddress.name || prev.name,
+        email: defaultAddress.email || prev.email,
+        addressLine1: defaultAddress.line1 || '',
+        addressLine2: defaultAddress.line2 || '',
+        city: defaultAddress.city || '',
+        landmark: defaultAddress.landmark || '',
+        pincode: defaultAddress.pincode || '',
+        mobile: defaultAddress.phone || ''
+      };
+    });
+  }, [addresses]);
 
   useEffect(() => {
     if (!orderPlaced) return;

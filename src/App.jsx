@@ -11,10 +11,12 @@ import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
 import Terms from './pages/Terms';
+import Profile from './pages/Profile';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { clearCartStorage } from './helpers/storage';
+import { ProfileProvider } from './context/ProfileContext';
 
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
@@ -215,6 +217,7 @@ function AppContent() {
                   : <Navigate to="/" replace />
               }
             />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
@@ -236,7 +239,9 @@ function AppContent() {
 function App() {
   return (
     <CartProvider>
-      <AppContent />
+      <ProfileProvider>
+        <AppContent />
+      </ProfileProvider>
     </CartProvider>
   );
 }

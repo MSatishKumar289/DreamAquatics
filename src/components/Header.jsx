@@ -140,6 +140,16 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  >
+                    Profile
+                  </button>
                   {isAdmin && (
                     <button
                       type="button"
@@ -248,6 +258,16 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  >
+                    Profile
+                  </button>
                   {isAdmin && (
                     <button
                       type="button"
