@@ -12,7 +12,6 @@ const CategoryCard = ({
   const navigate = useNavigate();
   const [qty, setQty] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [showQtyHint, setShowQtyHint] = useState(false);
   const [showViewHint, setShowViewHint] = useState(false);
   const [showExpandHint, setShowExpandHint] = useState(false);
 
@@ -61,12 +60,6 @@ const CategoryCard = ({
     };
   }, [isPreviewOpen]);
 
-  useEffect(() => {
-    if (!showQtyHint) return;
-    const timer = setTimeout(() => setShowQtyHint(false), 2000);
-    return () => clearTimeout(timer);
-  }, [showQtyHint]);
-
   // One-time hint to nudge users to view product details (subcategories only)
   useEffect(() => {
     if (!isSubCategory) return;
@@ -100,10 +93,10 @@ const CategoryCard = ({
   const handleAddToCart = (event) => {
     event?.stopPropagation();
     if (isSoldOut) return;
-    if (qty < 1) return;
+    const finalQty = qty < 1 ? 1 : qty;
     runFlyToCartAnimation();
     if (onAddToCart) {
-      onAddToCart(product, qty);
+      onAddToCart(product, finalQty);
       setQty(0);
     }
   };
@@ -361,33 +354,16 @@ const CategoryCard = ({
                 </div>
               </div>
 
-              <div
-                className="flex-1"
-                onPointerDown={() => {
-                  if (qty === 0 && !isSoldOut) {
-                    setShowQtyHint(true);
-                  }
-                }}
-                onMouseLeave={() => setShowQtyHint(false)}
-              >
+              <div className="flex-1">
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  disabled={isSoldOut || qty < 1}
+                  disabled={isSoldOut}
                   className="w-full whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
                 >
                   Add to cart
                 </button>
               </div>
-              {qty === 0 && !isSoldOut && (
-                <span
-                  className={`pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-200 transition-opacity ${
-                    showQtyHint ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  Increase quantity first.
-                </span>
-              )}
             </div>
           </>
         )}
