@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
@@ -412,109 +413,112 @@ const CategoryCard = ({
         </button>
       )}
 
-      {isPreviewOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setIsPreviewOpen(false);
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setIsPreviewOpen(false)}
-              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-              aria-label="Close image preview"
-            >
-              X
-            </button>
-            <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-start">
-              <div className="w-full md:w-1/2">
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                  <img
-                    src={imageSrc}
-                    alt={productTitle}
-                    className="h-full w-full object-contain bg-white"
-                  />
+      {isPreviewOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setIsPreviewOpen(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
+              <button
+                type="button"
+                onClick={() => setIsPreviewOpen(false)}
+                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                aria-label="Close image preview"
+              >
+                X
+              </button>
+              <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-start">
+                <div className="w-full md:w-1/2">
+                  <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                    <img
+                      src={imageSrc}
+                      alt={productTitle}
+                      className="h-full w-full object-contain bg-white"
+                    />
+                  </div>
+                  <div className="mt-4 flex flex-col items-center text-center gap-3">
+                    <div className="pt-1">
+                      {currentQty === 0 ? (
+                        <button
+                          type="button"
+                          onClick={handleAddToCart}
+                          disabled={isSoldOut}
+                          className="group mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                        >
+                          <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
+                            <img src={plusIcon} alt="" className="h-4 w-4" />
+                          </span>
+                          Add to cart
+                        </button>
+                      ) : (
+                        <div className="mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (currentQty <= 1) {
+                                setPendingRemove(true);
+                                return;
+                              }
+                              updateQty?.(product?.id, currentQty - 1);
+                            }}
+                            disabled={isSoldOut}
+                            className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                            aria-label={`Decrease quantity for ${productTitle}`}
+                          >
+                            <img src={incMinusIcon} alt="" className="h-9 w-9" />
+                          </button>
+                          <span className="px-3 text-base font-semibold text-blue-700">
+                            {currentQty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              updateQty?.(product?.id, currentQty + 1);
+                            }}
+                            disabled={isSoldOut}
+                            className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                            aria-label={`Increase quantity for ${productTitle}`}
+                          >
+                            <img src={incPlusIcon} alt="" className="h-9 w-9" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <h2 className="text-2xl font-semibold text-slate-900">
+                      {productTitle}
+                    </h2>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {"\u20B9"}
+                      {Number(product?.price ?? 0).toLocaleString("en-IN")}
+                    </p>
+                  </div>
                 </div>
-                <div className="mt-4 flex flex-col items-center text-center gap-3">
-                  <div className="pt-1">
-                    {currentQty === 0 ? (
-                      <button
-                        type="button"
-                        onClick={handleAddToCart}
-                        disabled={isSoldOut}
-                        className="group mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
-                      >
-                        <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
-                          <img src={plusIcon} alt="" className="h-4 w-4" />
-                        </span>
-                        Add to cart
-                      </button>
+                <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
+                  <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:max-h-none md:pr-0 md:overflow-visible">
+                    {productDescription ? (
+                      <p className="text-sm leading-relaxed text-slate-600">
+                        {productDescription}
+                      </p>
                     ) : (
-                      <div className="mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (currentQty <= 1) {
-                              setPendingRemove(true);
-                              return;
-                            }
-                            updateQty?.(product?.id, currentQty - 1);
-                          }}
-                          disabled={isSoldOut}
-                          className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                          aria-label={`Decrease quantity for ${productTitle}`}
-                        >
-                          <img src={incMinusIcon} alt="" className="h-9 w-9" />
-                        </button>
-                        <span className="px-3 text-base font-semibold text-blue-700">
-                          {currentQty}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            updateQty?.(product?.id, currentQty + 1);
-                          }}
-                          disabled={isSoldOut}
-                          className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                          aria-label={`Increase quantity for ${productTitle}`}
-                        >
-                          <img src={incPlusIcon} alt="" className="h-9 w-9" />
-                        </button>
-                      </div>
+                      <p className="text-sm text-slate-500">
+                        Product details will be available soon.
+                      </p>
                     )}
                   </div>
-                  <h2 className="text-2xl font-semibold text-slate-900">
-                    {productTitle}
-                  </h2>
-                  <p className="text-lg font-semibold text-slate-900">
-                    {"\u20B9"}
-                    {Number(product?.price ?? 0).toLocaleString("en-IN")}
-                  </p>
-                </div>
-              </div>
-              <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
-                <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:max-h-none md:pr-0 md:overflow-visible">
-                  {productDescription ? (
-                    <p className="text-sm leading-relaxed text-slate-600">
-                      {productDescription}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-slate-500">
-                      Product details will be available soon.
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {pendingRemove && (
         <div

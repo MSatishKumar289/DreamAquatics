@@ -194,15 +194,20 @@ const Home = ({ profile }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, [searchQuery]);
 
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [searchQuery]);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white pb-12">
       <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
         <div className="container mx-auto flex justify-center">
           <div
-            className={`mt-[5px] mb-[10px] w-full sm:flex sm:items-center sm:justify-between sm:gap-4 ${
+            className={`mt-[5px] mb-[10px] w-full transition-all duration-300 ease-out sm:flex sm:items-center sm:justify-between sm:gap-4 ${
               isSearchCollapsed
-                ? "rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
-                : "rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm ring-1 ring-slate-100"
+                ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
+                : "translate-x-0 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm ring-1 ring-slate-100"
             }`}
           >
             {isSearchCollapsed ? (
@@ -213,7 +218,7 @@ const Home = ({ profile }) => {
                     setIsSearchCollapsed(false);
                     setTimeout(() => searchInputRef.current?.focus(), 50);
                   }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-500 shadow-sm transition hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-500 shadow-sm transition-all duration-300 ease-out hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
                   aria-label="Open search"
                 >
                   <svg
