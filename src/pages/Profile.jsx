@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import AddressForm from '../components/AddressForm';
 import { useProfile } from '../context/ProfileContext';
 import edit_ic from '../assets/Icons/edit_ic.png';
@@ -12,6 +13,7 @@ const Profile = () => {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [activeTab, setActiveTab] = useState('addresses');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const location = useLocation();
 
   const orders = useMemo(
     () => [
@@ -67,6 +69,14 @@ const Profile = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'orders') {
+      setActiveTab('orders');
+    }
+  }, [location.search]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">

@@ -177,16 +177,27 @@ const Checkout = ({ user, onRequestLogin }) => {
               </div>
             )}
             {orderPlaced && (
-              <div className="mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.location.href = "/";
-                  }}
-                  className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                >
-                  Back to home
-                </button>
+              <div className="mt-4 flex flex-col items-center gap-3 text-center">
+                <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+                  View your order in Profile → Orders.
+                </div>
+                <div className="flex flex-col items-center gap-3 sm:flex-row">
+                  <Link
+                    to="/profile?tab=orders"
+                    className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  >
+                    Go to Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.location.href = "/";
+                    }}
+                    className="rounded-xl border border-blue-200 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  >
+                    Back to home
+                  </button>
+                </div>
               </div>
             )}
             {orderPlaced && showCelebration && (
