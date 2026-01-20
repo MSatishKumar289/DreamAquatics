@@ -25,7 +25,7 @@ const CategorySection = ({ categoryName, products }) => {
       <div className="w-full px-0">
         <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
-          <div className="relative mb-6 pr-28 sm:pr-32">
+          <div className="relative mb-4 pr-24 sm:pr-28">
             <h2
               id={`category-${categoryName}`}
               className="text-2xl sm:text-3xl font-bold text-gray-900"
