@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getImageWithFallback } from "../assets";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 const CategoryCard = ({
   categoryName,
@@ -10,10 +11,11 @@ const CategoryCard = ({
   showStockBadge
 }) => {
   const navigate = useNavigate();
-  const [qty, setQty] = useState(0);
+  const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [showViewHint, setShowViewHint] = useState(false);
   const [showExpandHint, setShowExpandHint] = useState(false);
+  const [showAddedHint, setShowAddedHint] = useState(false);
 
   const productTitle = isSubCategory
     ? product?.subcategoryName || product?.name || product?.title || "Category"
@@ -90,21 +92,29 @@ const CategoryCard = ({
     };
   }, [isSubCategory]);
 
+  useEffect(() => {
+    if (!showAddedHint) return;
+    const timer = setTimeout(() => setShowAddedHint(false), 1600);
+    return () => clearTimeout(timer);
+  }, [showAddedHint]);
+
   const handleAddToCart = (event) => {
     event?.stopPropagation();
     if (isSoldOut) return;
-    const finalQty = qty < 1 ? 1 : qty;
+    if (currentQty > 0) return;
     runFlyToCartAnimation();
-    if (onAddToCart) {
-      onAddToCart(product, finalQty);
-      setQty(0);
-    }
+    const addHandler = onAddToCart || addToCart;
+    addHandler?.(product, 1);
+    setShowAddedHint(true);
   };
 
   const imageSrc =
     typeof productImage === "string" && productImage.startsWith("http")
       ? productImage
       : getImageWithFallback(productImage, productTitle);
+
+  const currentQty =
+    cartItems?.find((item) => item.id === product?.id)?.qty || 0;
 
   const runFlyToCartAnimation = () => {
     try {
@@ -296,8 +306,12 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[180px] flex-col gap-3 sm:min-h-[200px]"}`}>
-        <div className="text-center">
+      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[220px] flex-col gap-3 sm:min-h-[240px]"}`}>
+        <div
+          className={`text-center ${
+            !isSubCategory ? "flex min-h-[120px] flex-col" : ""
+          }`}
+        >
           <h3 className="text-lg font-semibold text-slate-900 line-clamp-3">
             {productTitle}
           </h3>
@@ -319,51 +333,65 @@ const CategoryCard = ({
 
         {!isSubCategory && (
           <>
-            <div className="relative mt-auto flex items-center gap-2">
-              <div className="flex-1">
-                <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-full border border-blue-100 bg-blue-50">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setQty((prev) => Math.max(0, prev - 1));
-                  }}
-                  disabled={isSoldOut}
-                  className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
-                  aria-label={`Decrease quantity for ${productTitle}`}
-                >
-                  -
-                </button>
-                <span className="px-3 text-sm font-semibold text-blue-700">
-                  {qty}
-                </span>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setQty((prev) => prev + 1);
-                  }}
-                  disabled={isSoldOut}
-                  className={`px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300 ${
-                    qty === 0 && !isSoldOut ? "plus-bounce" : ""
-                  }`}
-                  aria-label={`Increase quantity for ${productTitle}`}
-                >
-                  +
-                </button>
+            <div className="relative mt-auto">
+              {currentQty === 0 ? (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    disabled={isSoldOut}
+                    className="group w-full max-w-[180px] whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/15 text-xs">+</span>
+                      Add to cart
+                    </span>
+                  </button>
                 </div>
-              </div>
-
-              <div className="flex-1">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={isSoldOut}
-                  className="w-full whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
-                >
-                  Add to cart
-                </button>
-              </div>
+              ) : (
+                <div className="flex justify-center">
+                  <div className="w-full max-w-[180px]">
+                    <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-lg border border-blue-200 bg-white shadow-sm">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (currentQty <= 1) {
+                            removeItem?.(product?.id);
+                            return;
+                          }
+                          updateQty?.(product?.id, currentQty - 1);
+                        }}
+                        disabled={isSoldOut}
+                        className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                        aria-label={`Decrease quantity for ${productTitle}`}
+                      >
+                        -
+                      </button>
+                      <span className="px-3 text-sm font-semibold text-blue-700">
+                        {currentQty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          updateQty?.(product?.id, currentQty + 1);
+                        }}
+                        disabled={isSoldOut}
+                        className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                        aria-label={`Increase quantity for ${productTitle}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {showAddedHint && (
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                  Added 1 item
+                </span>
+              )}
             </div>
           </>
         )}
