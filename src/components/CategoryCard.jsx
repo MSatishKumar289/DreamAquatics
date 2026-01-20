@@ -16,6 +16,7 @@ const CategoryCard = ({
   const [showViewHint, setShowViewHint] = useState(false);
   const [showExpandHint, setShowExpandHint] = useState(false);
   const [showAddedHint, setShowAddedHint] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState(false);
 
   const productTitle = isSubCategory
     ? product?.subcategoryName || product?.name || product?.title || "Category"
@@ -229,7 +230,7 @@ const CategoryCard = ({
         </div>
       )}
       <div className="relative w-full overflow-hidden rounded-b-none bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        <div className="relative aspect-[5/4] sm:aspect-[4/3] w-full border-b border-slate-200/60">
+        <div className="relative aspect-[4/3] sm:aspect-[4/3] w-full border-b border-slate-200/60">
           {isSubCategory && (
             <>
               <span
@@ -306,13 +307,13 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[220px] flex-col gap-3 sm:min-h-[240px]"}`}>
+      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[160px] flex-col gap-2 sm:min-h-[180px]"}`}>
         <div
           className={`text-center ${
-            !isSubCategory ? "flex min-h-[120px] flex-col" : ""
+            !isSubCategory ? "flex min-h-[90px] flex-col" : ""
           }`}
         >
-          <h3 className="text-lg font-semibold text-slate-900 line-clamp-3">
+          <h3 className="text-sm font-semibold text-slate-900 line-clamp-3">
             {productTitle}
           </h3>
           {!isSubCategory && productSubtitle && (
@@ -321,7 +322,7 @@ const CategoryCard = ({
             </p>
           )}
           {!isSubCategory && (
-            <div className="mt-3 flex items-center justify-center">
+            <div className="mt-0.5 flex items-center justify-center">
               <p className="text-lg font-semibold text-slate-900">
                 {"\u20B9"}
                 {Number(product?.price ?? 0).toLocaleString("en-IN")}
@@ -357,7 +358,7 @@ const CategoryCard = ({
                         onClick={(event) => {
                           event.stopPropagation();
                           if (currentQty <= 1) {
-                            removeItem?.(product?.id);
+                            setPendingRemove(true);
                             return;
                           }
                           updateQty?.(product?.id, currentQty - 1);
@@ -456,6 +457,45 @@ const CategoryCard = ({
                   </p>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingRemove && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setPendingRemove(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Remove item?
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Remove {productTitle} from your cart?
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingRemove(false)}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeItem?.(product?.id);
+                  setPendingRemove(false);
+                }}
+                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+              >
+                Remove
+              </button>
             </div>
           </div>
         </div>

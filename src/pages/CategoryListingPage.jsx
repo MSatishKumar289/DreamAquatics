@@ -246,7 +246,7 @@ const CategoryListingPage = () => {
               <p className="text-lg text-gray-600">Loading...</p>
             </div>
           ) : listForGrid.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {listForGrid.map((item) => (
                 <CategoryCard
                   key={item.id}
