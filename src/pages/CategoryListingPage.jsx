@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
 
@@ -12,10 +12,30 @@ const CategoryListingPage = () => {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [categorySlug, subCategorySlug]);
+
+  useEffect(() => {
+    setSearchQuery("");
+  }, [categorySlug, subCategorySlug]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (searchQuery.trim()) {
+        setIsSearchCollapsed(false);
+        return;
+      }
+      setIsSearchCollapsed(window.scrollY > 120);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [searchQuery]);
 
   // Map category slug to human-readable title
   const categoryLabel = {
@@ -35,12 +55,59 @@ const CategoryListingPage = () => {
       .join(" ");
   };
 
+  const renderCategoryIcon = (value) => {
+    switch (value) {
+      case "fishes":
+        return (
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M4 12c2.5-3 7-5 12-4l4 4-4 4c-5 1-9.5-1-12-4Z" />
+            <circle cx="10" cy="12" r="1" fill="currentColor" />
+          </svg>
+        );
+      case "live-plants":
+        return (
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M12 20V6" />
+            <path d="M12 12c-3-1-4-3-4-6 3 1 4 3 4 6Z" />
+            <path d="M12 14c3-1 4-3 4-6-3 1-4 3-4 6Z" />
+          </svg>
+        );
+      case "accessories":
+        return (
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M14 6l4 4-8 8H6v-4l8-8Z" />
+            <path d="M13 7l4 4" />
+          </svg>
+        );
+      case "tank":
+        return (
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <rect x="3" y="7" width="18" height="10" rx="2" />
+            <path d="M7 17c1 2 9 2 10 0" />
+          </svg>
+        );
+      default:
+        return (
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <circle cx="12" cy="12" r="8" />
+            <path d="M8 12h8M12 8v8" />
+          </svg>
+        );
+    }
+  };
+
   const subCategoryTitle = subCategorySlug ? slugToTitle(subCategorySlug) : null;
 
   const titleOfListingPage =
     subCategoryTitle ||
     categoryLabel[categorySlug] ||
     slugToTitle(categorySlug);
+
+  const categoryIconKey = useMemo(() => {
+    if (categorySlug === "plants") return "live-plants";
+    if (categorySlug === "tanks") return "tank";
+    return categorySlug;
+  }, [categorySlug]);
 
   // ✅ FIX: normalize route slug -> DB slug
   const normalizedCategorySlug = useMemo(() => {
@@ -154,6 +221,16 @@ const CategoryListingPage = () => {
   // ✅ decide which list to render
   const isSubcategoryMode = !!subCategorySlug;
   const listForGrid = isSubcategoryMode ? productsForIteration : subcategoryCards;
+  const filteredList = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return listForGrid;
+    return listForGrid.filter((item) => {
+      const title = isSubcategoryMode
+        ? (item?.name || item?.title || "")
+        : (item?.subcategoryName || item?.name || item?.title || "");
+      return title.toLowerCase().includes(query);
+    });
+  }, [isSubcategoryMode, listForGrid, searchQuery]);
   const subcategoryDescription = useMemo(() => {
     if (!isSubcategoryMode) return "";
     const firstWithDescription = productsForIteration.find(
@@ -234,7 +311,7 @@ const CategoryListingPage = () => {
                     Listings
                   </p>
                   <p className="text-2xl font-semibold text-slate-900">
-                    {loading ? "-" : listForGrid.length}
+                    {loading ? "-" : (isSubcategoryMode ? filteredList.length : listForGrid.length)}
                   </p>
                 </div>
               </div>
@@ -254,6 +331,103 @@ const CategoryListingPage = () => {
                 </button>
               )}
             </div>
+            <div className="sticky top-20 z-30 mt-4 flex items-center bg-white/80 py-2 backdrop-blur">
+              <div className="w-full max-w-4xl">
+                <div
+                  className={`relative w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    isSearchCollapsed
+                      ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
+                      : "translate-x-0 rounded-2xl border border-slate-200 bg-white/95 px-3 pt-2 pb-0 shadow-sm ring-1 ring-slate-100 sm:px-4 sm:py-3"
+                  }`}
+                >
+                  <div
+                    className={`flex w-full items-center gap-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      isSearchCollapsed
+                        ? "pointer-events-none -translate-y-3 scale-[0.98] opacity-0"
+                        : "translate-y-0 scale-100 opacity-100"
+                    }`}
+                  >
+                    <div className="relative flex h-9 w-12 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
+                      <span className="pointer-events-none text-slate-600">
+                        {renderCategoryIcon(categoryIconKey)}
+                      </span>
+                      <span className="pointer-events-none text-slate-500">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="h-3 w-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </span>
+                    </div>
+                    <div className="relative flex flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        placeholder={
+                          isSubcategoryMode
+                            ? "Search in this category"
+                            : "Search subcategories"
+                        }
+                        ref={searchInputRef}
+                        className="w-full bg-transparent pr-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                      />
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="11" cy="11" r="6.5" />
+                        <path d="M16 16l4 4" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div
+                    className={`flex w-full items-center justify-end transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      isSearchCollapsed
+                        ? "translate-y-0 scale-100 opacity-100"
+                        : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSearchCollapsed(false);
+                        setTimeout(() => searchInputRef.current?.focus(), 50);
+                      }}
+                      className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition-all duration-300 ease-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      aria-label="Open search"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="11" cy="11" r="6.5" />
+                        <path d="M16 16l4 4" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -262,9 +436,9 @@ const CategoryListingPage = () => {
             <div className="py-12 text-center">
               <p className="text-lg text-gray-600">Loading...</p>
             </div>
-          ) : listForGrid.length > 0 ? (
+          ) : filteredList.length > 0 ? (
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {listForGrid.map((item) => (
+              {filteredList.map((item) => (
                 <CategoryCard
                   key={item.id}
                   categoryName={categorySlug}
