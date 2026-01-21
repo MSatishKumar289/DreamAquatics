@@ -167,6 +167,8 @@ const AdminAddProduct = ({ profile, authLoading }) => {
   const [homeMediaError, setHomeMediaError] = useState("");
   const [selectedAdminOrder, setSelectedAdminOrder] = useState(null);
   const [adminView, setAdminView] = useState("catalog");
+  const [adminOrderState, setAdminOrderState] = useState({});
+  const [adminOrderFilter, setAdminOrderFilter] = useState("all");
 
   const loadHomeMediaFromStorage = () => {
     const stored = localStorage.getItem("dream-aquatics-home-media");
@@ -246,6 +248,118 @@ const AdminAddProduct = ({ profile, authLoading }) => {
     ],
     []
   );
+
+  useEffect(() => {
+    setAdminOrderState((prev) => {
+      if (Object.keys(prev).length) return prev;
+      const next = {};
+      adminOrders.forEach((order) => {
+        next[order.id] = {
+          status: "new",
+          fulfillment: "in-transit",
+          pendingFulfillment: "in-transit",
+          isDirty: false,
+          hasSavedFulfillment: false,
+          isEditing: false
+        };
+      });
+      return next;
+    });
+  }, [adminOrders]);
+
+  const updateAdminOrderStatus = (orderId, status) => {
+    setAdminOrderState((prev) => ({
+      ...prev,
+      [orderId]: {
+        ...prev[orderId],
+        status,
+        fulfillment:
+          status === "accepted"
+            ? prev[orderId]?.fulfillment || "in-transit"
+            : prev[orderId]?.fulfillment,
+        pendingFulfillment:
+          status === "accepted"
+            ? prev[orderId]?.fulfillment || "in-transit"
+            : prev[orderId]?.pendingFulfillment,
+        isDirty: false,
+        hasSavedFulfillment: status === "accepted" ? false : status === "cancelled",
+        isEditing: status === "accepted" ? false : prev[orderId]?.isEditing
+      }
+    }));
+  };
+
+  const updateAdminOrderFulfillment = (orderId, fulfillment) => {
+    setAdminOrderState((prev) => ({
+      ...prev,
+      [orderId]: {
+        ...prev[orderId],
+        pendingFulfillment: fulfillment,
+        isDirty: true
+      }
+    }));
+  };
+
+  const saveAdminOrderFulfillment = (orderId) => {
+    setAdminOrderState((prev) => ({
+      ...prev,
+      [orderId]: {
+        ...prev[orderId],
+        fulfillment: prev[orderId]?.pendingFulfillment || prev[orderId]?.fulfillment,
+        isDirty: false,
+        hasSavedFulfillment: true,
+        isEditing: false
+      }
+    }));
+  };
+
+  const cancelAdminOrderFulfillment = (orderId) => {
+    setAdminOrderState((prev) => ({
+      ...prev,
+      [orderId]: {
+        ...prev[orderId],
+        pendingFulfillment: prev[orderId]?.fulfillment,
+        isDirty: false,
+        hasSavedFulfillment: prev[orderId]?.hasSavedFulfillment,
+        isEditing: false
+      }
+    }));
+  };
+
+  const toggleAdminOrderEditing = (orderId) => {
+    setAdminOrderState((prev) => ({
+      ...prev,
+      [orderId]: {
+        ...prev[orderId],
+        isEditing: !prev[orderId]?.isEditing,
+        pendingFulfillment: prev[orderId]?.fulfillment || "in-transit",
+        isDirty: false
+      }
+    }));
+  };
+
+  const getAdminOrderStatus = (orderId) => {
+    const orderState = adminOrderState[orderId]?.status || "new";
+    if (orderState === "new") return "new";
+    if (orderState === "cancelled") return "cancelled";
+    const hasSaved = adminOrderState[orderId]?.hasSavedFulfillment;
+    if (!hasSaved) return "accepted";
+    return adminOrderState[orderId]?.fulfillment || "in-transit";
+  };
+
+  const filteredAdminOrders = useMemo(() => {
+    const filtered = adminOrders.filter((order) => {
+      if (adminOrderFilter === "all") return true;
+      return getAdminOrderStatus(order.id) === adminOrderFilter;
+    });
+
+    return filtered.sort((a, b) => {
+      const statusA = getAdminOrderStatus(a.id);
+      const statusB = getAdminOrderStatus(b.id);
+      if (statusA === "new" && statusB !== "new") return -1;
+      if (statusA !== "new" && statusB === "new") return 1;
+      return new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime();
+    });
+  }, [adminOrders, adminOrderFilter, adminOrderState]);
 
   const handleHomeMediaUpload = (type) => async (event) => {
     const file = event.target.files?.[0];
@@ -849,11 +963,14 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                   </button>
                 );
               })}
-              <div className="mt-4 pt-2 border-t border-slate-100">
+              <div className="mt-4 border-t border-slate-100 pt-3">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                  Admin Tools
+                </h3>
                 <button
                   type="button"
                   onClick={() => setAdminView("live")}
-                  className={`w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
+                  className={`mt-3 w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
                     adminView === "live"
                       ? "bg-blue-600 text-white"
                       : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
@@ -1067,13 +1184,30 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Orders</p>
                 <h2 className="text-lg font-semibold text-slate-900">Recent orders</h2>
               </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Filter
+                </label>
+                <select
+                  value={adminOrderFilter}
+                  onChange={(event) => setAdminOrderFilter(event.target.value)}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="all">All</option>
+                  <option value="new">New</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="in-transit">In Transit</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Canceled</option>
+                </select>
+              </div>
             </div>
 
-            {adminOrders.length === 0 ? (
+            {filteredAdminOrders.length === 0 ? (
               <p className="mt-4 text-sm text-slate-500">No orders received yet.</p>
             ) : (
               <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 lg:max-h-[520px]">
-                {adminOrders.map((order) => {
+                {filteredAdminOrders.map((order) => {
                   const firstItem = order.items[0];
                   const extraCount = Math.max(order.items.length - 1, 0);
                   const dateLabel = new Date(order.placedAt).toLocaleDateString("en-IN", {
@@ -1082,29 +1216,141 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                     year: "numeric"
                   });
 
+                  const orderState = adminOrderState[order.id]?.status || "new";
+                  const fulfillment =
+                    adminOrderState[order.id]?.pendingFulfillment ??
+                    adminOrderState[order.id]?.fulfillment ??
+                    "in-transit";
+                  const committedFulfillment =
+                    adminOrderState[order.id]?.fulfillment || "in-transit";
+                  const hasSavedFulfillment = adminOrderState[order.id]?.hasSavedFulfillment;
+                  const isEditing = adminOrderState[order.id]?.isEditing;
+                  const statusKey =
+                    orderState === "cancelled"
+                      ? "cancelled"
+                      : orderState === "accepted" && !hasSavedFulfillment
+                      ? "accepted"
+                      : orderState === "accepted"
+                      ? committedFulfillment
+                      : "new";
+                  const isDirty = fulfillment !== statusKey;
+                  const statusLabel =
+                    orderState === "cancelled"
+                      ? { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" }
+                      : orderState === "accepted" && !hasSavedFulfillment
+                      ? { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+                      : orderState === "accepted" && committedFulfillment === "cancelled"
+                      ? { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" }
+                      : orderState === "accepted" && committedFulfillment === "in-transit"
+                      ? { text: "In Transit", cls: "bg-amber-50 text-amber-700 border-amber-200" }
+                      : orderState === "accepted" && committedFulfillment === "completed"
+                      ? { text: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+                      : orderState === "accepted"
+                      ? { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+                      : null;
+
                   return (
-                    <button
+                    <div
                       key={order.id}
-                      type="button"
-                      onClick={() => setSelectedAdminOrder(order)}
-                      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 text-left shadow-sm transition hover:shadow-md"
+                      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm transition hover:shadow-md"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAdminOrder(order)}
+                          className="min-w-[220px] flex-1 text-left"
+                        >
                           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
                             Order {order.id}
                           </p>
                           <p className="mt-2 text-sm font-semibold text-slate-900">
-                            {firstItem?.title}
-                            {extraCount > 0 ? ` + ${extraCount} more` : ""}
+                            <span className="inline-flex flex-wrap items-center gap-2">
+                              <span>
+                                {firstItem?.title}
+                                {extraCount > 0 ? ` + ${extraCount} more` : ""}
+                              </span>
+                              {statusLabel && (
+                                <span
+                                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}
+                                >
+                                  {statusLabel.text}
+                                </span>
+                              )}
+                            </span>
                           </p>
                           <p className="mt-1 text-xs text-slate-600">{dateLabel}</p>
-                        </div>
+                        </button>
+
                         <div className="text-sm font-semibold text-slate-900">
                           Rs. {order.total.toLocaleString("en-IN")}
                         </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          {orderState === "new" && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => updateAdminOrderStatus(order.id, "accepted")}
+                                className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateAdminOrderStatus(order.id, "cancelled")}
+                                className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+
+                          {orderState === "accepted" && (
+                            <>
+                              {!isEditing ? (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAdminOrderEditing(order.id)}
+                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                >
+                                  Edit
+                                </button>
+                              ) : (
+                                <>
+                                  <select
+                                    value={fulfillment}
+                                    onChange={(event) =>
+                                      updateAdminOrderFulfillment(order.id, event.target.value)
+                                    }
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+                                  >
+                                    <option value="in-transit">In transit</option>
+                                    <option value="completed">Order completed</option>
+                                    <option value="cancelled">Order cancelled</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => saveAdminOrderFulfillment(order.id)}
+                                    disabled={!isDirty}
+                                    className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => cancelAdminOrderFulfillment(order.id)}
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                </>
+                              )}
+                            </>
+                          )}
+
+                        </div>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
