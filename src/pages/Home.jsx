@@ -33,6 +33,11 @@ const Home = ({ profile }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductOpen, setIsProductOpen] = useState(false);
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
+  const [homeMedia, setHomeMedia] = useState({
+    videoUrl: '',
+    imageOneUrl: '',
+    imageTwoUrl: ''
+  });
   const searchInputRef = useRef(null);
 
   const categoryOptions = [
@@ -99,6 +104,20 @@ const Home = ({ profile }) => {
   }, [allProducts, searchCategory, searchQuery, CATEGORY_SLUG_MAP]);
 
   useEffect(() => {
+    const storedMedia = localStorage.getItem('dream-aquatics-home-media');
+    if (storedMedia) {
+      try {
+        const parsed = JSON.parse(storedMedia);
+        setHomeMedia({
+          videoUrl: parsed.videoUrl || '',
+          imageOneUrl: parsed.imageOneUrl || '',
+          imageTwoUrl: parsed.imageTwoUrl || ''
+        });
+      } catch (error) {
+        console.error('Failed to parse home media settings', error);
+      }
+    }
+
     async function loadProducts() {
       try {
         const { data, error } = await fetchAllProductsWithCategories();
@@ -179,6 +198,20 @@ const Home = ({ profile }) => {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    const handleHomeMediaUpdated = (event) => {
+      const detail = event.detail || {};
+      setHomeMedia({
+        videoUrl: detail.videoUrl || '',
+        imageOneUrl: detail.imageOneUrl || '',
+        imageTwoUrl: detail.imageTwoUrl || ''
+      });
+    };
+
+    window.addEventListener('dreamAquaticsHomeMediaUpdated', handleHomeMediaUpdated);
+    return () => window.removeEventListener('dreamAquaticsHomeMediaUpdated', handleHomeMediaUpdated);
+  }, []);
+
   const isSearching = searchQuery.trim().length > 0;
 
   useEffect(() => {
@@ -198,6 +231,11 @@ const Home = ({ profile }) => {
     if (!searchQuery.trim()) return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchQuery]);
+
+  const highlightVideoSrc = homeMedia.videoUrl || HighlightVideo;
+  const highlightImageOne = homeMedia.imageOneUrl || HighlightTwo;
+  const highlightImageTwo = homeMedia.imageTwoUrl || HighlightThree;
+  const highlightPoster = homeMedia.imageOneUrl || HighlightOne;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white pb-12">
@@ -377,23 +415,23 @@ const Home = ({ profile }) => {
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/10">
                 <video
-                  src={HighlightVideo}
+                  src={highlightVideoSrc}
                   className="h-full w-full object-cover"
                   autoPlay
                   loop
                   muted
                   playsInline
                   controls
-                  poster={HighlightOne}
+                  poster={highlightPoster}
                 />
               </div>
               <button
                 type="button"
                 className="relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none"
-                onClick={() => setActiveHighlight(HighlightTwo)}
+                onClick={() => setActiveHighlight(highlightImageOne)}
                 aria-label="Enlarge highlight image"
               >
-                <img src={HighlightTwo} alt="Highlight koi" className="h-full w-full object-cover" />
+                <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" />
                 <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
                   <svg
                     viewBox="0 0 24 24"
@@ -415,10 +453,10 @@ const Home = ({ profile }) => {
               <button
                 type="button"
                 className="relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none"
-                onClick={() => setActiveHighlight(HighlightThree)}
+                onClick={() => setActiveHighlight(highlightImageTwo)}
                 aria-label="Enlarge highlight image"
               >
-                <img src={HighlightThree} alt="Highlight detail" className="h-full w-full object-cover" />
+                <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" />
                 <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
                   <svg
                     viewBox="0 0 24 24"

@@ -272,13 +272,13 @@ const CategoryListingPage = () => {
         }`}
       >
         <div
-          className={`flex w-full items-center gap-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`flex w-full items-center gap-2 min-w-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             isSearchCollapsed
               ? "pointer-events-none -translate-y-3 scale-[0.98] opacity-0"
               : "translate-y-0 scale-100 opacity-100"
           }`}
         >
-          <div className="relative flex h-9 w-12 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
+          <div className="relative flex h-9 w-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
             <span className="pointer-events-none text-slate-600">
               {renderCategoryIcon(categoryIconKey)}
             </span>
@@ -297,7 +297,7 @@ const CategoryListingPage = () => {
               </svg>
             </span>
           </div>
-          <div className="relative flex flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="relative flex flex-1 min-w-0 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
               <input
                 type="text"
                 value={searchQuery}
