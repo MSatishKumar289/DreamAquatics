@@ -248,7 +248,7 @@ const Home = ({ profile }) => {
                   ))}
                 </select>
               </div>
-              <div className="relative flex flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 sm:py-2">
+              <div className="relative flex w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 sm:py-2">
                 <input
                   type="text"
                   value={searchQuery}
@@ -273,7 +273,7 @@ const Home = ({ profile }) => {
               </div>
             </div>
             <div
-              className={`flex w-full items-center justify-end transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`absolute right-3 top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:right-4 ${
                 isSearchCollapsed
                   ? "translate-y-0 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"

@@ -262,8 +262,110 @@ const CategoryListingPage = () => {
     addToCart(product, qty);
   };
 
+  const searchBar = (
+    <div className="container mx-auto flex justify-center">
+      <div
+        className={`relative mt-[5px] mb-[10px] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:flex sm:items-center sm:justify-between sm:gap-4 ${
+          isSearchCollapsed
+            ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
+            : "translate-x-0 h-[65px] rounded-2xl border border-slate-200 bg-white/95 px-3 pt-2 pb-0 shadow-sm ring-1 ring-slate-100 sm:h-auto sm:px-4 sm:py-3"
+        }`}
+      >
+        <div
+          className={`flex w-full items-center gap-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            isSearchCollapsed
+              ? "pointer-events-none -translate-y-3 scale-[0.98] opacity-0"
+              : "translate-y-0 scale-100 opacity-100"
+          }`}
+        >
+          <div className="relative flex h-9 w-12 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
+            <span className="pointer-events-none text-slate-600">
+              {renderCategoryIcon(categoryIconKey)}
+            </span>
+            <span className="pointer-events-none text-slate-500">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3 w-3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+          </div>
+          <div className="relative flex flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={
+                  isSubcategoryMode
+                    ? "Search in this category"
+                    : "Search subcategories"
+                }
+                ref={searchInputRef}
+                className="w-full bg-transparent px-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none text-center"
+              />
+            <svg
+              viewBox="0 0 24 24"
+              className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M16 16l4 4" />
+            </svg>
+          </div>
+        </div>
+        <div
+          className={`absolute right-3 top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:right-4 ${
+            isSearchCollapsed
+              ? "translate-y-0 scale-100 opacity-100"
+              : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setIsSearchCollapsed(false);
+              setTimeout(() => searchInputRef.current?.focus(), 50);
+            }}
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition-all duration-300 ease-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            aria-label="Open search"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M16 16l4 4" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-white pb-12">
+      <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
+        {searchBar}
+      </section>
+      <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
       <div className="container mx-auto px-4 pt-6 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-white/40 bg-white/80 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
           <nav
@@ -330,103 +432,6 @@ const CategoryListingPage = () => {
                   View more
                 </button>
               )}
-            </div>
-            <div className="sticky top-20 z-30 mt-4 flex items-center bg-white/80 py-2 backdrop-blur">
-              <div className="w-full max-w-4xl">
-                <div
-                  className={`relative w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                    isSearchCollapsed
-                      ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
-                      : "translate-x-0 rounded-2xl border border-slate-200 bg-white/95 px-3 pt-2 pb-0 shadow-sm ring-1 ring-slate-100 sm:px-4 sm:py-3"
-                  }`}
-                >
-                  <div
-                    className={`flex w-full items-center gap-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                      isSearchCollapsed
-                        ? "pointer-events-none -translate-y-3 scale-[0.98] opacity-0"
-                        : "translate-y-0 scale-100 opacity-100"
-                    }`}
-                  >
-                    <div className="relative flex h-9 w-12 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
-                      <span className="pointer-events-none text-slate-600">
-                        {renderCategoryIcon(categoryIconKey)}
-                      </span>
-                      <span className="pointer-events-none text-slate-500">
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="h-3 w-3"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M6 9l6 6 6-6" />
-                        </svg>
-                      </span>
-                    </div>
-                    <div className="relative flex flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(event) => setSearchQuery(event.target.value)}
-                        placeholder={
-                          isSubcategoryMode
-                            ? "Search in this category"
-                            : "Search subcategories"
-                        }
-                        ref={searchInputRef}
-                        className="w-full bg-transparent pr-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
-                      />
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <circle cx="11" cy="11" r="6.5" />
-                        <path d="M16 16l4 4" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div
-                    className={`flex w-full items-center justify-end transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                      isSearchCollapsed
-                        ? "translate-y-0 scale-100 opacity-100"
-                        : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsSearchCollapsed(false);
-                        setTimeout(() => searchInputRef.current?.focus(), 50);
-                      }}
-                      className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition-all duration-300 ease-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      aria-label="Open search"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <circle cx="11" cy="11" r="6.5" />
-                        <path d="M16 16l4 4" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>

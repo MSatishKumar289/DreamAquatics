@@ -191,45 +191,48 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
         </div>
       </div>
 
-      {pendingRemove && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setPendingRemove(false);
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-900">
-              Remove item?
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Remove {title} from your cart?
-            </p>
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setPendingRemove(false)}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  removeItem?.(safeProduct?.id);
-                  setQty(0);
-                  setPendingRemove(false);
-                }}
-                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-              >
-                Remove
-              </button>
+      {pendingRemove &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setPendingRemove(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Remove item?
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Remove {title} from your cart?
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingRemove(false)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeItem?.(safeProduct?.id);
+                    setQty(0);
+                    setPendingRemove(false);
+                  }}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
