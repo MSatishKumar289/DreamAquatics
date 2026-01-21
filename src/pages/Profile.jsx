@@ -1,93 +1,210 @@
-import { useEffect, useMemo, useState } from 'react';
-import AddressForm from '../components/AddressForm';
-import { useProfile } from '../context/ProfileContext';
-import edit_ic from '../assets/Icons/edit_ic.png';
-import bin_ic from '../assets/Icons/bin_ic.png';
+import { useEffect, useMemo, useState } from "react";
+import AddressForm from "../components/AddressForm";
+import { useProfile } from "../context/ProfileContext";
+import edit_ic from "../assets/Icons/edit_ic.png";
+import bin_ic from "../assets/Icons/bin_ic.png";
+
+const Spinner = ({ size = 18 }) => (
+  <div
+    className="inline-block animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"
+    style={{ width: size, height: size }}
+    aria-label="Loading"
+  />
+);
 
 const Profile = () => {
-  const { addresses, addAddress, updateAddress, removeAddress, setDefaultAddress } = useProfile();
+  const {
+    addresses,
+    loadingAddresses,
+    addAddress,
+    updateAddress,
+    removeAddress,
+    setDefaultAddress,
+  } = useProfile();
+
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [pendingDelete, setPendingDelete] = useState(null);
-  const [activeTab, setActiveTab] = useState('addresses');
+  const [activeTab, setActiveTab] = useState("addresses");
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [toast, setToast] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
+
+  const [savingAddress, setSavingAddress] = useState(false);
+
+  // forces AddressForm remount -> clears typed content
+  const [formResetKey, setFormResetKey] = useState(0);
+
+  const isBusy = loadingAddresses || savingAddress;
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, type, message });
+    setTimeout(() => setToast({ show: false, type: "", message: "" }), 2500);
+  };
+  
 
   const orders = useMemo(
     () => [
       {
-        id: 'DA-1001',
-        placedAt: '2025-01-12',
-        status: 'Pending',
+        id: "DA-1001",
+        placedAt: "2025-01-12",
+        status: "Pending",
         subtotal: 1350,
         shipping: 100,
         total: 1450,
         address: {
-          name: 'Satish',
-          email: 'msatish289kumar@gmail.com',
-          phone: '3213123123',
-          line1: '33D, Gandhi Puram, Cross Street',
-          line2: 'Dharapuram',
-          landmark: 'Near Periyakaaliamman Kovil',
-          city: 'Dharapuram',
-          pincode: '638656'
+          name: "Satish",
+          email: "msatish289kumar@gmail.com",
+          phone: "3213123123",
+          line1: "33D, Gandhi Puram, Cross Street",
+          line2: "Dharapuram",
+          landmark: "Near Periyakaaliamman Kovil",
+          city: "Dharapuram",
+          pincode: "638656",
         },
         items: [
-          { id: 'itm-1', title: 'Full Moon Betta', qty: 2, price: 400 },
-          { id: 'itm-2', title: 'Albino Oscar', qty: 1, price: 650 },
-          { id: 'itm-3', title: 'Channa Andrao', qty: 1, price: 300 }
-        ]
-      }
+          { id: "itm-1", title: "Full Moon Betta", qty: 2, price: 400 },
+          { id: "itm-2", title: "Albino Oscar", qty: 1, price: 650 },
+          { id: "itm-3", title: "Channa Andrao", qty: 1, price: 300 },
+        ],
+      },
     ],
     []
   );
 
   const canAddMore = addresses.length < 2;
 
-  const handleAdd = (payload) => {
-    const result = addAddress(payload);
-    if (!result.ok) {
-      setError(result.error);
-      return;
+  const handleAdd = async (payload) => {
+    if (isBusy) return;
+    setSavingAddress(true);
+
+    try {
+      const result = await addAddress(payload);
+
+      if (!result?.ok) {
+        const msg =
+          typeof result?.error === "string"
+            ? result.error
+            : result?.error?.message || "Failed to add address";
+        setError(msg);
+        showToast(msg, "error");
+        return;
+      }
+
+      setError("");
+      showToast("Address added successfully", "success");
+
+      // close and reset form
+      setShowForm(false);
+      setEditing(null);
+      setFormResetKey((k) => k + 1);
+    } finally {
+      setSavingAddress(false);
     }
-    setError('');
-    setShowForm(false);
   };
 
-  const handleUpdate = (payload) => {
-    updateAddress(editing.id, payload);
-    setEditing(null);
+  const handleUpdate = async (payload) => {
+    if (!editing) return;
+    if (isBusy) return;
+
+    setSavingAddress(true);
+    try {
+      const result = await updateAddress(editing.id, payload);
+
+      if (!result?.ok) {
+        const msg =
+          typeof result?.error === "string"
+            ? result.error
+            : result?.error?.message || "Failed to update address";
+        setError(msg);
+        showToast(msg, "error");
+        return;
+      }
+
+      setError("");
+      showToast("Address updated successfully", "success");
+
+      setEditing(null);
+      setShowForm(false);
+      setFormResetKey((k) => k + 1);
+    } finally {
+      setSavingAddress(false);
+    }
   };
 
   const activeFormValue = useMemo(() => {
-    if (editing) return editing;
-    return null;
+    if (!editing) return null;
+    return {
+      ...editing,
+      phone: editing.mobile || "",
+      line1: editing.address_line1 || "",
+      line2: editing.address_line2 || "",
+    };
   }, [editing]);
+  
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">
+      {/* Toast */}
+      {toast.show && (
+        <div className="fixed top-5 left-1/2 z-[9999] -translate-x-1/2">
+          <div
+            className={`rounded-xl px-5 py-3 text-sm font-semibold shadow-lg ring-1 ${
+              toast.type === "success"
+                ? "bg-emerald-600 text-white ring-emerald-200"
+                : "bg-red-600 text-white ring-red-200"
+            }`}
+          >
+            {toast.message}
+          </div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <header className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Profile</p>
-          {activeTab === 'addresses' ? (
-            <>
-              <h1 className="mt-2 text-3xl font-semibold text-slate-900">Saved Addresses</h1>
-              <p className="mt-2 text-sm text-slate-600">
-                Add up to two delivery addresses and set a default one.
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+                Profile
               </p>
-            </>
-          ) : (
-            <>
-              <h1 className="mt-2 text-3xl font-semibold text-slate-900">Your Orders</h1>
-              <p className="mt-2 text-sm text-slate-600">
-                Track your recent purchases and order history here.
-              </p>
-            </>
-          )}
+              {activeTab === "addresses" ? (
+                <>
+                  <h1 className="mt-2 text-3xl font-semibold text-slate-900">
+                    Saved Addresses
+                  </h1>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Add up to two delivery addresses and set a default one.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="mt-2 text-3xl font-semibold text-slate-900">
+                    Your Orders
+                  </h1>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Track your recent purchases and order history here.
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Top-right loader indicator */}
+            {loadingAddresses && activeTab === "addresses" && (
+              <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                <Spinner size={14} />
+                Loading
+              </div>
+            )}
+          </div>
         </header>
 
         <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
@@ -100,114 +217,173 @@ const Profile = () => {
           <div className="mb-4 inline-flex w-full overflow-hidden rounded-full border border-slate-200 bg-slate-50 p-1">
             <button
               type="button"
-              onClick={() => setActiveTab('addresses')}
-              className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                activeTab === 'addresses'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-600 hover:text-slate-900'
+              disabled={isBusy}
+              onClick={() => setActiveTab("addresses")}
+              className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                activeTab === "addresses"
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Addresses
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('orders')}
-              className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                activeTab === 'orders'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-600 hover:text-slate-900'
+              disabled={isBusy}
+              onClick={() => setActiveTab("orders")}
+              className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                activeTab === "orders"
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Orders
             </button>
           </div>
 
-          {activeTab === 'addresses' ? (
+          {activeTab === "addresses" ? (
             <>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-slate-900">Address book</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Address book
+                </h2>
+
                 <button
                   type="button"
                   onClick={() => {
                     setEditing(null);
                     setShowForm(true);
+                    setError("");
+                    setFormResetKey((k) => k + 1);
                   }}
-                  disabled={!canAddMore}
-                  className="w-full max-w-xs rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:w-auto"
+                  disabled={!canAddMore || isBusy || showForm || !!editing}
+                  className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:w-auto"
                 >
+                  {isBusy ? <Spinner size={16} /> : null}
                   Add address
                 </button>
               </div>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {addresses.length === 0 && (
-                  <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600 md:col-span-2">
-                    No addresses saved yet.
+              {/* Full-page style loading placeholder */}
+              {loadingAddresses ? (
+                <div className="mt-5 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-700">
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <Spinner size={22} />
+                    <span className="font-semibold">Loading addresses...</span>
                   </div>
-                )}
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  {addresses.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600 md:col-span-2">
+                      No addresses saved yet.
+                    </div>
+                  )}
 
-                {addresses.map((addr) => (
-                  <div
-                    key={addr.id}
-                    className={`flex h-full w-full flex-col rounded-xl border px-4 py-3 shadow-sm ${
-                      addr.isDefault
-                        ? 'border-emerald-200 bg-emerald-50'
-                        : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-slate-900">{addr.name}</p>
-                        {addr.email && <p className="text-xs text-slate-600 break-words">{addr.email}</p>}
-                        <p className="text-xs text-slate-600">{addr.phone}</p>
+                  {addresses.map((addr) => {
+                    const isDefault = !!addr.is_default;
+
+                    return (
+                      <div
+                        key={addr.id}
+                        className={`flex h-full w-full flex-col rounded-xl border px-4 py-3 shadow-sm ${
+                          isDefault
+                            ? "border-emerald-200 bg-emerald-50"
+                            : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-slate-900">
+                              {addr.name}
+                            </p>
+                            {addr.email && (
+                              <p className="text-xs break-words text-slate-600">
+                                {addr.email}
+                              </p>
+                            )}
+                            <p className="text-xs text-slate-600">{addr.mobile}</p>
+                          </div>
+
+                          <div className="flex flex-shrink-0 items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => {
+                                setEditing(addr);
+                                setShowForm(false);
+                                setError("");
+                              }}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              aria-label={`Edit ${addr.name} address`}
+                              title="Edit"
+                            >
+                              <img
+                                src={edit_ic}
+                                alt=""
+                                className="h-4 w-4"
+                                aria-hidden
+                              />
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => setPendingDelete(addr)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              aria-label={`Delete ${addr.name} address`}
+                              title="Delete"
+                            >
+                              <img
+                                src={bin_ic}
+                                alt=""
+                                className="h-4 w-4"
+                                aria-hidden
+                              />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-2 text-xs text-slate-600">
+                          <p>{addr.address_line1}</p>
+                          {addr.address_line2 && <p>{addr.address_line2}</p>}
+                          {addr.landmark && <p>Landmark: {addr.landmark}</p>}
+                          <p>
+                            {addr.city} - {addr.pincode}
+                          </p>
+                        </div>
+
+                        <div className="mt-auto flex min-h-[40px] items-center justify-center">
+                          {isDefault ? (
+                            <span className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                              Default
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={async () => {
+                                const res = await setDefaultAddress(addr.id);
+                                if (!res?.ok) {
+                                  showToast(
+                                    "Failed to set default address",
+                                    "error"
+                                  );
+                                  return;
+                                }
+                                showToast("Default address updated", "success");
+                              }}
+                              className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Set default
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-shrink-0 items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditing(addr)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                          aria-label={`Edit ${addr.name} address`}
-                          title="Edit"
-                        >
-                          <img src={edit_ic} alt="" className="h-4 w-4" aria-hidden />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPendingDelete(addr)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                          aria-label={`Delete ${addr.name} address`}
-                          title="Delete"
-                        >
-                          <img src={bin_ic} alt="" className="h-4 w-4" aria-hidden />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-xs text-slate-600">
-                      <p>{addr.line1}</p>
-                      {addr.line2 && <p>{addr.line2}</p>}
-                      {addr.landmark && <p>Landmark: {addr.landmark}</p>}
-                      <p>
-                        {addr.city} - {addr.pincode}
-                      </p>
-                    </div>
-                    <div className="mt-auto flex min-h-[40px] items-center justify-center">
-                      {addr.isDefault ? (
-                        <span className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-                          Default
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setDefaultAddress(addr.id)}
-                          className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100"
-                        >
-                          Set default
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           ) : orders.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
@@ -218,18 +394,22 @@ const Profile = () => {
               {orders.map((order) => {
                 const firstItem = order.items[0];
                 const extraCount = Math.max(order.items.length - 1, 0);
-                const dateLabel = new Date(order.placedAt).toLocaleDateString('en-IN', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric'
-                });
+                const dateLabel = new Date(order.placedAt).toLocaleDateString(
+                  "en-IN",
+                  {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }
+                );
 
                 return (
                   <button
                     key={order.id}
                     type="button"
+                    disabled={isBusy}
                     onClick={() => setSelectedOrder(order)}
-                    className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 text-left shadow-sm transition hover:shadow-md"
+                    className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 text-left shadow-sm transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -238,14 +418,14 @@ const Profile = () => {
                         </p>
                         <p className="mt-2 text-sm font-semibold text-slate-900">
                           {firstItem?.title}
-                          {extraCount > 0 ? ` + ${extraCount} more` : ''}
+                          {extraCount > 0 ? ` + ${extraCount} more` : ""}
                         </p>
                         <p className="mt-1 text-xs text-slate-600">
                           {dateLabel} · {order.status}
                         </p>
                       </div>
                       <div className="text-sm font-semibold text-slate-900">
-                        ₹{order.total.toLocaleString('en-IN')}
+                        ₹{order.total.toLocaleString("en-IN")}
                       </div>
                     </div>
                   </button>
@@ -257,15 +437,29 @@ const Profile = () => {
 
         {(showForm || editing) && (
           <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">
-              {editing ? 'Edit address' : 'Add new address'}
-            </h2>
-            <div className="mt-4">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-slate-900">
+                {editing ? "Edit address" : "Add new address"}
+              </h2>
+
+              {(loadingAddresses || savingAddress) && (
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                  <Spinner size={14} />
+                  Saving...
+                </div>
+              )}
+            </div>
+
+            <div className={`mt-4 ${isBusy ? "pointer-events-none opacity-70" : ""}`}>
               <AddressForm
+                key={`${editing?.id || "new"}-${formResetKey}`}
                 initialValue={activeFormValue}
                 onCancel={() => {
+                  if (isBusy) return;
                   setShowForm(false);
                   setEditing(null);
+                  setError("");
+                  setFormResetKey((k) => k + 1);
                 }}
                 onSave={editing ? handleUpdate : handleAdd}
               />
@@ -278,7 +472,8 @@ const Profile = () => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
           onClick={(event) => {
-            if (event.target === event.currentTarget) setPendingDelete(null);
+            if (event.target === event.currentTarget && !isBusy)
+              setPendingDelete(null);
           }}
           role="dialog"
           aria-modal="true"
@@ -290,22 +485,52 @@ const Profile = () => {
             <p className="mt-2 text-sm text-slate-600">
               Delete address for {pendingDelete.name}?
             </p>
+
             <div className="mt-4 flex items-center justify-center gap-3">
               <button
                 type="button"
+                disabled={isBusy}
                 onClick={() => setPendingDelete(null)}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
               </button>
+
               <button
                 type="button"
-                onClick={() => {
-                  removeAddress(pendingDelete.id);
-                  setPendingDelete(null);
+                disabled={isBusy}
+                onClick={async () => {
+                  if (isBusy) return;
+                
+                  setSavingAddress(true);
+                  try {
+                    const deletedId = pendingDelete.id;
+                    const wasDefault = !!pendingDelete.is_default;
+                
+                    const res = await removeAddress(deletedId);
+                    if (!res?.ok) {
+                      showToast("Failed to delete address", "error");
+                      return;
+                    }
+                
+                    // ✅ If default deleted -> set remaining address as default
+                    if (wasDefault) {
+                      const remaining = addresses.filter((a) => a.id !== deletedId);
+                      if (remaining.length > 0) {
+                        await setDefaultAddress(remaining[0].id);
+                      }
+                    }
+                
+                    showToast("Address deleted", "success");
+                    setPendingDelete(null);
+                  } finally {
+                    setSavingAddress(false);
+                  }
                 }}
-                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
+                {isBusy ? <Spinner size={16} /> : null}
                 Delete
               </button>
             </div>
@@ -313,6 +538,7 @@ const Profile = () => {
         </div>
       )}
 
+      {/* selectedOrder modal unchanged */}
       {selectedOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
@@ -326,9 +552,15 @@ const Profile = () => {
             <div className="relative border-b border-dashed border-slate-200 px-5 py-4 text-center">
               <p className="flex items-baseline justify-center text-blue-600">
                 <span className="text-base font-bold tracking-[0.2em]">D</span>
-                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">REAM</span>
-                <span className="ml-0.5 text-base font-bold tracking-[0.2em]">A</span>
-                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">QUATICS</span>
+                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">
+                  REAM
+                </span>
+                <span className="ml-0.5 text-base font-bold tracking-[0.2em]">
+                  A
+                </span>
+                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">
+                  QUATICS
+                </span>
               </p>
               <h2 className="mt-2 text-1xl font-semibold text-slate-900">
                 Order Details
@@ -342,14 +574,15 @@ const Profile = () => {
                 X
               </button>
             </div>
+
             <div className="max-h-[75vh] overflow-y-auto px-5 py-4 text-sm text-slate-700">
               <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
                 <span>Placed on</span>
                 <span className="font-semibold text-slate-900">
-                  {new Date(selectedOrder.placedAt).toLocaleDateString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
+                  {new Date(selectedOrder.placedAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
                   })}
                 </span>
               </div>
@@ -361,18 +594,40 @@ const Profile = () => {
                 </div>
                 <div className="mt-3 space-y-3 border-b border-dashed border-slate-200 pb-4">
                   {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="flex items-start justify-between gap-4">
+                    <div
+                      key={item.id}
+                      className="flex items-start justify-between gap-4"
+                    >
                       <div>
                         <p className="font-semibold text-slate-900">{item.title}</p>
                         <p className="text-xs text-slate-500">
-                          Qty {item.qty} · ₹{item.price.toLocaleString('en-IN')}
+                          Qty {item.qty} · ₹{item.price.toLocaleString("en-IN")}
                         </p>
                       </div>
                       <div className="font-semibold text-slate-900">
-                        ₹{(item.qty * item.price).toLocaleString('en-IN')}
+                        ₹{(item.qty * item.price).toLocaleString("en-IN")}
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-slate-900">
+                    ₹{selectedOrder.subtotal.toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Standard shipping</span>
+                  <span className="font-semibold text-slate-900">
+                    ₹{selectedOrder.shipping.toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-3 font-semibold text-slate-900">
+                  <span>Total</span>
+                  <span>₹{selectedOrder.total.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
@@ -396,29 +651,8 @@ const Profile = () => {
                   </p>
                 </div>
               </div>
-
-              <div className="mt-4 space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-slate-900">
-                    ₹{selectedOrder.subtotal.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Standard shipping</span>
-                  <span className="font-semibold text-slate-900">
-                    ₹{selectedOrder.shipping.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-3 font-semibold text-slate-900">
-                  <span>Total</span>
-                  <span>₹{selectedOrder.total.toLocaleString('en-IN')}</span>
-                </div>
-                <p className="pt-2 text-xs text-slate-500">
-                  Payment details will be shared via WhatsApp after you place the order.
-                </p>
-              </div>
             </div>
+
             <div className="h-4 w-full bg-white">
               <svg
                 className="h-full w-full"
