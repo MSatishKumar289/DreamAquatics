@@ -12,6 +12,7 @@ import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
 import Terms from './pages/Terms';
 import Profile from './pages/Profile';
+import Search from './pages/Search';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
@@ -209,6 +210,7 @@ function AppContent() {
               }
             />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/search" element={<Search />} />
             <Route
               path="/admin/add-product"
               element={

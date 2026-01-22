@@ -12,7 +12,8 @@ const CategoryCard = ({
   product,
   isSubCategory = false,
   onAddToCart,
-  showStockBadge
+  showStockBadge,
+  isMasonry = false
 }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -311,9 +312,19 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-2 sm:p-3 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[150px] flex-col gap-1 sm:min-h-[170px] sm:gap-1.5"}`}>
+      <div
+        className={`p-2 sm:p-3 ${
+          isSubCategory
+            ? "flex flex-col gap-2 sm:gap-3"
+            : isMasonry
+              ? "flex flex-col gap-1 sm:gap-1.5"
+              : "flex min-h-[150px] flex-col gap-1 sm:min-h-[170px] sm:gap-1.5"
+        }`}
+      >
         <div
-          className={`text-center ${!isSubCategory ? "flex flex-1 flex-col" : ""}`}
+          className={`text-center ${
+            !isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""
+          }`}
         >
           <h3 className="text-sm sm:text-base font-semibold text-slate-900 line-clamp-3">
             {productTitle}

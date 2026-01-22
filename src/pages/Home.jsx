@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchAllProductsWithCategories } from '../lib/catalogApi';
 import CategorySection from '../components/CategorySection';
 import CategoryCard from '../components/CategoryCard';
@@ -16,6 +17,7 @@ import HighlightVideo from '../assets/Videos/video.mp4';
 
 const Home = ({ profile }) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
   const CATEGORY_SLUG_MAP = {
     fishes: 'fishes',
@@ -32,7 +34,9 @@ const Home = ({ profile }) => {
   const [searchCategory, setSearchCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductOpen, setIsProductOpen] = useState(false);
-  const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
+  const [isSearchCollapsed, setIsSearchCollapsed] = useState(true);
+  const [hasSearchOpened, setHasSearchOpened] = useState(false);
+  const [showSearchHint, setShowSearchHint] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
     imageOneUrl: '',
@@ -215,20 +219,40 @@ const Home = ({ profile }) => {
   const isSearching = searchQuery.trim().length > 0;
 
   useEffect(() => {
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    setIsSearchCollapsed(true);
+    setHasSearchOpened(false);
+    setShowSearchHint(!isDesktop);
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => {
-      if (searchQuery.trim()) {
-        setIsSearchCollapsed(false);
+      const isDesktop = window.innerWidth >= 768;
+      if (isSearching) return;
+      if (window.scrollY > 0) {
+        searchInputRef.current?.blur();
+        setIsSearchCollapsed(true);
         return;
       }
-      setIsSearchCollapsed(window.scrollY > 120);
+      if (!isDesktop) {
+        setIsSearchCollapsed(true);
+        return;
+      }
     };
-    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [searchQuery]);
+  }, [hasSearchOpened, searchQuery, isSearching]);
+
+  useEffect(() => {
+    if (hasSearchOpened) return;
+    setShowSearchHint(true);
+    const timer = setTimeout(() => setShowSearchHint(false), 4000);
+    return () => clearTimeout(timer);
+  }, [hasSearchOpened]);
 
   useEffect(() => {
     if (!searchQuery.trim()) return;
+    if (searchInputRef.current === document.activeElement) return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchQuery]);
 
@@ -240,7 +264,7 @@ const Home = ({ profile }) => {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white pb-12">
       <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
-        <div className="container mx-auto flex justify-center">
+        <div className="container mx-auto flex justify-center md:justify-start">
           <div
             className={`relative mt-[5px] mb-[10px] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:flex sm:items-center sm:justify-between sm:gap-4 ${
               isSearchCollapsed
@@ -293,35 +317,49 @@ const Home = ({ profile }) => {
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search for products"
                   ref={searchInputRef}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
                   className="w-full bg-transparent pr-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
                 />
-                <svg
-                  viewBox="0 0 24 24"
-                  className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="6.5" />
-                  <path d="M16 16l4 4" />
-                </svg>
+                {searchQuery.trim() ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    aria-label="Clear search"
+                  >
+                    X
+                  </button>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="6.5" />
+                    <path d="M16 16l4 4" />
+                  </svg>
+                )}
               </div>
             </div>
             <div
-              className={`absolute right-3 top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:right-4 ${
+              className={`absolute top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSearchCollapsed
-                  ? "translate-y-0 scale-100 opacity-100"
+                  ? "right-3 translate-y-0 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
               }`}
             >
               <button
                 type="button"
                 onClick={() => {
-                  setIsSearchCollapsed(false);
-                  setTimeout(() => searchInputRef.current?.focus(), 50);
+                  setHasSearchOpened(true);
+                  setShowSearchHint(false);
+                  navigate("/search");
                 }}
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition-all duration-300 ease-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 aria-label="Open search"
@@ -341,11 +379,19 @@ const Home = ({ profile }) => {
                   <path d="M16 16l4 4" />
                 </svg>
               </button>
+              {isSearchCollapsed && showSearchHint && (
+                <span className="absolute left-1/5 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+                  Tap to search
+                </span>
+              )}
             </div>
           </div>
         </div>
       </section>
-      <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
+      <div
+        className={`${isSearchCollapsed ? "h-0" : "h-[78px]"} md:h-0`}
+        aria-hidden="true"
+      />
 
       {!isSearching && (
       <section className="relative overflow-hidden pt-4 pb-6 md:pb-8">
@@ -504,7 +550,7 @@ const Home = ({ profile }) => {
       )}
 
       {isSearching && (
-        <section className="px-4 pt-6 sm:px-6 container mx-auto">
+        <section className="container mx-auto px-4 pt-24 sm:px-6 md:pt-28">
           <div className="rounded-3xl bg-white/95 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -515,13 +561,6 @@ const Home = ({ profile }) => {
                   {searchResults.length} items found
                 </h2>
               </div>
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-700 shadow hover:bg-blue-100"
-                >
-                  Clear search
-                </button>
             </div>
 
             <div className="mt-5">

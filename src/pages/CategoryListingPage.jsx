@@ -14,7 +14,9 @@ const CategoryListingPage = () => {
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
+  const openingSearchRef = useRef(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -26,16 +28,25 @@ const CategoryListingPage = () => {
 
   useEffect(() => {
     const onScroll = () => {
-      if (searchQuery.trim()) {
-        setIsSearchCollapsed(false);
+      if (openingSearchRef.current) return;
+      const atTop = window.scrollY <= 0;
+      if (isSearchFocused) {
+        if (!atTop) {
+          searchInputRef.current?.blur();
+          setIsSearchFocused(false);
+          setIsSearchCollapsed(true);
+        }
         return;
       }
-      setIsSearchCollapsed(window.scrollY > 120);
+      if (!atTop) {
+        setIsSearchCollapsed(true);
+        return;
+      }
+      setIsSearchCollapsed(false);
     };
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [searchQuery]);
+  }, [isSearchFocused]);
 
   // Map category slug to human-readable title
   const categoryLabel = {
@@ -257,6 +268,7 @@ const CategoryListingPage = () => {
     ? subcategoryDescription
     : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
   const hasLongDescription = descriptionText.trim().length > 160;
+  const isSearching = searchQuery.trim().length > 0;
 
   const handleAddToCart = (product, qty = 1) => {
     addToCart(product, qty);
@@ -265,10 +277,21 @@ const CategoryListingPage = () => {
   const searchBar = (
     <div className="container mx-auto flex justify-center">
       <div
+        onClick={() => {
+          if (!isSearchCollapsed) return;
+          openingSearchRef.current = true;
+          setIsSearchFocused(true);
+          setIsSearchCollapsed(false);
+          window.scrollTo({ top: 0, behavior: "auto" });
+          setTimeout(() => {
+            openingSearchRef.current = false;
+            searchInputRef.current?.focus();
+          }, 80);
+        }}
         className={`relative mt-[5px] mb-[10px] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:flex sm:items-center sm:justify-between sm:gap-4 ${
           isSearchCollapsed
-            ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
-            : "translate-x-0 h-[65px] rounded-2xl border border-slate-200 bg-white/95 px-3 pt-2 pb-0 shadow-sm ring-1 ring-slate-100 sm:h-auto sm:px-4 sm:py-3"
+            ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0 cursor-pointer"
+            : "translate-x-0 h-[56px] rounded-xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm ring-1 ring-slate-100 sm:h-auto sm:px-4 sm:py-3"
         }`}
       >
         <div
@@ -278,7 +301,7 @@ const CategoryListingPage = () => {
               : "translate-y-0 scale-100 opacity-100"
           }`}
         >
-          <div className="relative flex h-9 w-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
+          <div className="relative flex h-9 w-10 shrink-0 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white sm:h-10 sm:w-14 sm:rounded-xl">
             <span className="pointer-events-none text-slate-600">
               {renderCategoryIcon(categoryIconKey)}
             </span>
@@ -297,32 +320,45 @@ const CategoryListingPage = () => {
               </svg>
             </span>
           </div>
-          <div className="relative flex flex-1 min-w-0 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="relative flex h-9 flex-1 min-w-0 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 sm:h-auto sm:rounded-xl sm:py-2">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
                 placeholder={
                   isSubcategoryMode
                     ? "Search in this category"
                     : "Search subcategories"
                 }
                 ref={searchInputRef}
-                className="w-full bg-transparent px-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none text-center"
+                className="w-full bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
               />
-            <svg
-              viewBox="0 0 24 24"
-              className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="6.5" />
-              <path d="M16 16l4 4" />
-            </svg>
+            {searchQuery.trim() ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                aria-label="Clear search"
+              >
+                X
+              </button>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M16 16l4 4" />
+              </svg>
+            )}
           </div>
         </div>
         <div
@@ -367,7 +403,8 @@ const CategoryListingPage = () => {
       </section>
       <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
       <div className="container mx-auto px-4 pt-6 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-white/40 bg-white/80 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
+        {!isSearching && (
+          <section className="rounded-3xl border border-white/40 bg-white/80 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
           <nav
             className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400"
             aria-label="Breadcrumb"
@@ -434,25 +471,70 @@ const CategoryListingPage = () => {
               )}
             </div>
           </div>
-        </section>
+          </section>
+        )}
 
-        <section className="mt-8 rounded-3xl border border-white/60 bg-white/90 p-5 shadow-lg shadow-blue-100/80">
+        <section
+          className={`rounded-3xl border border-white/60 bg-white/90 p-5 shadow-lg shadow-blue-100/80 ${
+            isSearching ? "mt-4" : "mt-8"
+          }`}
+        >
           {loading ? (
             <div className="py-12 text-center">
               <p className="text-lg text-gray-600">Loading...</p>
             </div>
           ) : filteredList.length > 0 ? (
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {filteredList.map((item) => (
-                <CategoryCard
-                  key={item.id}
-                  categoryName={categorySlug}
-                  product={item}
-                  isSubCategory={!isSubcategoryMode}
-                  onAddToCart={handleAddToCart}
-                  showStockBadge={isSubcategoryMode}
-                />
-              ))}
+            <div
+              className={`rounded-3xl ${
+                isSearching
+                  ? "bg-white/95 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10"
+                  : ""
+              }`}
+            >
+              {isSearching && (
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                      Search results
+                    </p>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                      {filteredList.length} items found
+                    </h2>
+                  </div>
+                </div>
+              )}
+              {isSearching ? (
+                <div
+                  className="columns-2 gap-4 max-h-[70vh] overflow-y-auto pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:columns-3 lg:columns-4"
+                  onScroll={() => searchInputRef.current?.blur()}
+                >
+                  {filteredList.map((item) => (
+                    <div key={item.id} className="mb-4 break-inside-avoid">
+                      <CategoryCard
+                        categoryName={categorySlug}
+                        product={item}
+                        isSubCategory={!isSubcategoryMode}
+                        onAddToCart={handleAddToCart}
+                        showStockBadge={isSubcategoryMode}
+                        isMasonry
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                  {filteredList.map((item) => (
+                    <CategoryCard
+                      key={item.id}
+                      categoryName={categorySlug}
+                      product={item}
+                      isSubCategory={!isSubcategoryMode}
+                      onAddToCart={handleAddToCart}
+                      showStockBadge={isSubcategoryMode}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="py-12 text-center">
