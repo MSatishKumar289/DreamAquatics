@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAdminOrders } from '../context/AdminOrdersContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
 import close_ic from '../assets/Icons/close_ic.svg';
 import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
 
 
-const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
+const Header = ({
+  user,
+  onLogout,
+  onRequestLogin,
+  onCartOpen,
+  onAdminOrdersOpen,
+  isRoleResolved
+}) => {
   const { itemCount } = useCart();
+  const { newOrdersCount } = useAdminOrders();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -100,7 +109,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
 
             {/* Profile / Login */}
             <div className="relative flex items-center gap-2">
-              {user ? (
+              {user && isAdmin ? null : user ? (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -125,8 +134,9 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                     </span>
                   </button>
                   {showProfileHint && (
-                    <div className="absolute right-0 top-12 z-50 hidden w-64 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg xl:block">
-                      Profile has your orders &amp; addresses.
+                    <div className="absolute right-0 top-12 z-50 hidden w-60 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg xl:block">
+                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                      Access your profile here.
                     </div>
                   )}
                   {user.role === 'admin' && (
@@ -159,7 +169,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   </svg>
                 </button>
               )}
-              {user && isProfileOpen && (
+              {user && !isAdmin && isProfileOpen && (
                   <div
                     data-profile-menu
                     className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
@@ -203,30 +213,62 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
               )}
             </div>
             
-            {/* Cart Icon */}
-            <button
-              type="button"
-              onClick={() => onCartOpen?.()}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-              aria-label={`Shopping cart with ${cartCount} items`}
-              data-cart-target="cart"
-            >
-              <img src={cart_ic} alt="Cart" />
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
+            {/* Cart / Notifications */}
+            {!isRoleResolved ? null : isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onAdminOrdersOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${newOrdersCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Admin notifications with ${newOrdersCount} new orders`}
+                data-orders-target="orders"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+                  <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                </svg>
+                {newOrdersCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${newOrdersCount} new orders`}
+                  >
+                    {newOrdersCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCartOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Shopping cart with ${cartCount} items`}
+                data-cart-target="cart"
+              >
+                <img src={cart_ic} alt="Cart" />
+                {cartCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${cartCount} items in cart`}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button & Cart */}
           <div className="flex xl:hidden items-center space-x-2.5 flex-shrink-0">
             <div className="relative flex items-center gap-1.5">
-              {user ? (
+              {user && isAdmin ? null : user ? (
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
@@ -252,7 +294,8 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   </button>
                   {showProfileHint && (
                     <div className="absolute right-0 top-10 z-50 w-56 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
-                      Profile has your orders &amp; addresses.
+                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                      Access your profile here.
                     </div>
                   )}
                   {user.role === 'admin' && (
@@ -285,7 +328,7 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   </svg>
                 </button>
               )}
-              {user && isProfileOpen && (
+              {user && !isAdmin && isProfileOpen && (
                 <div
                   data-profile-menu
                   className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
@@ -328,24 +371,56 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                 </div>
               )}
             </div>
-            {/* Mobile Cart Icon */}
-            <button
-              type="button"
-              onClick={() => onCartOpen?.()}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-              aria-label={`Shopping cart with ${cartCount} items`}
-              data-cart-target="cart"
-            >
-              <img src={mobile_cart_ic} alt="Cart" />
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
+            {/* Mobile Cart / Notifications */}
+            {!isRoleResolved ? null : isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onAdminOrdersOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${newOrdersCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Admin notifications with ${newOrdersCount} new orders`}
+                data-orders-target="orders"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+                  <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                </svg>
+                {newOrdersCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${newOrdersCount} new orders`}
+                  >
+                    {newOrdersCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCartOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Shopping cart with ${cartCount} items`}
+                data-cart-target="cart"
+              >
+                <img src={mobile_cart_ic} alt="Cart" />
+                {cartCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${cartCount} items in cart`}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Hamburger Menu Button */}
             <button

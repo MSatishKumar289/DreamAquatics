@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
+import WhatsIcon from "../assets/Images/whatsapp.jpeg";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
@@ -377,9 +378,10 @@ const CategoryListingPage = () => {
             className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition-all duration-300 ease-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
             aria-label="Open search"
           >
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-500" />
             <svg
               viewBox="0 0 24 24"
-              className="h-4 w-4"
+              className="h-6 w-6"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -535,6 +537,24 @@ const CategoryListingPage = () => {
                   ))}
                 </div>
               )}
+            </div>
+          ) : isSearching ? (
+            <div className="rounded-3xl bg-white/95 px-4 py-6 text-center text-sm text-slate-600 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
+              <p className="text-sm font-semibold text-slate-700">
+                Didn’t find what you were looking for?
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                Tell us what you need and we will help you find it.
+              </p>
+              <a
+                href={`https://wa.me/918667418965?text=${encodeURIComponent(
+                  `Hi, I'm looking for ${searchQuery.trim() || "a product"} — please share the details.`
+                )}`}
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5"
+              >
+                <img src={WhatsIcon} alt="" className="h-4 w-4 rounded-full object-contain" aria-hidden />
+                WhatsApp us
+              </a>
             </div>
           ) : (
             <div className="py-12 text-center">

@@ -166,7 +166,7 @@ const Profile = () => {
       {toast.show && (
         <div className="fixed top-5 left-1/2 z-[9999] -translate-x-1/2">
           <div
-            className={`rounded-xl px-5 py-3 text-sm font-semibold shadow-lg ring-1 ${
+            className={`rounded-xl px-5 py-3 text-sm font-semibold shadow-lg ring-1 whitespace-nowrap ${
               toast.type === "success"
                 ? "bg-emerald-600 text-white ring-emerald-200"
                 : "bg-red-600 text-white ring-red-200"

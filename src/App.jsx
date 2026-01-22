@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
+import AdminOrdersDrawer from './components/AdminOrdersDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
@@ -18,6 +19,7 @@ import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { clearCartStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
+import { AdminOrdersProvider } from './context/AdminOrdersContext';
 
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
@@ -25,6 +27,7 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
 
   const { clearCart, lastAddedAt } = useCart();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
@@ -55,6 +58,7 @@ function AppContent() {
           setSessionUser(null);
           setProfile(null);
           setAuthLoading(false);
+          localStorage.removeItem('da_profile_hint_seen');
 
           // 🔒 Cart cleanup happens ONLY here
           clearCart();
@@ -153,15 +157,19 @@ function AppContent() {
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
+  const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
     <BrowserRouter>
+      <AdminOrdersProvider>
       <div className="App flex min-h-screen flex-col">
         <Header
           user={authUser}
           onLogout={handleLogout}
           onRequestLogin={openLoginModal}
           onCartOpen={() => setIsCartOpen(true)}
+          onAdminOrdersOpen={() => setIsAdminOrdersOpen(true)}
+          isRoleResolved={isRoleResolved}
         />
 
         {isLoginModalOpen && (
@@ -193,6 +201,12 @@ function AppContent() {
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
         />
+        {authUser?.role === 'admin' && (
+          <AdminOrdersDrawer
+            isOpen={isAdminOrdersOpen}
+            onClose={() => setIsAdminOrdersOpen(false)}
+          />
+        )}
 
         <main className="flex-1">
           <Routes>
@@ -234,6 +248,7 @@ function AppContent() {
 
         <Footer />
       </div>
+      </AdminOrdersProvider>
     </BrowserRouter>
   );
 }

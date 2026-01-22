@@ -333,7 +333,7 @@ const Home = ({ profile }) => {
                 ) : (
                   <svg
                     viewBox="0 0 24 24"
-                    className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
+                    className="pointer-events-none absolute right-3 h-6 w-6 text-slate-400"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
@@ -367,7 +367,7 @@ const Home = ({ profile }) => {
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-500" aria-hidden="true" />
                 <svg
                   viewBox="0 0 24 24"
-                  className="h-4 w-4"
+                  className="h-6 w-6"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"

@@ -124,7 +124,7 @@ const Search = () => {
         <div className="container mx-auto flex justify-center">
           <div className="relative mt-[5px] mb-[10px] w-full rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-sm ring-1 ring-slate-100 sm:px-4 sm:py-3">
             <div className="flex w-full max-w-4xl items-center gap-2 mx-auto">
-              <div className="relative flex h-9 w-12 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
+              <div className="relative flex h-9 w-12 items-center justify-center gap-0.8 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
                 <span className="pointer-events-none text-slate-600">
                   {renderCategoryIcon(searchCategory)}
                 </span>
@@ -156,13 +156,32 @@ const Search = () => {
                 </select>
               </div>
               <div className="relative flex w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 sm:py-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="absolute left-3 inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  aria-label="Back"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search for products"
                   ref={searchInputRef}
-                  className="w-full bg-transparent pr-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                  className="w-full bg-transparent pl-9 pr-8 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
                 />
                 {searchQuery.trim() ? (
                   <button
@@ -179,7 +198,7 @@ const Search = () => {
                 ) : (
                   <svg
                     viewBox="0 0 24 24"
-                    className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400"
+                    className="pointer-events-none absolute right-3 h-6 w-6 text-slate-400"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"

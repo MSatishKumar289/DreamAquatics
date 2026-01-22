@@ -53,7 +53,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   const ToastUI = toast.show ? (
     <div className="fixed top-5 left-1/2 z-[9999] -translate-x-1/2">
       <div
-        className={`rounded-xl px-5 py-3 text-sm font-semibold shadow-lg ring-1 ${
+        className={`rounded-xl px-5 py-3 text-sm font-semibold shadow-lg ring-1 whitespace-nowrap ${
           toast.type === "success"
             ? "bg-emerald-600 text-white ring-emerald-200"
             : "bg-red-600 text-white ring-red-200"
@@ -374,7 +374,7 @@ const Checkout = ({ user, onRequestLogin }) => {
               </div>
             )}
 
-            {orderPlaced && (
+            {orderPlaced && isLoggedIn && (
               <div className="mt-4 flex flex-col items-center gap-3 text-center">
                 <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
                   View your order in Profile → Orders.
@@ -632,10 +632,22 @@ const Checkout = ({ user, onRequestLogin }) => {
           ) : (
             <>
               {!isLoggedIn && (
-                <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                  You are checking out as a guest. Your order updates will be sent
-                  to the email and mobile number below.
-                </div>
+                <>
+                  <div className="mb-4 flex w-full flex-col items-center gap-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/60 px-5 py-4 text-center text-sm text-gray-700">
+                    <span>Already have an account? Log in to prefill details.</span>
+                    <button
+                      type="button"
+                      onClick={onRequestLogin}
+                      className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    >
+                      Login
+                    </button>
+                  </div>
+                  <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                    You are checking out as a guest. Your order updates will be sent
+                    to the email and mobile number below.
+                  </div>
+                </>
               )}
 
               <form className="space-y-6" onSubmit={handleReview}>
@@ -782,18 +794,6 @@ const Checkout = ({ user, onRequestLogin }) => {
                     </button>
                   )}
 
-                  {!isLoggedIn && (
-                    <div className="flex w-full max-w-lg flex-col items-center gap-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/60 px-5 py-4 text-center text-sm text-gray-700">
-                      <span>Already have an account? Log in to prefill details.</span>
-                      <button
-                        type="button"
-                        onClick={onRequestLogin}
-                        className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                      >
-                        Login
-                      </button>
-                    </div>
-                  )}
                 </div>
               </form>
             </>
