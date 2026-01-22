@@ -109,7 +109,7 @@ const Header = ({
 
             {/* Profile / Login */}
             <div className="relative flex items-center gap-2">
-              {user && isAdmin ? null : user ? (
+              {user ? (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -169,7 +169,7 @@ const Header = ({
                   </svg>
                 </button>
               )}
-              {user && !isAdmin && isProfileOpen && (
+              {user && isProfileOpen && (
                   <div
                     data-profile-menu
                     className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
@@ -177,16 +177,18 @@ const Header = ({
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      navigate('/profile');
-                    }}
-                    className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
-                  >
-                    Profile
-                  </button>
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Profile
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       type="button"
@@ -268,7 +270,7 @@ const Header = ({
           {/* Mobile Menu Button & Cart */}
           <div className="flex xl:hidden items-center space-x-2.5 flex-shrink-0">
             <div className="relative flex items-center gap-1.5">
-              {user && isAdmin ? null : user ? (
+              {user ? (
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
@@ -328,7 +330,7 @@ const Header = ({
                   </svg>
                 </button>
               )}
-              {user && !isAdmin && isProfileOpen && (
+              {user && isProfileOpen && (
                 <div
                   data-profile-menu
                   className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
@@ -336,16 +338,18 @@ const Header = ({
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      navigate('/profile');
-                    }}
-                    className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
-                  >
-                    Profile
-                  </button>
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Profile
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       type="button"
