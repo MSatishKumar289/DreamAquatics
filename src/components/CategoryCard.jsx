@@ -460,11 +460,11 @@ const CategoryCard = ({
             return (
               <button
                 {...commonProps}
-                className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-slate-800 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+                className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
               >
                 <span>Explore</span>
                 {count !== null && (
-                  <span className="absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-sky-700 shadow ring-2 ring-sky-300">
+                  <span className="absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 shadow ring-2 ring-blue-400">
                     {count}
                   </span>
                 )}
@@ -492,7 +492,7 @@ const CategoryCard = ({
           return (
             <button
               {...commonProps}
-              className="absolute inset-x-3 bottom-3 inline-flex items-center justify-between rounded-full bg-slate-800 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+              className="absolute inset-x-3 bottom-3 inline-flex items-center justify-between rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
             >
               <span className="inline-flex items-center gap-2">
                 <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
@@ -503,7 +503,7 @@ const CategoryCard = ({
                 <span>Explore</span>
               </span>
               {count !== null && (
-                <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-sky-700 ring-2 ring-sky-300">
+                <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 ring-2 ring-blue-400">
                   {count}
                 </span>
               )}
