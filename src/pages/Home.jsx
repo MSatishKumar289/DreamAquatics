@@ -325,7 +325,7 @@ const Home = ({ profile }) => {
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
                     aria-label="Clear search"
                   >
                     X
@@ -380,9 +380,10 @@ const Home = ({ profile }) => {
                 </svg>
               </button>
               {isSearchCollapsed && showSearchHint && (
-                <span className="absolute left-1/5 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+                <div className="absolute left-1/5 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+                  <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-blue-600/90" aria-hidden="true" />
                   Tap to search
-                </span>
+                </div>
               )}
             </div>
           </div>

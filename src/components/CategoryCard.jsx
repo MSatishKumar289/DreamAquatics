@@ -439,7 +439,7 @@ const CategoryCard = ({
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
-                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                className="absolute right-4 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
                 aria-label="Close image preview"
               >
                 X

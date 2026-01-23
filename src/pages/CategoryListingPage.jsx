@@ -17,6 +17,8 @@ const CategoryListingPage = () => {
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [hasSearchOpened, setHasSearchOpened] = useState(false);
+  const [showSearchHint, setShowSearchHint] = useState(false);
   const searchInputRef = useRef(null);
   const openingSearchRef = useRef(false);
 
@@ -30,6 +32,17 @@ const CategoryListingPage = () => {
     window.addEventListener("resize", updateView);
     return () => window.removeEventListener("resize", updateView);
   }, []);
+
+  useEffect(() => {
+    if (!isMobileView) {
+      setShowSearchHint(false);
+      return;
+    }
+    if (hasSearchOpened) return;
+    setShowSearchHint(true);
+    const timer = setTimeout(() => setShowSearchHint(false), 4000);
+    return () => clearTimeout(timer);
+  }, [hasSearchOpened, isMobileView]);
 
   useEffect(() => {
     setSearchQuery("");
@@ -383,6 +396,8 @@ const CategoryListingPage = () => {
           <button
             type="button"
             onClick={() => {
+              setHasSearchOpened(true);
+              setShowSearchHint(false);
               setIsSearchCollapsed(false);
               setTimeout(() => searchInputRef.current?.focus(), 50);
             }}
@@ -404,6 +419,12 @@ const CategoryListingPage = () => {
               <path d="M16 16l4 4" />
             </svg>
           </button>
+          {isSearchCollapsed && showSearchHint && (
+            <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-md bg-blue-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+              <span className="absolute -top-1 right-4 h-2 w-2 rotate-45 bg-blue-600/90" aria-hidden="true" />
+              Tap to search
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -518,7 +539,7 @@ const CategoryListingPage = () => {
                     <h2 className="text-xl font-semibold text-slate-900">
                       {filteredList.length} items found
                     </h2>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-2 text-center text-xs text-sky-600/80">
                       Images are for reference. Actual product appearance may vary.
                     </p>
                   </div>
@@ -608,7 +629,7 @@ const CategoryListingPage = () => {
               <button
                 type="button"
                 onClick={() => setShowDescriptionModal(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
                 aria-label="Close description"
               >
                 X

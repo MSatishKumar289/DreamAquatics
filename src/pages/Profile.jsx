@@ -576,7 +576,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700"
+                className="absolute right-4 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700"
                 aria-label="Close order details"
               >
                 X
