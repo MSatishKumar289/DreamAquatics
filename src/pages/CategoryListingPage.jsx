@@ -16,12 +16,20 @@ const CategoryListingPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
   const searchInputRef = useRef(null);
   const openingSearchRef = useRef(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [categorySlug, subCategorySlug]);
+
+  useEffect(() => {
+    const updateView = () => setIsMobileView(window.innerWidth < 640);
+    updateView();
+    window.addEventListener("resize", updateView);
+    return () => window.removeEventListener("resize", updateView);
+  }, []);
 
   useEffect(() => {
     setSearchQuery("");
@@ -268,7 +276,10 @@ const CategoryListingPage = () => {
   const descriptionText = subcategoryDescription
     ? subcategoryDescription
     : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
-  const hasLongDescription = descriptionText.trim().length > 160;
+  const descriptionLength = descriptionText.trim().length;
+  const hasLongDescription = isMobileView
+    ? descriptionLength > 80
+    : descriptionLength > 160;
   const isSearching = searchQuery.trim().length > 0;
 
   const handleAddToCart = (product, qty = 1) => {
@@ -463,14 +474,19 @@ const CategoryListingPage = () => {
                 {descriptionText}
               </p>
               {hasLongDescription && (
-                <button
-                  type="button"
-                  onClick={() => setShowDescriptionModal(true)}
-                  className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                >
-                  View more
-                </button>
+                <div className="mt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowDescriptionModal(true)}
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  >
+                    View more
+                  </button>
+                </div>
               )}
+              <p className="mt-2 text-center text-xs text-sky-600/80">
+                Images are for reference. Actual product appearance may vary.
+              </p>
             </div>
           </div>
           </section>
@@ -502,23 +518,25 @@ const CategoryListingPage = () => {
                     <h2 className="text-xl font-semibold text-slate-900">
                       {filteredList.length} items found
                     </h2>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Images are for reference. Actual product appearance may vary.
+                    </p>
                   </div>
                 </div>
               )}
               {isSearching ? (
                 <div
-                  className="columns-2 gap-4 max-h-[70vh] overflow-y-auto pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:columns-3 lg:columns-4"
+                  className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto overflow-x-hidden pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:grid-cols-3 lg:grid-cols-4"
                   onScroll={() => searchInputRef.current?.blur()}
                 >
                   {filteredList.map((item) => (
-                    <div key={item.id} className="mb-4 break-inside-avoid">
+                    <div key={item.id} className="h-full">
                       <CategoryCard
                         categoryName={categorySlug}
                         product={item}
                         isSubCategory={!isSubcategoryMode}
                         onAddToCart={handleAddToCart}
                         showStockBadge={isSubcategoryMode}
-                        isMasonry
                       />
                     </div>
                   ))}

@@ -178,6 +178,9 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
                 {"\u20B9"}
                 {priceValue.toLocaleString("en-IN")}
               </p>
+              <p className="text-xs text-slate-500">
+                Images are for reference. Actual product appearance may vary.
+              </p>
             </div>
           </div>
 

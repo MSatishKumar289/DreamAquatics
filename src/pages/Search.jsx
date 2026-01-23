@@ -229,6 +229,9 @@ const Search = () => {
                 <h2 className="text-xl font-semibold text-slate-900">
                   {searchResults.length} items found
                 </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Images are for reference. Actual product appearance may vary.
+                </p>
               </div>
             </div>
           )}

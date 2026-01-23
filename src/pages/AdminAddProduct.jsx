@@ -159,6 +159,7 @@ const AdminAddProduct = ({ profile, authLoading }) => {
   const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [subcategorySearch, setSubcategorySearch] = useState("");
   const [itemSearch, setItemSearch] = useState("");
   const [homeMediaDraft, setHomeMediaDraft] = useState({
     videoUrl: "",
@@ -319,6 +320,13 @@ const AdminAddProduct = ({ profile, authLoading }) => {
   }, [selectedCategoryId]);
 
   const currentSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
+  const filteredSubcategories = useMemo(() => {
+    const query = subcategorySearch.trim().toLowerCase();
+    if (!query) return currentSubcategories;
+    return currentSubcategories.filter((subcategory) =>
+      String(subcategory?.name || "").toLowerCase().includes(query)
+    );
+  }, [currentSubcategories, subcategorySearch]);
   const orderedCategories = useMemo(() => {
     const order = ["Fishes", "Plants", "Accessories", "Tanks"];
     const rank = new Map(order.map((name, index) => [name, index]));
@@ -897,7 +905,20 @@ const AdminAddProduct = ({ profile, authLoading }) => {
             </div>
 
             <div className="mt-4 space-y-2">
-              {currentSubcategories.map((subcategory) => {
+              <input
+                type="search"
+                value={subcategorySearch}
+                onChange={(event) => setSubcategorySearch(event.target.value)}
+                placeholder="Search subcategories"
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+              <span className="text-xs text-slate-400">
+                {filteredSubcategories.length} subcategories
+              </span>
+            </div>
+
+            <div className="mt-3 max-h-[420px] space-y-2 overflow-y-auto pr-1 sm:max-h-[520px]">
+              {filteredSubcategories.map((subcategory) => {
                 const isActive = subcategory.id === selectedSubcategoryId;
                 return (
                   <div
@@ -945,7 +966,7 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                   </div>
                 );
               })}
-              {currentSubcategories.length === 0 && (
+              {filteredSubcategories.length === 0 && (
                 <p className="text-sm text-slate-500">No subcategories available.</p>
               )}
             </div>
