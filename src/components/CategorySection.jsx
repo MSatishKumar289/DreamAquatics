@@ -34,7 +34,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
               {displayName}
             </h2>
             <button
-              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
+              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-100/70 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
