@@ -88,13 +88,15 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
       aria-labelledby="modal-title"
     >
       <div className="relative mx-4 w-full max-w-4xl rounded-3xl bg-white p-5 shadow-2xl md:p-8 max-h-[90dvh] overflow-y-auto md:max-h-[90vh] md:overflow-hidden">
-        <button
-          onClick={onClose}
-          className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-          aria-label="Close modal"
-        >
-          X
-        </button>
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 !bg-red-600 !text-white"
+            aria-label="Close modal"
+          >
+            <span className="text-base font-semibold leading-none">X</span>
+          </button>
+        </div>
 
         <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row max-h-none md:max-h-[calc(90vh-5rem)]">
           <div className="space-y-4 md:w-1/2">
@@ -182,7 +184,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
             </div>
           </div>
 
-          <div className="space-y-4 md:w-1/2 flex flex-col min-h-0 pr-8">
+          <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
             <section className="space-y-4 flex flex-col min-h-0">
               <p className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
                 {safeProduct?.description || ""}
