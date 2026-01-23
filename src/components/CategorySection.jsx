@@ -34,11 +34,11 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
               {displayName}
             </h2>
             <button
-              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-100/70 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
+              className="group relative inline-flex items-center gap-2 rounded-2xl border border-blue-100 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(37,99,235,0.2)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-3.5 w-3.5"
@@ -52,7 +52,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
                 </svg>
               </span>
               <span>View All</span>
-              <span className="inline-flex min-w-[32px] items-center justify-center rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-white ring-1 ring-blue-700/30">
+              <span className="absolute -right-2 -top-2 inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white shadow ring-2 ring-white">
                 {productCount}
               </span>
             </button>
