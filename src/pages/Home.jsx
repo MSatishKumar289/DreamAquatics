@@ -186,6 +186,7 @@ const Home = ({ profile }) => {
                 subcategorySlug: subcategory.slug,
                 latestProductDate: latestProduct?.created_at || '',
                 image: latestProduct?.product_images?.[0]?.url || '',
+                itemCount: group.length,
               };
             })
             .filter(Boolean)

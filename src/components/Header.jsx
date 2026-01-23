@@ -65,7 +65,7 @@ const Header = ({
     const timer = setTimeout(() => {
       setShowProfileHint(false);
       localStorage.setItem('da_profile_hint_seen', '1');
-    }, 3000);
+    }, 5000);
     return () => clearTimeout(timer);
   }, [user]);
 

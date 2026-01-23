@@ -213,6 +213,7 @@ const CategoryListingPage = () => {
         subcategoryDescription: sub.description || "",
         latestProductDate: latestProduct?.created_at || "",
         image: latestProduct?.product_images?.[0]?.url || "",
+        itemCount: group.length,
       };
     });
 

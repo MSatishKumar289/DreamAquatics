@@ -15,6 +15,7 @@ const CategoryCard = ({
   showStockBadge,
   isMasonry = false
 }) => {
+  const EXPLORE_STYLE = "corner-badge";
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -315,18 +316,18 @@ const CategoryCard = ({
       <div
         className={`p-2 sm:p-3 ${
           isSubCategory
-            ? "flex flex-col gap-2 sm:gap-3"
+            ? "flex flex-col gap-2 pb-5 sm:gap-3 sm:pb-6"
             : isMasonry
               ? "flex flex-col gap-1 sm:gap-1.5"
               : "flex min-h-[150px] flex-col gap-1 sm:min-h-[170px] sm:gap-1.5"
         }`}
       >
         <div
-          className={`text-center ${
+          className={`text-center min-h-[38px] ${
             !isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""
           }`}
         >
-          <h3 className="text-sm sm:text-base font-semibold text-slate-900 line-clamp-3">
+          <h3 className="px-1 text-sm sm:text-base font-semibold text-slate-900 line-clamp-3">
             {productTitle}
           </h3>
           {!isSubCategory && productSubtitle && (
@@ -412,16 +413,103 @@ const CategoryCard = ({
       </div>
 
       {isSubCategory && (
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            handleClick();
-          }}
-          className="absolute inset-x-0 bottom-0 rounded-none bg-blue-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:px-4 sm:py-2.5"
-        >
-          View Product
-        </button>
+        (() => {
+          const count = Number.isFinite(product?.itemCount) ? product.itemCount : null;
+          const commonProps = {
+            type: "button",
+            onClick: (event) => {
+              event.stopPropagation();
+              handleClick();
+            },
+          };
+
+          if (EXPLORE_STYLE === "underline") {
+            return (
+              <button
+                {...commonProps}
+                className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-md backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.2)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              >
+                <span>Explore</span>
+                {count !== null && (
+                  <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white">
+                    {count}
+                  </span>
+                )}
+                <span className="absolute inset-x-8 -bottom-1 h-[2px] rounded-full bg-blue-500/60" aria-hidden="true" />
+              </button>
+            );
+          }
+
+          if (EXPLORE_STYLE === "outline") {
+            return (
+              <button
+                {...commonProps}
+                className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full border border-blue-300 bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.18)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              >
+                <span>Explore</span>
+                {count !== null && (
+                  <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-2 text-[10px] font-semibold tracking-[0.12em] text-white shadow-sm">
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          }
+
+          if (EXPLORE_STYLE === "corner-badge") {
+            return (
+              <button
+                {...commonProps}
+                className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-slate-800 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+              >
+                <span>Explore</span>
+                {count !== null && (
+                  <span className="absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-sky-700 shadow ring-2 ring-sky-300">
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          }
+
+          if (EXPLORE_STYLE === "stacked") {
+            return (
+              <button
+                {...commonProps}
+                className="absolute inset-x-3 bottom-3 flex flex-col items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              >
+                <span>Explore</span>
+                {count !== null && (
+                  <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white ring-1 ring-white/30">
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          }
+
+          // split pill (default)
+          return (
+            <button
+              {...commonProps}
+              className="absolute inset-x-3 bottom-3 inline-flex items-center justify-between rounded-full bg-slate-800 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+            >
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
+                    <path d="M5 12h14M12 5v14" />
+                  </svg>
+                </span>
+                <span>Explore</span>
+              </span>
+              {count !== null && (
+                <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-sky-700 ring-2 ring-sky-300">
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })()
       )}
 
       {isPreviewOpen &&
