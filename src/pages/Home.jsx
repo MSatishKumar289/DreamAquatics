@@ -27,6 +27,7 @@ const Home = ({ profile }) => {
   };
   const instagramUrl = 'https://www.instagram.com/dreamaquatics23/?hl=en';
   const [productsByCategory, setProductsByCategory] = useState({});
+  const [subcategoryCounts, setSubcategoryCounts] = useState({});
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeHighlight, setActiveHighlight] = useState(null);
@@ -159,6 +160,11 @@ const Home = ({ profile }) => {
           });
         }
 
+        const counts = categories.reduce((acc, categoryKey) => {
+          acc[categoryKey] = Object.keys(groupedBySubcategory[categoryKey] || {}).length;
+          return acc;
+        }, {});
+
         const mapped = categories.reduce((acc, categoryKey) => {
           const subcategoryGroups = Object.values(groupedBySubcategory[categoryKey] || {});
 
@@ -191,6 +197,7 @@ const Home = ({ profile }) => {
         }, {});
 
         setProductsByCategory(mapped);
+        setSubcategoryCounts(counts);
         setAllProducts(data || []);
       } catch (error) {
         console.error('Error loading products:', error);
@@ -613,6 +620,7 @@ const Home = ({ profile }) => {
             key={category}
             categoryName={category}
             products={productsByCategory[category] || []}
+            subcategoryCount={subcategoryCounts[category] || 0}
           />
         ))
       ))}

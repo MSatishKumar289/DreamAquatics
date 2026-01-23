@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import CategoryCard from './CategoryCard';
 
-const CategorySection = ({ categoryName, products }) => {
+const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
   const navigate = useNavigate();
   const categoryLabel = {
     'fishes': '🐠 Fishes',
@@ -18,6 +18,7 @@ const CategorySection = ({ categoryName, products }) => {
 
   // Take only the first 4 products for this category
   const displayProducts = products.slice(0, 4);
+  const productCount = subcategoryCount;
   // console.log(displayProducts);
 
   return (
@@ -25,15 +26,15 @@ const CategorySection = ({ categoryName, products }) => {
       <div className="w-full px-0">
         <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
-          <div className="relative mb-4 pr-24 sm:pr-28">
+          <div className="mb-4 flex flex-nowrap items-center justify-between gap-3">
             <h2
               id={`category-${categoryName}`}
-              className="text-2xl sm:text-3xl font-bold text-gray-900"
+              className="truncate text-xl font-bold text-gray-900 sm:text-2xl"
             >
               {displayName}
             </h2>
             <button
-              className="group absolute right-0 top-0 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none"
+              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
@@ -51,6 +52,9 @@ const CategorySection = ({ categoryName, products }) => {
                 </svg>
               </span>
               <span>View All</span>
+              <span className="inline-flex min-w-[32px] items-center justify-center rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-white ring-1 ring-blue-700/30">
+                {productCount}
+              </span>
             </button>
           </div>
 
