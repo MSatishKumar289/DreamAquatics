@@ -401,7 +401,7 @@ const CategoryCard = ({
                   </div>
                 </div>
               )}
-              {showAddedHint && (
+              {showAddedHint && !isPreviewOpen && (
                 <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                   Added 1 item
                 </span>
@@ -436,6 +436,11 @@ const CategoryCard = ({
             aria-modal="true"
           >
             <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
+              {showAddedHint && (
+                <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-md bg-emerald-600 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                  Added 1 item
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
