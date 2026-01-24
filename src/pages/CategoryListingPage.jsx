@@ -474,7 +474,7 @@ const CategoryListingPage = () => {
                 <p className="text-sm uppercase tracking-[0.4em] text-blue-600">
                   Collection
                 </p>
-                <h1 className="text-4xl font-bold text-slate-900 line-clamp-2 sm:text-5xl">
+                <h1 className="text-2xl font-bold text-slate-900 line-clamp-2 sm:text-5xl">
                   {titleOfListingPage}
                 </h1>
               </div>
