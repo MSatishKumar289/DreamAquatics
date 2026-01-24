@@ -123,7 +123,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
                   aria-label={`Add ${title} to cart`}
                 >
                   <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
-                    <img src={plusIcon} alt="" className="h-4 w-4" />
+                    <img src={plusIcon} alt="" className="h-6 w-6" />
                   </span>
                   Add to cart
                 </button>

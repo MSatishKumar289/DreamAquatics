@@ -556,7 +556,7 @@ const CategoryCard = ({
                           className="group mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
                         >
                           <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
-                            <img src={plusIcon} alt="" className="h-4 w-4" />
+                            <img src={plusIcon} alt="" className="h-6 w-6" />
                           </span>
                           Add to cart
                         </button>
