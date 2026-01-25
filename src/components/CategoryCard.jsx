@@ -491,7 +491,7 @@ const CategoryCard = ({
                 {startFromBlock}
                 <button
                   {...commonProps}
-                  className="absolute inset-x-8 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 md:inset-x-8 md:px-3 md:py-2 md:text-[10px] lg:inset-x-12 lg:px-2.5 lg:py-2 lg:text-[9px]"
+                  className="absolute inset-x-4 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 md:inset-x-4 md:px-3 md:py-2 md:text-[11px] lg:inset-x-8 lg:px-2.5 lg:py-2 lg:text-[10px]"
                 >
                   <span>Explore</span>
                   {count !== null && (
