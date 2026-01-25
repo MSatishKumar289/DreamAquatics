@@ -207,9 +207,9 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
+      className={`group relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
-      } ${!isSubCategory && isSoldOut ? "cursor-not-allowed opacity-60 grayscale" : ""}`}
+      }`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
       aria-label={
@@ -217,24 +217,6 @@ const CategoryCard = ({
       }
       onClick={handleClick}
     >
-      {!isSubCategory && shouldShowStockBadge && (
-        <div className="absolute left-0 top-0 z-10">
-          <div
-            className={`h-8 w-8 ${
-              isSoldOut ? "bg-red-600" : "bg-emerald-600"
-            }`}
-            style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
-            aria-hidden="true"
-          />
-          <div
-            className={`absolute left-0 top-0 whitespace-nowrap rounded-br-md px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm ${
-              isSoldOut ? "bg-red-600" : "bg-emerald-600"
-            }`}
-          >
-            {isSoldOut ? "Out Of Stock" : "In Stock"}
-          </div>
-        </div>
-      )}
       <div className="relative w-full overflow-hidden rounded-b-none bg-gradient-to-br from-slate-50 via-white to-slate-100">
         <div className="relative aspect-[4/3] sm:aspect-[4/3] w-full border-b border-slate-200/60">
           {isSubCategory && (
@@ -268,12 +250,9 @@ const CategoryCard = ({
           <img
             src={imageSrc}
             alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-            className={`h-full w-full transition-transform duration-300 group-hover:scale-105 ${
-              isSubCategory ? "object-cover" : "object-contain bg-white"
-            }`}
+            className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
             onClick={(event) => {
               if (isSubCategory) return;
-              if (isSoldOut) return;
               event.stopPropagation();
               setIsPreviewOpen(true);
             }}
@@ -286,10 +265,10 @@ const CategoryCard = ({
           />
           {!isSubCategory && (
             <>
-              <div className="pointer-events-none absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+              <div className="pointer-events-none absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
                 <svg
                   viewBox="0 0 24 24"
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"
@@ -319,9 +298,30 @@ const CategoryCard = ({
             ? "flex flex-col gap-2 pb-5 sm:gap-3 sm:pb-6"
             : isMasonry
               ? "flex flex-col gap-1 sm:gap-1.5"
-              : "flex min-h-[150px] flex-col gap-1 sm:min-h-[170px] sm:gap-1.5"
+              : "flex min-h-[160px] flex-col gap-1 sm:min-h-[185px] sm:gap-1.5"
         }`}
       >
+        {!isSubCategory && shouldShowStockBadge && (
+          <div className="flex justify-center mb-2">
+            <div
+              className={`relative inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-md ${
+                isSoldOut ? "border-rose-200 bg-rose-500" : "border-emerald-200 bg-emerald-600"
+              }`}
+            >
+              <span
+                className="absolute left-1/2 -bottom-1.5 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border border-transparent"
+                style={{
+                  borderLeftColor: isSoldOut ? "#f43f5e" : "#059669",
+                  borderBottomColor: isSoldOut ? "#f43f5e" : "#059669",
+                  backgroundColor: isSoldOut ? "#f43f5e" : "#059669"
+                }}
+                aria-hidden="true"
+              />
+              <span className="h-1.5 w-1.5 rounded-full bg-white/90" aria-hidden="true" />
+              {isSoldOut ? "Sold Out" : "In Stock"}
+            </div>
+          </div>
+        )}
         <div
           className={`text-center min-h-[38px] ${
             !isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""
