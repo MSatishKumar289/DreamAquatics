@@ -13,7 +13,7 @@ const Spinner = ({ size = 18 }) => (
   />
 );
 
-const Profile = ({ orders = [] }) => {
+const Profile = () => {
   const {
     addresses,
     loadingAddresses,

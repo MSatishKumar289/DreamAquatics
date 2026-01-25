@@ -63,7 +63,6 @@ const normalizeProducts = (products = []) =>
 const AdminAddProduct = ({
   profile,
   authLoading,
-  adminOrders = [],
   onUpdateOrderStatus,
   onUpdateOrderFulfillment
 }) => {
