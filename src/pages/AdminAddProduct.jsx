@@ -1216,13 +1216,9 @@ const AdminAddProduct = ({
                                 {firstItem?.title}
                                 {extraCount > 0 ? ` + ${extraCount} more` : ""}
                               </span>
-                              {statusLabel && (
-                                <span
-                                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}
-                                >
-                                  {statusLabel.text}
-                                </span>
-                              )}
+                              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                Accepted
+                              </span>
                             </span>
                           </p>
                           <p className="mt-1 text-xs text-slate-600">{dateLabel} · {formatOrderStatus(order.status)}</p>
@@ -1233,92 +1229,18 @@ const AdminAddProduct = ({
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
-                          {orderState === "new" && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => onUpdateOrderStatus?.(order.id, "accepted")}
-                                className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
-                              >
-                                Accept
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onUpdateOrderStatus?.(order.id, "cancelled")}
-                                className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          )}
-
-                          {orderState === "accepted" && (
-                            <>
-                              {!isEditing ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingOrderId(order.id);
-                                    setPendingFulfillment((prev) => ({
-                                      ...prev,
-                                      [order.id]: committedFulfillment ?? "in-transit"
-                                    }));
-                                  }}
-                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                                >
-                                  Edit
-                                </button>
-                              ) : (
-                                <>
-                                  <select
-                                    value={fulfillment}
-                                    onChange={(event) =>
-                                      setPendingFulfillment((prev) => ({
-                                        ...prev,
-                                        [order.id]: event.target.value
-                                      }))
-                                    }
-                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
-                                  >
-                                    <option value="in-transit">In transit</option>
-                                    <option value="completed">Order completed</option>
-                                    <option value="cancelled">Order cancelled</option>
-                                  </select>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onUpdateOrderFulfillment?.(order.id, fulfillment);
-                                      setEditingOrderId(null);
-                                      setPendingFulfillment((prev) => {
-                                        const next = { ...prev };
-                                        delete next[order.id];
-                                        return next;
-                                      });
-                                    }}
-                                    disabled={!isDirty}
-                                    className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-                                  >
-                                    Save
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingOrderId(null);
-                                      setPendingFulfillment((prev) => {
-                                        const next = { ...prev };
-                                        delete next[order.id];
-                                        return next;
-                                      });
-                                    }}
-                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
-                                  >
-                                    Cancel
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          )}
-
+                          <button
+                            type="button"
+                            className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
+                          >
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1754,41 +1676,55 @@ const AdminAddProduct = ({
               </div>
 
               {/* ✅ Status dropdown */}
-              <div className="mt-4 flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
-                <span>Status</span>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-slate-200 pb-3">
+                <span className="text-sm font-semibold text-slate-500">Status</span>
 
-                <select
-                  value={selectedAdminOrder.status}
-                  onChange={async (e) => {
-                    const nextStatus = e.target.value;
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={selectedAdminOrder.status}
+                    onChange={async (e) => {
+                      const nextStatus = e.target.value;
 
-                    // optimistic UI update
-                    setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
-                    setAdminOrders((prev) =>
-                      prev.map((o) =>
-                        o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
-                      )
-                    );
+                      // optimistic UI update
+                      setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
+                      setAdminOrders((prev) =>
+                        prev.map((o) =>
+                          o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
+                        )
+                      );
 
-                    const { error } = await updateOrderStatusAdmin(
-                      selectedAdminOrder.id,
-                      nextStatus
-                    );
+                      const { error } = await updateOrderStatusAdmin(
+                        selectedAdminOrder.id,
+                        nextStatus
+                      );
 
-                    if (error) {
-                      showToast(error.message || "Failed to update status", "error");
-                      loadAdminOrders(); // reload correct status from DB
-                    } else {
-                      showToast("Order status updated", "success");
-                    }
-                  }}
-                  className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
-                >
-                  <option value="awaiting_approval">Awaiting Approval</option>
-                  <option value="in_transit">Confirmed (In Transit)</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+                      if (error) {
+                        showToast(error.message || "Failed to update status", "error");
+                        loadAdminOrders(); // reload correct status from DB
+                      } else {
+                        showToast("Order status updated", "success");
+                      }
+                    }}
+                    className="min-w-[170px] rounded-full border border-blue-500 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none"
+                  >
+                    <option value="in_transit">In Transit</option>
+                    <option value="completed">Order Completed</option>
+                    <option value="cancelled">Order Cancelled</option>
+                  </select>
+
+                  <button
+                    type="button"
+                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
 
               {/* Items */}
