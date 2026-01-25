@@ -326,7 +326,7 @@ const CategoryCard = ({
           </div>
         )}
         <div
-          className={`text-center ${isSubCategory ? "min-h-[36px]" : "min-h-[38px]"} ${
+          className={`text-center ${isSubCategory ? "min-h-[38px]" : "min-h-[38px]"} ${
             !isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""
           }`}
         >
@@ -432,7 +432,7 @@ const CategoryCard = ({
 
           const startFromBlock = startFromPrice !== null && (
             <div className="absolute inset-x-3 bottom-10 flex justify-center sm:bottom-11">
-              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "20px" }}>
+              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "8px" }}>
                 Starts from {"\u20B9"}
                 {startFromPrice.toLocaleString("en-IN")}
               </span>
