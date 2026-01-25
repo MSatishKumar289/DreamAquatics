@@ -1644,12 +1644,12 @@ const AdminAddProduct = ({
 
               <h2 className="mt-2 text-1xl font-semibold text-slate-900">Order receipt</h2>
 
-              <p className="mt-1 text-xs text-slate-600">
-                Status:{" "}
-                <span className="font-semibold">
-                  {formatOrderStatus(selectedAdminOrder.status)}
+              <div className="mt-2 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <span>Status</span>
+                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                  Approved
                 </span>
-              </p>
+              </div>
 
               <button
                 type="button"
@@ -1676,10 +1676,10 @@ const AdminAddProduct = ({
               </div>
 
               {/* ✅ Status dropdown */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-slate-200 pb-3">
+              <div className="mt-4 flex flex-col items-start gap-3 border-b border-dashed border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-semibold text-slate-500">Status</span>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
                   <select
                     value={selectedAdminOrder.status}
                     onChange={async (e) => {
@@ -1708,8 +1708,8 @@ const AdminAddProduct = ({
                     className="min-w-[170px] rounded-full border border-blue-500 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none"
                   >
                     <option value="in_transit">In Transit</option>
-                    <option value="completed">Order Completed</option>
-                    <option value="cancelled">Order Cancelled</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
                   </select>
 
                   <button
@@ -1737,8 +1737,8 @@ const AdminAddProduct = ({
                 <div className="mt-3 space-y-3 border-b border-dashed border-slate-200 pb-4">
                   {(selectedAdminOrder.order_items || []).map((item) => (
                     <div key={item.id} className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-semibold text-slate-900">{item.title}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words font-semibold text-slate-900">{item.title}</p>
                         <p className="text-xs text-slate-500">
                           Qty {item.qty} - Rs. {Number(item.price).toLocaleString("en-IN")}
                         </p>

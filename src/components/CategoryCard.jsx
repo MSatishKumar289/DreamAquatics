@@ -369,7 +369,7 @@ const CategoryCard = ({
                     type="button"
                     onClick={handleAddToCart}
                     disabled={isSoldOut}
-                    className="group inline-flex h-9 w-[160px] min-w-[160px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
                   >
                     <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                       <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -439,7 +439,7 @@ const CategoryCard = ({
 
           const startFromBlock = startFromPrice !== null && (
             <div className="absolute inset-x-3 bottom-10 flex justify-center sm:bottom-11">
-              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "14px" }}>
+              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "20px" }}>
                 Starts from {"\u20B9"}
                 {startFromPrice.toLocaleString("en-IN")}
               </span>
@@ -491,7 +491,7 @@ const CategoryCard = ({
                 {startFromBlock}
                 <button
                   {...commonProps}
-                  className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+                  className="absolute inset-x-8 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 md:inset-x-16 md:px-2.5 md:py-2.5 md:text-[9px]"
                 >
                   <span>Explore</span>
                   {count !== null && (
@@ -591,7 +591,7 @@ const CategoryCard = ({
                           type="button"
                           onClick={handleAddToCart}
                           disabled={isSoldOut}
-                          className="group mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                          className="group mx-auto inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
                         >
                           <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
                             <img src={plusIcon} alt="" className="h-6 w-6" />
