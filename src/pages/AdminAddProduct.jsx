@@ -18,6 +18,12 @@ import {
   updateSubcategory,
   deleteSubcategoryCascade
 } from "../lib/catalogApi.js";
+import {
+  fetchAllOrdersAdmin,
+  updateOrderStatusAdmin,
+  formatOrderStatus
+} from "../lib/ordersApi.js";
+
 
 const MAX_IMAGE_BYTES = 300 * 1024;
 const MAX_IMAGE_DIMENSION = 720;
@@ -174,6 +180,10 @@ const AdminAddProduct = ({
   const [homeMediaError, setHomeMediaError] = useState("");
   const [selectedAdminOrder, setSelectedAdminOrder] = useState(null);
   const [adminView, setAdminView] = useState("catalog");
+  const [adminOrders, setAdminOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState("");
+
   const [adminOrderFilter, setAdminOrderFilter] = useState("all");
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [pendingFulfillment, setPendingFulfillment] = useState({});
@@ -229,6 +239,22 @@ const AdminAddProduct = ({
     showToast("Home media reset", "success");
   };
 
+  const loadAdminOrders = async () => {
+    setOrdersLoading(true);
+    setOrdersError("");
+  
+    const { data, error } = await fetchAllOrdersAdmin();
+    if (error) {
+      setOrdersError(error.message || "Failed to load orders");
+      setAdminOrders([]);
+      setOrdersLoading(false);
+      return;
+    }
+  
+    setAdminOrders(data || []);
+    setOrdersLoading(false);
+  };
+  
   const getOrderStatusKey = (order) => {
     const state = order.status || "new";
     if (state === "cancelled") return "cancelled";
@@ -410,6 +436,12 @@ const AdminAddProduct = ({
       navigate("/", { replace: true });
     }
   }, [profile, authLoading, navigate]);
+
+  useEffect(() => {
+    if (adminView !== "orders") return;
+    loadAdminOrders();
+  }, [adminView]);
+  
 
   /* =========================
      ITEM HANDLERS
@@ -1137,18 +1169,25 @@ const AdminAddProduct = ({
               </div>
             </div>
 
-            {filteredAdminOrders.length === 0 ? (
+            {ordersLoading ? (
+              <p className="mt-4 text-sm text-slate-500">Loading orders...</p>
+            ) : ordersError ? (
+              <p className="mt-4 text-sm text-rose-600">{ordersError}</p>
+            ) : adminOrders.length === 0 ? (
               <p className="mt-4 text-sm text-slate-500">No orders received yet.</p>
             ) : (
               <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 lg:max-h-[520px]">
-                {filteredAdminOrders.map((order) => {
-                  const firstItem = order.items[0];
-                  const extraCount = Math.max(order.items.length - 1, 0);
-                  const dateLabel = new Date(order.placedAt).toLocaleDateString("en-IN", {
+                {adminOrders.map((order) => {
+                  const items = order.order_items || [];
+                  const firstItem = items[0];
+                  const extraCount = Math.max(items.length - 1, 0);
+                  
+                  const dateLabel = new Date(order.created_at).toLocaleDateString("en-IN", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric"
                   });
+                  
 
                   const orderState = order.status || "new";
                   const committedFulfillment = order.fulfillment || null;
@@ -1170,7 +1209,7 @@ const AdminAddProduct = ({
                           className="min-w-[220px] flex-1 text-left"
                         >
                           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                            Order {order.id}
+                            Order {order.order_number || order.id}
                           </p>
                           <p className="mt-2 text-sm font-semibold text-slate-900">
                             <span className="inline-flex flex-wrap items-center gap-2">
@@ -1187,11 +1226,11 @@ const AdminAddProduct = ({
                               )}
                             </span>
                           </p>
-                          <p className="mt-1 text-xs text-slate-600">{dateLabel}</p>
+                          <p className="mt-1 text-xs text-slate-600">{dateLabel} · {formatOrderStatus(order.status)}</p>
                         </button>
 
                         <div className="text-sm font-semibold text-slate-900">
-                          Rs. {order.total.toLocaleString("en-IN")}
+                          Rs. {Number(order.total || 0).toLocaleString("en-IN")}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
@@ -1673,6 +1712,7 @@ const AdminAddProduct = ({
           aria-modal="true"
         >
           <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+            {/* Header */}
             <div className="relative border-b border-dashed border-slate-200 px-5 py-4 text-center">
               <p className="flex items-baseline justify-center text-blue-600">
                 <span className="text-base font-bold tracking-[0.2em]">D</span>
@@ -1680,7 +1720,16 @@ const AdminAddProduct = ({
                 <span className="ml-0.5 text-base font-bold tracking-[0.2em]">A</span>
                 <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">QUATICS</span>
               </p>
+
               <h2 className="mt-2 text-1xl font-semibold text-slate-900">Order receipt</h2>
+
+              <p className="mt-1 text-xs text-slate-600">
+                Status:{" "}
+                <span className="font-semibold">
+                  {formatOrderStatus(selectedAdminOrder.status)}
+                </span>
+              </p>
+
               <button
                 type="button"
                 onClick={() => setSelectedAdminOrder(null)}
@@ -1690,11 +1739,14 @@ const AdminAddProduct = ({
                 X
               </button>
             </div>
+
+            {/* Body */}
             <div className="max-h-[75vh] overflow-y-auto px-5 py-4 text-sm text-slate-700">
+              {/* Placed on */}
               <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
                 <span>Placed on</span>
                 <span className="font-semibold text-slate-900">
-                  {new Date(selectedAdminOrder.placedAt).toLocaleDateString("en-IN", {
+                  {new Date(selectedAdminOrder.created_at).toLocaleDateString("en-IN", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric"
@@ -1702,68 +1754,121 @@ const AdminAddProduct = ({
                 </span>
               </div>
 
+              {/* ✅ Status dropdown */}
+              <div className="mt-4 flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
+                <span>Status</span>
+
+                <select
+                  value={selectedAdminOrder.status}
+                  onChange={async (e) => {
+                    const nextStatus = e.target.value;
+
+                    // optimistic UI update
+                    setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
+                    setAdminOrders((prev) =>
+                      prev.map((o) =>
+                        o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
+                      )
+                    );
+
+                    const { error } = await updateOrderStatusAdmin(
+                      selectedAdminOrder.id,
+                      nextStatus
+                    );
+
+                    if (error) {
+                      showToast(error.message || "Failed to update status", "error");
+                      loadAdminOrders(); // reload correct status from DB
+                    } else {
+                      showToast("Order status updated", "success");
+                    }
+                  }}
+                  className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+                >
+                  <option value="awaiting_approval">Awaiting Approval</option>
+                  <option value="in_transit">Confirmed (In Transit)</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              {/* Items */}
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
                   <span>Item</span>
                   <span>Total</span>
                 </div>
+
                 <div className="mt-3 space-y-3 border-b border-dashed border-slate-200 pb-4">
-                  {selectedAdminOrder.items.map((item) => (
+                  {(selectedAdminOrder.order_items || []).map((item) => (
                     <div key={item.id} className="flex items-start justify-between gap-4">
                       <div>
                         <p className="font-semibold text-slate-900">{item.title}</p>
                         <p className="text-xs text-slate-500">
-                          Qty {item.qty} - Rs. {item.price.toLocaleString("en-IN")}
+                          Qty {item.qty} - Rs. {Number(item.price).toLocaleString("en-IN")}
                         </p>
                       </div>
                       <div className="font-semibold text-slate-900">
-                        Rs. {(item.qty * item.price).toLocaleString("en-IN")}
+                        Rs.{" "}
+                        {Number(item.line_total || item.qty * item.price).toLocaleString(
+                          "en-IN"
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
+              {/* Delivery Address */}
               <div className="mt-4 border-b border-dashed border-slate-200 pb-4">
                 <h3 className="text-xs uppercase tracking-[0.3em] text-slate-400">
                   Delivery Address
                 </h3>
+
                 <div className="mt-2 space-y-1 text-sm">
                   <p className="font-semibold text-slate-900">
-                    {selectedAdminOrder.customer.name}
+                    {selectedAdminOrder.customer_name}
                   </p>
-                  <p>{selectedAdminOrder.customer.email}</p>
-                  <p>{selectedAdminOrder.customer.phone}</p>
-                  <p>{selectedAdminOrder.customer.line1}</p>
-                  {selectedAdminOrder.customer.line2 && <p>{selectedAdminOrder.customer.line2}</p>}
-                  {selectedAdminOrder.customer.landmark && (
-                    <p>Landmark: {selectedAdminOrder.customer.landmark}</p>
+                  {selectedAdminOrder.customer_email && <p>{selectedAdminOrder.customer_email}</p>}
+                  <p>{selectedAdminOrder.customer_mobile}</p>
+                  <p>{selectedAdminOrder.address_line1}</p>
+                  {selectedAdminOrder.address_line2 && <p>{selectedAdminOrder.address_line2}</p>}
+                  {selectedAdminOrder.landmark && (
+                    <p>Landmark: {selectedAdminOrder.landmark}</p>
                   )}
                   <p>
-                    {selectedAdminOrder.customer.city} - {selectedAdminOrder.customer.pincode}
+                    {selectedAdminOrder.city} - {selectedAdminOrder.pincode}
                   </p>
                 </div>
               </div>
 
+              {/* Totals */}
               <div className="mt-4 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-900">
-                    Rs. {selectedAdminOrder.subtotal.toLocaleString("en-IN")}
+                    Rs. {Number(selectedAdminOrder.subtotal || 0).toLocaleString("en-IN")}
                   </span>
                 </div>
+
                 <div className="flex items-center justify-between">
                   <span>Standard shipping</span>
                   <span className="font-semibold text-slate-900">
-                    Rs. {selectedAdminOrder.shipping.toLocaleString("en-IN")}
+                    Rs.{" "}
+                    {Number(selectedAdminOrder.shipping_fee || 0).toLocaleString("en-IN")}
                   </span>
                 </div>
+
                 <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-3 font-semibold text-slate-900">
                   <span>Total</span>
-                  <span>Rs. {selectedAdminOrder.total.toLocaleString("en-IN")}</span>
+                  <span>
+                    Rs. {Number(selectedAdminOrder.total || 0).toLocaleString("en-IN")}
+                  </span>
                 </div>
               </div>
             </div>
+
+            {/* Receipt tear strip */}
             <div className="h-4 w-full bg-white">
               <svg className="h-full w-full" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path
@@ -1777,6 +1882,7 @@ const AdminAddProduct = ({
           </div>
         </div>
       )}
+
     </>
   );
 };

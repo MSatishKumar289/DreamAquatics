@@ -6,6 +6,8 @@ import {
   deleteCustomerAddress,
   setDefaultAddress as setDefaultAddressDb,
 } from "../lib/addressApi";
+import { getSessionUser, onAuthChange } from "../lib/authApi";
+
 
 const MAX_ADDRESSES = 2;
 
@@ -37,10 +39,46 @@ export const ProfileProvider = ({ children }) => {
   };
 
   // ✅ only run once on mount (no auth listener here)
+  // useEffect(() => {
+  //   refreshAddresses();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   useEffect(() => {
-    refreshAddresses();
+    let mounted = true;
+  
+    const init = async () => {
+      const { user } = await getSessionUser();
+      if (!mounted) return;
+  
+      if (user) {
+        refreshAddresses();
+      } else {
+        setAddresses([]);
+      }
+    };
+  
+    init();
+  
+    const { data: authListener } = onAuthChange((event, user) => {
+      if (!mounted) return;
+  
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        refreshAddresses();
+      }
+  
+      if (event === "SIGNED_OUT") {
+        setAddresses([]);
+      }
+    });
+  
+    return () => {
+      mounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
 
   const getNextAddressLabel = (existing = []) => {
     const labels = new Set(existing.map((a) => (a.label || "").trim()).filter(Boolean));

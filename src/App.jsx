@@ -19,6 +19,8 @@ import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { clearCartStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
@@ -246,7 +248,15 @@ function AppContent() {
                   : <Navigate to="/" replace />
               }
             />
-            <Route path="/profile" element={<Profile orders={userOrders} />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute user={sessionUser} loading={authLoading}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
