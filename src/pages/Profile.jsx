@@ -415,7 +415,7 @@ const Profile = () => {
               No orders yet. Your future orders will appear here.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
               {orders.map((order) => {
                 const items = order.order_items || [];
                 const firstItem = items[0];
@@ -447,8 +447,11 @@ const Profile = () => {
                           {firstItem?.title || "Order Items"}
                           {extraCount > 0 ? ` + ${extraCount} more` : ""}
                         </p>
+                        <span className="mt-2 inline-flex w-fit items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                          Approved
+                        </span>
                         <p className="mt-1 text-xs text-slate-600">
-                          {dateLabel} · {formatOrderStatus(order.status)}
+                          {dateLabel}
                         </p>
                       </div>
                       <div className="text-sm font-semibold text-slate-900">

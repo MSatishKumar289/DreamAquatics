@@ -13,7 +13,8 @@ const CategoryCard = ({
   isSubCategory = false,
   onAddToCart,
   showStockBadge,
-  isMasonry = false
+  isMasonry = false,
+  compact = false,
 }) => {
   const EXPLORE_STYLE = "corner-badge";
   const navigate = useNavigate();
@@ -212,7 +213,7 @@ const CategoryCard = ({
     <article
       className={`group relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
-      }`}
+      } ${compact ? "h-full" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
       aria-label={
@@ -221,7 +222,11 @@ const CategoryCard = ({
       onClick={handleClick}
     >
       <div className="relative w-full overflow-hidden rounded-b-none bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        <div className="relative aspect-[4/3] sm:aspect-[4/3] w-full border-b border-slate-200/60">
+        <div
+          className={`relative w-full border-b border-slate-200/60 ${
+            compact ? "aspect-[1/1]" : "aspect-[4/3] sm:aspect-[4/3]"
+          }`}
+        >
           {isSubCategory && (
             <>
               <span
@@ -296,12 +301,14 @@ const CategoryCard = ({
       </div>
 
       <div
-        className={`p-2 sm:p-3 ${
+        className={`${compact ? "p-2" : "p-2 sm:p-3"} ${
           isSubCategory
             ? "flex flex-col gap-2 pb-12 sm:gap-3 sm:pb-14"
             : isMasonry
               ? "flex flex-col gap-1 sm:gap-1.5"
-              : "flex min-h-[160px] flex-col gap-1 sm:min-h-[185px] sm:gap-1.5"
+              : compact
+                ? "flex min-h-[130px] flex-col gap-1 sm:gap-1.5"
+                : "flex min-h-[160px] flex-col gap-1 sm:min-h-[185px] sm:gap-1.5"
         }`}
       >
         {!isSubCategory && shouldShowStockBadge && (
@@ -326,12 +333,12 @@ const CategoryCard = ({
           </div>
         )}
         <div
-          className={`text-center ${isSubCategory ? "min-h-[38px]" : "min-h-[38px]"} ${
-            !isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""
-          }`}
+          className={`text-center ${
+            isSubCategory ? "min-h-[38px]" : "min-h-[90px]"
+          } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""}`}
         >
           <h3
-            className={`px-1 text-sm sm:text-base font-semibold text-slate-900 ${
+            className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-slate-900 ${
               isSubCategory ? "line-clamp-2" : "line-clamp-3"
             }`}
           >
@@ -362,7 +369,7 @@ const CategoryCard = ({
                     type="button"
                     onClick={handleAddToCart}
                     disabled={isSoldOut}
-                    className="group inline-flex h-9 w-full max-w-[180px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    className="group inline-flex h-9 w-[160px] min-w-[160px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
                   >
                     <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                       <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -372,7 +379,7 @@ const CategoryCard = ({
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <div className="w-full max-w-[180px]">
+                  <div className="w-[160px] min-w-[160px]">
                     <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
                         <button
                           type="button"
@@ -432,7 +439,7 @@ const CategoryCard = ({
 
           const startFromBlock = startFromPrice !== null && (
             <div className="absolute inset-x-3 bottom-10 flex justify-center sm:bottom-11">
-              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "8px" }}>
+              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "14px" }}>
                 Starts from {"\u20B9"}
                 {startFromPrice.toLocaleString("en-IN")}
               </span>

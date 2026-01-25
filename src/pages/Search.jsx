@@ -258,9 +258,9 @@ const Search = () => {
                 </a>
               </div>
             ) : searchQuery.trim() ? (
-              <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {searchResults.map((product) => (
-                  <div key={product.id} className="mb-4 break-inside-avoid">
+                  <div key={product.id} className="h-full">
                     <CategoryCard
                       categoryName={
                         Object.keys(CATEGORY_SLUG_MAP).find(
@@ -269,6 +269,7 @@ const Search = () => {
                       }
                       product={product}
                       showStockBadge
+                      compact
                     />
                   </div>
                 ))}
