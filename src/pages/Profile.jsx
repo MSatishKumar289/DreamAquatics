@@ -12,7 +12,7 @@ const Spinner = ({ size = 18 }) => (
   />
 );
 
-const Profile = () => {
+const Profile = ({ orders = [] }) => {
   const {
     addresses,
     loadingAddresses,
@@ -47,35 +47,6 @@ const Profile = () => {
     setTimeout(() => setToast({ show: false, type: "", message: "" }), 2500);
   };
   
-
-  const orders = useMemo(
-    () => [
-      {
-        id: "DA-1001",
-        placedAt: "2025-01-12",
-        status: "Pending",
-        subtotal: 1350,
-        shipping: 100,
-        total: 1450,
-        address: {
-          name: "Satish",
-          email: "msatish289kumar@gmail.com",
-          phone: "3213123123",
-          line1: "33D, Gandhi Puram, Cross Street",
-          line2: "Dharapuram",
-          landmark: "Near Periyakaaliamman Kovil",
-          city: "Dharapuram",
-          pincode: "638656",
-        },
-        items: [
-          { id: "itm-1", title: "Full Moon Betta", qty: 2, price: 400 },
-          { id: "itm-2", title: "Albino Oscar", qty: 1, price: 650 },
-          { id: "itm-3", title: "Channa Andrao", qty: 1, price: 300 },
-        ],
-      },
-    ],
-    []
-  );
 
   const canAddMore = addresses.length < 2;
 

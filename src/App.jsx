@@ -19,7 +19,6 @@ import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { clearCartStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
-import { AdminOrdersProvider } from './context/AdminOrdersContext';
 
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
@@ -28,6 +27,8 @@ function AppContent() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
+  const [adminOrders] = useState([]);
+  const [userOrders] = useState([]);
 
   const { clearCart, lastAddedAt } = useCart();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
@@ -147,6 +148,11 @@ function AppContent() {
     return authUser ? `Welcome ${authUser.name}` : null;
   }, [authUser]);
 
+  const newOrdersCount = useMemo(
+    () => adminOrders.filter((order) => (order.status || "new") === "new").length,
+    [adminOrders]
+  );
+
   /* ================= LOGOUT ================= */
 
   const handleLogout = useCallback(async () => {
@@ -161,7 +167,6 @@ function AppContent() {
 
   return (
     <BrowserRouter>
-      <AdminOrdersProvider>
       <div className="App flex min-h-screen flex-col">
         <Header
           user={authUser}
@@ -170,6 +175,7 @@ function AppContent() {
           onCartOpen={() => setIsCartOpen(true)}
           onAdminOrdersOpen={() => setIsAdminOrdersOpen(true)}
           isRoleResolved={isRoleResolved}
+          newOrdersCount={newOrdersCount}
         />
 
         {isLoginModalOpen && (
@@ -205,6 +211,7 @@ function AppContent() {
           <AdminOrdersDrawer
             isOpen={isAdminOrdersOpen}
             onClose={() => setIsAdminOrdersOpen(false)}
+            orders={adminOrders}
           />
         )}
 
@@ -229,11 +236,17 @@ function AppContent() {
               path="/admin/add-product"
               element={
                 profile?.role === 'admin'
-                  ? <AdminAddProduct profile={profile} authLoading={authLoading} />
+                  ? (
+                    <AdminAddProduct
+                      profile={profile}
+                      authLoading={authLoading}
+                      adminOrders={adminOrders}
+                    />
+                  )
                   : <Navigate to="/" replace />
               }
             />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<Profile orders={userOrders} />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
@@ -248,7 +261,6 @@ function AppContent() {
 
         <Footer />
       </div>
-      </AdminOrdersProvider>
     </BrowserRouter>
   );
 }

@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAdminOrders } from "../context/AdminOrdersContext";
 
-const AdminOrdersDrawer = ({ isOpen, onClose }) => {
-  const {
-    adminOrders,
-    adminOrderState,
-    updateAdminOrderStatus,
-    updateAdminOrderFulfillment,
-    saveAdminOrderFulfillment,
-    cancelAdminOrderFulfillment,
-    toggleAdminOrderEditing,
-  } = useAdminOrders();
+const AdminOrdersDrawer = ({
+  isOpen,
+  onClose,
+  orders = [],
+  onUpdateOrderStatus,
+  onUpdateOrderFulfillment
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [pendingFulfillment, setPendingFulfillment] = useState({});
 
   useEffect(() => {
     if (isOpen) {
@@ -44,11 +42,24 @@ const AdminOrdersDrawer = ({ isOpen, onClose }) => {
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (isOpen) return;
+    setEditingOrderId(null);
+    setPendingFulfillment({});
+  }, [isOpen]);
+
+  const getOrderStatusKey = (order) => {
+    const state = order.status || "new";
+    if (state === "cancelled") return "cancelled";
+    if (state !== "accepted") return state;
+    return order.fulfillment || "accepted";
+  };
+
   const sortedOrders = useMemo(() => {
-    return adminOrders
-      .filter((order) => (adminOrderState[order.id]?.status || "new") === "new")
+    return orders
+      .filter((order) => getOrderStatusKey(order) === "new")
       .sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime());
-  }, [adminOrders, adminOrderState]);
+  }, [orders]);
 
   if (!shouldRender) return null;
 
@@ -108,23 +119,18 @@ const AdminOrdersDrawer = ({ isOpen, onClose }) => {
                     year: "numeric",
                   }
                 );
-                const orderState = adminOrderState[order.id]?.status || "new";
+                const orderState = order.status || "new";
+                const committedFulfillment = order.fulfillment || null;
+                const isEditing = editingOrderId === order.id;
                 const fulfillment =
-                  adminOrderState[order.id]?.pendingFulfillment ??
-                  adminOrderState[order.id]?.fulfillment ??
-                  "in-transit";
-                const committedFulfillment =
-                  adminOrderState[order.id]?.fulfillment || "in-transit";
-                const hasSavedFulfillment =
-                  adminOrderState[order.id]?.hasSavedFulfillment;
-                const isEditing = adminOrderState[order.id]?.isEditing;
+                  pendingFulfillment[order.id] ?? committedFulfillment ?? "in-transit";
                 const statusLabel =
                   orderState === "cancelled"
                     ? {
                         text: "Canceled",
                         cls: "bg-rose-50 text-rose-700 border-rose-200",
                       }
-                    : orderState === "accepted" && !hasSavedFulfillment
+                    : orderState === "accepted" && !committedFulfillment
                     ? {
                         text: "Accepted",
                         cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -148,11 +154,7 @@ const AdminOrdersDrawer = ({ isOpen, onClose }) => {
                         cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
                       }
                     : null;
-                const isDirty =
-                  fulfillment !==
-                  (orderState === "accepted" && hasSavedFulfillment
-                    ? committedFulfillment
-                    : "accepted");
+                const isDirty = fulfillment !== (committedFulfillment ?? "in-transit");
 
                 return (
                   <div
@@ -191,14 +193,14 @@ const AdminOrdersDrawer = ({ isOpen, onClose }) => {
                           <>
                             <button
                               type="button"
-                              onClick={() => updateAdminOrderStatus(order.id, "accepted")}
+                              onClick={() => onUpdateOrderStatus?.(order.id, "accepted")}
                               className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
                             >
                               Accept
                             </button>
                             <button
                               type="button"
-                              onClick={() => updateAdminOrderStatus(order.id, "cancelled")}
+                              onClick={() => onUpdateOrderStatus?.(order.id, "cancelled")}
                               className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
                             >
                               Cancel
@@ -206,43 +208,67 @@ const AdminOrdersDrawer = ({ isOpen, onClose }) => {
                           </>
                         )}
 
-                        {orderState === "accepted" && (
-                          <>
-                            {!isEditing ? (
-                              <button
-                                type="button"
-                                onClick={() => toggleAdminOrderEditing(order.id)}
-                                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                              >
-                                Edit
-                              </button>
-                            ) : (
-                              <>
-                                <select
-                                  value={fulfillment}
-                                  onChange={(event) =>
-                                    updateAdminOrderFulfillment(order.id, event.target.value)
-                                  }
-                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
-                                >
-                                  <option value="in-transit">In transit</option>
-                                  <option value="completed">Order completed</option>
-                                  <option value="cancelled">Order cancelled</option>
-                                </select>
+                          {orderState === "accepted" && (
+                            <>
+                              {!isEditing ? (
                                 <button
                                   type="button"
-                                  onClick={() => saveAdminOrderFulfillment(order.id)}
-                                  disabled={!isDirty}
-                                  className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                  onClick={() => {
+                                    setEditingOrderId(order.id);
+                                    setPendingFulfillment((prev) => ({
+                                      ...prev,
+                                      [order.id]: committedFulfillment ?? "in-transit"
+                                    }));
+                                  }}
+                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
                                 >
-                                  Save
+                                  Edit
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => cancelAdminOrderFulfillment(order.id)}
-                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
-                                >
-                                  Cancel
+                              ) : (
+                                <>
+                                  <select
+                                    value={fulfillment}
+                                    onChange={(event) =>
+                                      setPendingFulfillment((prev) => ({
+                                        ...prev,
+                                        [order.id]: event.target.value
+                                      }))
+                                    }
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+                                  >
+                                    <option value="in-transit">In transit</option>
+                                    <option value="completed">Order completed</option>
+                                    <option value="cancelled">Order cancelled</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onUpdateOrderFulfillment?.(order.id, fulfillment);
+                                      setEditingOrderId(null);
+                                      setPendingFulfillment((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }}
+                                    disabled={!isDirty}
+                                    className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingOrderId(null);
+                                      setPendingFulfillment((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }}
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
+                                  >
+                                    Cancel
                                 </button>
                               </>
                             )}

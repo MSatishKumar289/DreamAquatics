@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import edit_ic from "../assets/Icons/edit_ic.png";
 import bin_ic from "../assets/Icons/bin_ic.png";
-import { useAdminOrders } from "../context/AdminOrdersContext";
 import {
   createProduct,
   uploadProductImage,
@@ -55,7 +54,13 @@ const normalizeProducts = (products = []) =>
     imageData: p.product_images?.[0]?.url || ""
   }));
 
-const AdminAddProduct = ({ profile, authLoading }) => {
+const AdminAddProduct = ({
+  profile,
+  authLoading,
+  adminOrders = [],
+  onUpdateOrderStatus,
+  onUpdateOrderFulfillment
+}) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const subcategoryFileInputRef = useRef(null);
@@ -170,16 +175,8 @@ const AdminAddProduct = ({ profile, authLoading }) => {
   const [selectedAdminOrder, setSelectedAdminOrder] = useState(null);
   const [adminView, setAdminView] = useState("catalog");
   const [adminOrderFilter, setAdminOrderFilter] = useState("all");
-  const {
-    adminOrders,
-    adminOrderState,
-    updateAdminOrderStatus,
-    updateAdminOrderFulfillment,
-    saveAdminOrderFulfillment,
-    cancelAdminOrderFulfillment,
-    toggleAdminOrderEditing,
-    getAdminOrderStatus
-  } = useAdminOrders();
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [pendingFulfillment, setPendingFulfillment] = useState({});
 
   const loadHomeMediaFromStorage = () => {
     const stored = localStorage.getItem("dream-aquatics-home-media");
@@ -232,21 +229,51 @@ const AdminAddProduct = ({ profile, authLoading }) => {
     showToast("Home media reset", "success");
   };
 
+  const getOrderStatusKey = (order) => {
+    const state = order.status || "new";
+    if (state === "cancelled") return "cancelled";
+    if (state !== "accepted") return state;
+    return order.fulfillment || "accepted";
+  };
+
+  const getOrderStatusLabel = (order) => {
+    const state = order.status || "new";
+    const fulfillment = order.fulfillment || null;
+    if (state === "cancelled") {
+      return { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" };
+    }
+    if (state === "accepted" && !fulfillment) {
+      return { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (state === "accepted" && fulfillment === "cancelled") {
+      return { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" };
+    }
+    if (state === "accepted" && fulfillment === "in-transit") {
+      return { text: "In Transit", cls: "bg-amber-50 text-amber-700 border-amber-200" };
+    }
+    if (state === "accepted" && fulfillment === "completed") {
+      return { text: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (state === "accepted") {
+      return { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    return null;
+  };
 
   const filteredAdminOrders = useMemo(() => {
     const filtered = adminOrders.filter((order) => {
       if (adminOrderFilter === "all") return true;
-      return getAdminOrderStatus(order.id) === adminOrderFilter;
+      return getOrderStatusKey(order) === adminOrderFilter;
     });
 
     return filtered.sort((a, b) => {
-      const statusA = getAdminOrderStatus(a.id);
-      const statusB = getAdminOrderStatus(b.id);
+      const statusA = getOrderStatusKey(a);
+      const statusB = getOrderStatusKey(b);
       if (statusA === "new" && statusB !== "new") return -1;
       if (statusA !== "new" && statusB === "new") return 1;
       return new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime();
     });
-  }, [adminOrders, adminOrderFilter, adminOrderState]);
+  }, [adminOrders, adminOrderFilter]);
 
   const handleHomeMediaUpload = (type) => async (event) => {
     const file = event.target.files?.[0];
@@ -1123,38 +1150,13 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                     year: "numeric"
                   });
 
-                  const orderState = adminOrderState[order.id]?.status || "new";
+                  const orderState = order.status || "new";
+                  const committedFulfillment = order.fulfillment || null;
+                  const isEditing = editingOrderId === order.id;
                   const fulfillment =
-                    adminOrderState[order.id]?.pendingFulfillment ??
-                    adminOrderState[order.id]?.fulfillment ??
-                    "in-transit";
-                  const committedFulfillment =
-                    adminOrderState[order.id]?.fulfillment || "in-transit";
-                  const hasSavedFulfillment = adminOrderState[order.id]?.hasSavedFulfillment;
-                  const isEditing = adminOrderState[order.id]?.isEditing;
-                  const statusKey =
-                    orderState === "cancelled"
-                      ? "cancelled"
-                      : orderState === "accepted" && !hasSavedFulfillment
-                      ? "accepted"
-                      : orderState === "accepted"
-                      ? committedFulfillment
-                      : "new";
-                  const isDirty = fulfillment !== statusKey;
-                  const statusLabel =
-                    orderState === "cancelled"
-                      ? { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" }
-                      : orderState === "accepted" && !hasSavedFulfillment
-                      ? { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
-                      : orderState === "accepted" && committedFulfillment === "cancelled"
-                      ? { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" }
-                      : orderState === "accepted" && committedFulfillment === "in-transit"
-                      ? { text: "In Transit", cls: "bg-amber-50 text-amber-700 border-amber-200" }
-                      : orderState === "accepted" && committedFulfillment === "completed"
-                      ? { text: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
-                      : orderState === "accepted"
-                      ? { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
-                      : null;
+                    pendingFulfillment[order.id] ?? committedFulfillment ?? "in-transit";
+                  const isDirty = fulfillment !== (committedFulfillment ?? "in-transit");
+                  const statusLabel = getOrderStatusLabel(order);
 
                   return (
                     <div
@@ -1197,14 +1199,14 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                             <>
                               <button
                                 type="button"
-                                onClick={() => updateAdminOrderStatus(order.id, "accepted")}
+                                onClick={() => onUpdateOrderStatus?.(order.id, "accepted")}
                                 className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
                               >
                                 Accept
                               </button>
                               <button
                                 type="button"
-                                onClick={() => updateAdminOrderStatus(order.id, "cancelled")}
+                                onClick={() => onUpdateOrderStatus?.(order.id, "cancelled")}
                                 className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
                               >
                                 Cancel
@@ -1217,7 +1219,13 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                               {!isEditing ? (
                                 <button
                                   type="button"
-                                  onClick={() => toggleAdminOrderEditing(order.id)}
+                                  onClick={() => {
+                                    setEditingOrderId(order.id);
+                                    setPendingFulfillment((prev) => ({
+                                      ...prev,
+                                      [order.id]: committedFulfillment ?? "in-transit"
+                                    }));
+                                  }}
                                   className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
                                 >
                                   Edit
@@ -1227,7 +1235,10 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                                   <select
                                     value={fulfillment}
                                     onChange={(event) =>
-                                      updateAdminOrderFulfillment(order.id, event.target.value)
+                                      setPendingFulfillment((prev) => ({
+                                        ...prev,
+                                        [order.id]: event.target.value
+                                      }))
                                     }
                                     className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
                                   >
@@ -1237,7 +1248,15 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                                   </select>
                                   <button
                                     type="button"
-                                    onClick={() => saveAdminOrderFulfillment(order.id)}
+                                    onClick={() => {
+                                      onUpdateOrderFulfillment?.(order.id, fulfillment);
+                                      setEditingOrderId(null);
+                                      setPendingFulfillment((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }}
                                     disabled={!isDirty}
                                     className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                                   >
@@ -1245,7 +1264,14 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => cancelAdminOrderFulfillment(order.id)}
+                                    onClick={() => {
+                                      setEditingOrderId(null);
+                                      setPendingFulfillment((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }}
                                     className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
                                   >
                                     Cancel

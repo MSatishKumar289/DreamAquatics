@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useAdminOrders } from '../context/AdminOrdersContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
 import close_ic from '../assets/Icons/close_ic.svg';
@@ -14,10 +13,10 @@ const Header = ({
   onRequestLogin,
   onCartOpen,
   onAdminOrdersOpen,
-  isRoleResolved
+  isRoleResolved,
+  newOrdersCount = 0
 }) => {
   const { itemCount } = useCart();
-  const { newOrdersCount } = useAdminOrders();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
