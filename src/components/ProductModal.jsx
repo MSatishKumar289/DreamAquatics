@@ -1,11 +1,15 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { getImageWithFallback } from "../assets";
-import close_ic from "../assets/Icons/close_ic.svg";
-import cart_ic from "../assets/Icons/cart_ic.svg";
+import plusIcon from "../assets/Icons/plus.png";
+import incPlusIcon from "../assets/Icons/iplus.png";
+import incMinusIcon from "../assets/Icons/iminus.png";
+import { useCart } from "../context/CartContext";
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
+  const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(0);
+  const [pendingRemove, setPendingRemove] = useState(false);
 
   // ✅ always compute safe values (even when closed) to keep Hooks stable
   const safeProduct = product || {};
@@ -46,11 +50,14 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     };
   }, [isOpen, onClose]);
 
+  const currentQty =
+    cartItems?.find((item) => item.id === safeProduct?.id)?.qty || 0;
+
   useEffect(() => {
     if (isOpen) {
-      setQty(1);
+      setQty(currentQty);
     }
-  }, [isOpen, product?.id]);
+  }, [isOpen, safeProduct?.id, currentQty]);
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -60,11 +67,12 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
   const handleAddToCart = () => {
     if (showConfirmation) return;
-    onAddToCart(safeProduct, qty);
+    const addHandler = onAddToCart || addToCart;
+    addHandler?.(safeProduct, 1);
+    setQty(1);
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
-      onClose();
     }, 2000);
   };
 
@@ -73,24 +81,24 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="relative mx-4 w-full max-w-4xl rounded-3xl bg-white p-5 shadow-2xl md:p-8">
+      <div className="relative mx-4 w-full max-w-4xl rounded-3xl bg-white p-5 shadow-2xl md:p-8 max-h-[90dvh] overflow-y-auto md:max-h-[90vh] md:overflow-hidden">
         <div className="mb-4 flex justify-end">
           <button
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 !bg-red-600 !text-white"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 !bg-red-600 !text-white"
             aria-label="Close modal"
           >
             <span className="text-base font-semibold leading-none">X</span>
           </button>
         </div>
 
-        <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row">
+        <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row max-h-none md:max-h-[calc(90vh-5rem)]">
           <div className="space-y-4 md:w-1/2">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
               <img src={imageSrc} alt={title} className="w-full h-full object-cover" />
@@ -107,67 +115,127 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               )}
             </div>
 
-            <div className="flex w-full items-stretch gap-3">
-              <div
-                className="grid flex-1 grid-cols-[42px_1fr_42px] items-center overflow-hidden rounded-xl border border-gray-300 bg-white"
-                role="group"
-                aria-label={`Quantity control for ${title}`}
-              >
+            <div className="flex w-full items-stretch justify-center gap-3">
+              {qty === 0 ? (
                 <button
-                  type="button"
-                  onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-                  aria-label={`Decrease quantity for ${title}`}
-                  className="h-full text-lg font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  onClick={handleAddToCart}
+                  className="group inline-flex h-12 w-52 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  aria-label={`Add ${title} to cart`}
                 >
-                  -
+                  <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
+                    <img src={plusIcon} alt="" className="h-6 w-6" />
+                  </span>
+                  Add to cart
                 </button>
-                <span className="text-center text-base font-semibold text-gray-900">
-                  {qty}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQty((prev) => prev + 1)}
-                  aria-label={`Increase quantity for ${title}`}
-                  className="h-full text-lg font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                >
-                  +
-                </button>
-              </div>
-
-              <button
-                onClick={handleAddToCart}
-                className="inline-flex flex-[2] items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                aria-label={`Add ${title} to cart`}
-              >
-                <img
-                  src={cart_ic}
-                  alt=""
-                  className="h-4 w-4 brightness-0 invert"
-                  aria-hidden="true"
-                />
-                <span className="leading-tight">Add to Cart</span>
-              </button>
+              ) : (
+                <div className="w-52">
+                  <div
+                    className="inline-flex h-12 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm"
+                    role="group"
+                    aria-label={`Quantity control for ${title}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (qty <= 1) {
+                          setPendingRemove(true);
+                          return;
+                        }
+                        const next = qty - 1;
+                        setQty(next);
+                        updateQty?.(safeProduct?.id, next);
+                      }}
+                      aria-label={`Decrease quantity for ${title}`}
+                      className="h-10 w-10 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    >
+                      <img src={incMinusIcon} alt="" className="h-10 w-10" />
+                    </button>
+                    <span className="text-base font-semibold text-blue-700">
+                      {qty}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = qty + 1;
+                        setQty(next);
+                        updateQty?.(safeProduct?.id, next);
+                      }}
+                      aria-label={`Increase quantity for ${title}`}
+                      className="h-10 w-10 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    >
+                      <img src={incPlusIcon} alt="" className="h-10 w-10" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
 
-          <div className="space-y-4 md:w-1/2">
-            <section className="space-y-4">
+            <div className="space-y-2 text-center">
               <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
                 {title}
               </h2>
-
               <p className="text-2xl font-bold text-gray-900">
                 {"\u20B9"}
                 {priceValue.toLocaleString("en-IN")}
               </p>
+              <p className="mt-2 text-center text-xs text-sky-600/80">
+                Images are for reference. Actual product appearance may vary.
+              </p>
+            </div>
+          </div>
 
-              <p className="text-md text-gray-700 leading-relaxed">
+          <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
+            <section className="space-y-4 flex flex-col min-h-0">
+              <p className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
                 {safeProduct?.description || ""}
               </p>
             </section>
           </div>
         </div>
       </div>
+
+      {pendingRemove &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setPendingRemove(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Remove item?
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Remove {title} from your cart?
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingRemove(false)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeItem?.(safeProduct?.id);
+                    setQty(0);
+                    setPendingRemove(false);
+                  }}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

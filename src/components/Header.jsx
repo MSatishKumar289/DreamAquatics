@@ -7,12 +7,21 @@ import close_ic from '../assets/Icons/close_ic.svg';
 import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
 
 
-const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
+const Header = ({
+  user,
+  onLogout,
+  onRequestLogin,
+  onCartOpen,
+  onAdminOrdersOpen,
+  isRoleResolved,
+  newOrdersCount = 0
+}) => {
   const { itemCount } = useCart();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [showProfileHint, setShowProfileHint] = useState(false);
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin';
 
@@ -46,6 +55,24 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!user) return;
+    const seen = localStorage.getItem('da_profile_hint_seen');
+    if (seen) return;
+    setShowProfileHint(true);
+    const timer = setTimeout(() => {
+      setShowProfileHint(false);
+      localStorage.setItem('da_profile_hint_seen', '1');
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [user]);
+
+  const dismissProfileHint = () => {
+    if (!showProfileHint) return;
+    setShowProfileHint(false);
+    localStorage.setItem('da_profile_hint_seen', '1');
+  };
 
   return (
     <>
@@ -85,7 +112,10 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setIsProfileOpen((prev) => !prev)}
+                    onClick={() => {
+                      dismissProfileHint();
+                      setIsProfileOpen((prev) => !prev);
+                    }}
                     data-profile-button
                     className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_0_0_6px_rgba(37,99,235,0.08)] transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-[0_0_0_8px_rgba(37,99,235,0.12)] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                     aria-label="Account menu"
@@ -102,6 +132,12 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                         .toUpperCase()}
                     </span>
                   </button>
+                  {showProfileHint && (
+                    <div className="absolute right-0 top-12 z-50 hidden w-60 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg xl:block">
+                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                      Access your profile here.
+                    </div>
+                  )}
                   {user.role === 'admin' && (
                     <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-2 py-1 rounded-md border border-sky-200">
                       Admin
@@ -140,6 +176,18 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Profile
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       type="button"
@@ -166,24 +214,56 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
               )}
             </div>
             
-            {/* Cart Icon */}
-            <button
-              type="button"
-              onClick={() => onCartOpen?.()}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-              aria-label={`Shopping cart with ${cartCount} items`}
-              data-cart-target="cart"
-            >
-              <img src={cart_ic} alt="Cart" />
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
+            {/* Cart / Notifications */}
+            {!isRoleResolved ? null : isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onAdminOrdersOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${newOrdersCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Admin notifications with ${newOrdersCount} new orders`}
+                data-orders-target="orders"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+                  <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                </svg>
+                {newOrdersCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${newOrdersCount} new orders`}
+                  >
+                    {newOrdersCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCartOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Shopping cart with ${cartCount} items`}
+                data-cart-target="cart"
+              >
+                <img src={cart_ic} alt="Cart" />
+                {cartCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${cartCount} items in cart`}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button & Cart */}
@@ -193,7 +273,10 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setIsProfileOpen((prev) => !prev)}
+                    onClick={() => {
+                      dismissProfileHint();
+                      setIsProfileOpen((prev) => !prev);
+                    }}
                     data-profile-button
                     className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_0_0_5px_rgba(37,99,235,0.08)] transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-[0_0_0_7px_rgba(37,99,235,0.12)] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
                     aria-label="Account menu"
@@ -210,6 +293,12 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                         .toUpperCase()}
                     </span>
                   </button>
+                  {showProfileHint && (
+                    <div className="absolute right-0 top-10 z-50 w-56 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
+                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                      Access your profile here.
+                    </div>
+                  )}
                   {user.role === 'admin' && (
                     <span className="text-[10px] font-semibold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 whitespace-nowrap">
                       Admin
@@ -248,6 +337,18 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
                   {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Profile
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       type="button"
@@ -273,24 +374,56 @@ const Header = ({ user, onLogout, onRequestLogin, onCartOpen }) => {
                 </div>
               )}
             </div>
-            {/* Mobile Cart Icon */}
-            <button
-              type="button"
-              onClick={() => onCartOpen?.()}
-              className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-              aria-label={`Shopping cart with ${cartCount} items`}
-              data-cart-target="cart"
-            >
-              <img src={mobile_cart_ic} alt="Cart" />
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
+            {/* Mobile Cart / Notifications */}
+            {!isRoleResolved ? null : isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onAdminOrdersOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${newOrdersCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Admin notifications with ${newOrdersCount} new orders`}
+                data-orders-target="orders"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+                  <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                </svg>
+                {newOrdersCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${newOrdersCount} new orders`}
+                  >
+                    {newOrdersCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCartOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Shopping cart with ${cartCount} items`}
+                data-cart-target="cart"
+              >
+                <img src={mobile_cart_ic} alt="Cart" />
+                {cartCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${cartCount} items in cart`}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Hamburger Menu Button */}
             <button

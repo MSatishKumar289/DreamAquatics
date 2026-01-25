@@ -18,6 +18,12 @@ import {
   updateSubcategory,
   deleteSubcategoryCascade
 } from "../lib/catalogApi.js";
+import {
+  fetchAllOrdersAdmin,
+  updateOrderStatusAdmin,
+  formatOrderStatus
+} from "../lib/ordersApi.js";
+
 
 const MAX_IMAGE_BYTES = 300 * 1024;
 const MAX_IMAGE_DIMENSION = 720;
@@ -54,7 +60,12 @@ const normalizeProducts = (products = []) =>
     imageData: p.product_images?.[0]?.url || ""
   }));
 
-const AdminAddProduct = ({ profile, authLoading }) => {
+const AdminAddProduct = ({
+  profile,
+  authLoading,
+  onUpdateOrderStatus,
+  onUpdateOrderFulfillment
+}) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const subcategoryFileInputRef = useRef(null);
@@ -158,7 +169,168 @@ const AdminAddProduct = ({ profile, authLoading }) => {
   const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [subcategorySearch, setSubcategorySearch] = useState("");
   const [itemSearch, setItemSearch] = useState("");
+  const [homeMediaDraft, setHomeMediaDraft] = useState({
+    videoUrl: "",
+    imageOneUrl: "",
+    imageTwoUrl: ""
+  });
+  const [homeMediaError, setHomeMediaError] = useState("");
+  const [selectedAdminOrder, setSelectedAdminOrder] = useState(null);
+  const [adminView, setAdminView] = useState("catalog");
+  const [adminOrders, setAdminOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState("");
+
+  const [adminOrderFilter, setAdminOrderFilter] = useState("all");
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [pendingFulfillment, setPendingFulfillment] = useState({});
+
+  const loadHomeMediaFromStorage = () => {
+    const stored = localStorage.getItem("dream-aquatics-home-media");
+    if (!stored) {
+      setHomeMediaDraft({
+        videoUrl: "",
+        imageOneUrl: "",
+        imageTwoUrl: ""
+      });
+      return;
+    }
+    try {
+      const parsed = JSON.parse(stored);
+      setHomeMediaDraft({
+        videoUrl: parsed.videoUrl || "",
+        imageOneUrl: parsed.imageOneUrl || "",
+        imageTwoUrl: parsed.imageTwoUrl || ""
+      });
+    } catch (error) {
+      console.error("Failed to parse home media settings", error);
+    }
+  };
+
+  useEffect(() => {
+    loadHomeMediaFromStorage();
+  }, []);
+
+  const handleSaveHomeMedia = () => {
+    try {
+      localStorage.setItem("dream-aquatics-home-media", JSON.stringify(homeMediaDraft));
+      setHomeMediaError("");
+      showToast("Home media updated", "success");
+      window.dispatchEvent(
+        new CustomEvent("dreamAquaticsHomeMediaUpdated", { detail: homeMediaDraft })
+      );
+    } catch (error) {
+      console.error("Failed to save home media", error);
+      setHomeMediaError("Unable to save home media settings.");
+    }
+  };
+
+  const handleResetHomeMedia = () => {
+    localStorage.removeItem("dream-aquatics-home-media");
+    setHomeMediaDraft({
+      videoUrl: "",
+      imageOneUrl: "",
+      imageTwoUrl: ""
+    });
+    setHomeMediaError("");
+    showToast("Home media reset", "success");
+  };
+
+  const loadAdminOrders = async () => {
+    setOrdersLoading(true);
+    setOrdersError("");
+  
+    const { data, error } = await fetchAllOrdersAdmin();
+    if (error) {
+      setOrdersError(error.message || "Failed to load orders");
+      setAdminOrders([]);
+      setOrdersLoading(false);
+      return;
+    }
+  
+    setAdminOrders(data || []);
+    setOrdersLoading(false);
+  };
+  
+  const getOrderStatusKey = (order) => {
+    const state = order.status || "new";
+    if (state === "cancelled") return "cancelled";
+    if (state !== "accepted") return state;
+    return order.fulfillment || "accepted";
+  };
+
+  const getOrderStatusLabel = (order) => {
+    const state = order.status || "new";
+    const fulfillment = order.fulfillment || null;
+    if (state === "cancelled") {
+      return { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" };
+    }
+    if (state === "accepted" && !fulfillment) {
+      return { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (state === "accepted" && fulfillment === "cancelled") {
+      return { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" };
+    }
+    if (state === "accepted" && fulfillment === "in-transit") {
+      return { text: "In Transit", cls: "bg-amber-50 text-amber-700 border-amber-200" };
+    }
+    if (state === "accepted" && fulfillment === "completed") {
+      return { text: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (state === "accepted") {
+      return { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    return null;
+  };
+
+  const filteredAdminOrders = useMemo(() => {
+    const filtered = adminOrders.filter((order) => {
+      if (adminOrderFilter === "all") return true;
+      return getOrderStatusKey(order) === adminOrderFilter;
+    });
+
+    return filtered.sort((a, b) => {
+      const statusA = getOrderStatusKey(a);
+      const statusB = getOrderStatusKey(b);
+      if (statusA === "new" && statusB !== "new") return -1;
+      if (statusA !== "new" && statusB === "new") return 1;
+      return new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime();
+    });
+  }, [adminOrders, adminOrderFilter]);
+
+  const handleHomeMediaUpload = (type) => async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setHomeMediaError("");
+
+    try {
+      let dataUrl = "";
+      if (type === "video") {
+        if (file.size > 8 * 1024 * 1024) {
+          setHomeMediaError("Video is too large. Please upload a smaller file.");
+          return;
+        }
+        dataUrl = await readFileAsDataUrl(file);
+      } else {
+        dataUrl = await prepareImageData(file);
+      }
+
+      setHomeMediaDraft((prev) => ({
+        ...prev,
+        ...(type === "video" ? { videoUrl: dataUrl } : null),
+        ...(type === "imageOne" ? { imageOneUrl: dataUrl } : null),
+        ...(type === "imageTwo" ? { imageTwoUrl: dataUrl } : null)
+      }));
+    } catch (error) {
+      console.error("Failed to upload home media", error);
+      setHomeMediaError("Unable to process the file. Try a smaller one.");
+    } finally {
+      event.target.value = "";
+    }
+  };
 
   /* =========================
      FETCH CATEGORIES
@@ -200,6 +372,13 @@ const AdminAddProduct = ({ profile, authLoading }) => {
   }, [selectedCategoryId]);
 
   const currentSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
+  const filteredSubcategories = useMemo(() => {
+    const query = subcategorySearch.trim().toLowerCase();
+    if (!query) return currentSubcategories;
+    return currentSubcategories.filter((subcategory) =>
+      String(subcategory?.name || "").toLowerCase().includes(query)
+    );
+  }, [currentSubcategories, subcategorySearch]);
   const orderedCategories = useMemo(() => {
     const order = ["Fishes", "Plants", "Accessories", "Tanks"];
     const rank = new Map(order.map((name, index) => [name, index]));
@@ -256,6 +435,12 @@ const AdminAddProduct = ({ profile, authLoading }) => {
       navigate("/", { replace: true });
     }
   }, [profile, authLoading, navigate]);
+
+  useEffect(() => {
+    if (adminView !== "orders") return;
+    loadAdminOrders();
+  }, [adminView]);
+  
 
   /* =========================
      ITEM HANDLERS
@@ -716,6 +901,7 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                     key={category.id}
                     type="button"
                     onClick={() => {
+                      setAdminView("catalog");
                       setSelectedCategory(category.name);
                       setSelectedCategoryId(category.id);
                     }}
@@ -729,9 +915,38 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                   </button>
                 );
               })}
+              <div className="mt-4 border-t border-slate-100 pt-3">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                  Admin Tools
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setAdminView("live")}
+                  className={`mt-3 w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
+                    adminView === "live"
+                      ? "bg-blue-600 text-white"
+                      : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  }`}
+                >
+                  Live update
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminView("orders")}
+                  className={`mt-3 w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
+                    adminView === "orders"
+                      ? "bg-blue-600 text-white"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  Orders
+                </button>
+              </div>
             </div>
           </aside>
 
+          {adminView === "catalog" && (
+          <div className="contents">
           <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
@@ -748,7 +963,20 @@ const AdminAddProduct = ({ profile, authLoading }) => {
             </div>
 
             <div className="mt-4 space-y-2">
-              {currentSubcategories.map((subcategory) => {
+              <input
+                type="search"
+                value={subcategorySearch}
+                onChange={(event) => setSubcategorySearch(event.target.value)}
+                placeholder="Search subcategories"
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+              <span className="text-xs text-slate-400">
+                {filteredSubcategories.length} subcategories
+              </span>
+            </div>
+
+            <div className="mt-3 max-h-[420px] space-y-2 overflow-y-auto pr-1 sm:max-h-[520px]">
+              {filteredSubcategories.map((subcategory) => {
                 const isActive = subcategory.id === selectedSubcategoryId;
                 return (
                   <div
@@ -796,7 +1024,7 @@ const AdminAddProduct = ({ profile, authLoading }) => {
                   </div>
                 );
               })}
-              {currentSubcategories.length === 0 && (
+              {filteredSubcategories.length === 0 && (
                 <p className="text-sm text-slate-500">No subcategories available.</p>
               )}
             </div>
@@ -911,6 +1139,318 @@ const AdminAddProduct = ({ profile, authLoading }) => {
               )}
             </div>
           </section>
+          </div>
+          )}
+
+          {adminView === "orders" && (
+          <section className="md:col-span-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Orders</p>
+                <h2 className="text-lg font-semibold text-slate-900">Recent orders</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Filter
+                </label>
+                <select
+                  value={adminOrderFilter}
+                  onChange={(event) => setAdminOrderFilter(event.target.value)}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="all">All</option>
+                  <option value="new">New</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="in-transit">In Transit</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Canceled</option>
+                </select>
+              </div>
+            </div>
+
+            {ordersLoading ? (
+              <p className="mt-4 text-sm text-slate-500">Loading orders...</p>
+            ) : ordersError ? (
+              <p className="mt-4 text-sm text-rose-600">{ordersError}</p>
+            ) : adminOrders.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-500">No orders received yet.</p>
+            ) : (
+              <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 lg:max-h-[520px]">
+                {adminOrders.map((order) => {
+                  const items = order.order_items || [];
+                  const firstItem = items[0];
+                  const extraCount = Math.max(items.length - 1, 0);
+                  
+                  const dateLabel = new Date(order.created_at).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                  });
+                  
+
+                  const orderState = order.status || "new";
+                  const committedFulfillment = order.fulfillment || null;
+                  const isEditing = editingOrderId === order.id;
+                  const fulfillment =
+                    pendingFulfillment[order.id] ?? committedFulfillment ?? "in-transit";
+                  const isDirty = fulfillment !== (committedFulfillment ?? "in-transit");
+                  const statusLabel = getOrderStatusLabel(order);
+
+                  return (
+                    <div
+                      key={order.id}
+                      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm transition hover:shadow-md"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAdminOrder(order)}
+                          className="min-w-[220px] flex-1 text-left"
+                        >
+                          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                            Order {order.order_number || order.id}
+                          </p>
+                          <p className="mt-2 text-sm font-semibold text-slate-900">
+                            <span className="inline-flex flex-wrap items-center gap-2">
+                              <span>
+                                {firstItem?.title}
+                                {extraCount > 0 ? ` + ${extraCount} more` : ""}
+                              </span>
+                              {statusLabel && (
+                                <span
+                                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}
+                                >
+                                  {statusLabel.text}
+                                </span>
+                              )}
+                            </span>
+                          </p>
+                          <p className="mt-1 text-xs text-slate-600">{dateLabel} · {formatOrderStatus(order.status)}</p>
+                        </button>
+
+                        <div className="text-sm font-semibold text-slate-900">
+                          Rs. {Number(order.total || 0).toLocaleString("en-IN")}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          {orderState === "new" && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => onUpdateOrderStatus?.(order.id, "accepted")}
+                                className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onUpdateOrderStatus?.(order.id, "cancelled")}
+                                className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+
+                          {orderState === "accepted" && (
+                            <>
+                              {!isEditing ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingOrderId(order.id);
+                                    setPendingFulfillment((prev) => ({
+                                      ...prev,
+                                      [order.id]: committedFulfillment ?? "in-transit"
+                                    }));
+                                  }}
+                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                >
+                                  Edit
+                                </button>
+                              ) : (
+                                <>
+                                  <select
+                                    value={fulfillment}
+                                    onChange={(event) =>
+                                      setPendingFulfillment((prev) => ({
+                                        ...prev,
+                                        [order.id]: event.target.value
+                                      }))
+                                    }
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+                                  >
+                                    <option value="in-transit">In transit</option>
+                                    <option value="completed">Order completed</option>
+                                    <option value="cancelled">Order cancelled</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onUpdateOrderFulfillment?.(order.id, fulfillment);
+                                      setEditingOrderId(null);
+                                      setPendingFulfillment((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }}
+                                    disabled={!isDirty}
+                                    className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingOrderId(null);
+                                      setPendingFulfillment((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }}
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                </>
+                              )}
+                            </>
+                          )}
+
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+          )}
+
+          {adminView === "live" && (
+            <section className="md:col-span-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Home screen</p>
+                  <h2 className="text-lg font-semibold text-slate-900">Live update</h2>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1fr]">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">Video</p>
+                    <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">
+                      Upload video
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleHomeMediaUpload("video")}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">Image one</p>
+                    <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">
+                      Upload image one
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHomeMediaUpload("imageOne")}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">Image two</p>
+                    <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">
+                      Upload image two
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHomeMediaUpload("imageTwo")}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {homeMediaError && (
+                    <p className="text-sm text-rose-600">{homeMediaError}</p>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+                    <p className="mb-2 font-semibold text-slate-600">Video preview</p>
+                    {homeMediaDraft.videoUrl ? (
+                      <video
+                        src={homeMediaDraft.videoUrl}
+                        className="h-36 w-full rounded-md object-cover"
+                        muted
+                        controls
+                      />
+                    ) : (
+                      <div className="flex h-36 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
+                        Upload a video to preview.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+                    <p className="mb-2 font-semibold text-slate-600">Image one preview</p>
+                    {homeMediaDraft.imageOneUrl ? (
+                      <img
+                        src={homeMediaDraft.imageOneUrl}
+                        alt="Highlight one preview"
+                        className="h-28 w-full rounded-md object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-28 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
+                        Upload an image to preview.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+                    <p className="mb-2 font-semibold text-slate-600">Image two preview</p>
+                    {homeMediaDraft.imageTwoUrl ? (
+                      <img
+                        src={homeMediaDraft.imageTwoUrl}
+                        alt="Highlight two preview"
+                        className="h-28 w-full rounded-md object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-28 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
+                        Upload an image to preview.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={loadHomeMediaFromStorage}
+                  className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveHomeMedia}
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </div>
+            </section>
+          )}
         </div>
 
         {/* =========================
@@ -1119,7 +1659,7 @@ const AdminAddProduct = ({ profile, authLoading }) => {
           </div>
         )}
 
-        {pendingDelete && (
+      {pendingDelete && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
             onClick={(event) => {
@@ -1160,6 +1700,188 @@ const AdminAddProduct = ({ profile, authLoading }) => {
           </div>
         )}
       </div>
+
+      {selectedAdminOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelectedAdminOrder(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+            {/* Header */}
+            <div className="relative border-b border-dashed border-slate-200 px-5 py-4 text-center">
+              <p className="flex items-baseline justify-center text-blue-600">
+                <span className="text-base font-bold tracking-[0.2em]">D</span>
+                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">REAM</span>
+                <span className="ml-0.5 text-base font-bold tracking-[0.2em]">A</span>
+                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">QUATICS</span>
+              </p>
+
+              <h2 className="mt-2 text-1xl font-semibold text-slate-900">Order receipt</h2>
+
+              <p className="mt-1 text-xs text-slate-600">
+                Status:{" "}
+                <span className="font-semibold">
+                  {formatOrderStatus(selectedAdminOrder.status)}
+                </span>
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setSelectedAdminOrder(null)}
+                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700"
+                aria-label="Close order receipt"
+              >
+                X
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="max-h-[75vh] overflow-y-auto px-5 py-4 text-sm text-slate-700">
+              {/* Placed on */}
+              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
+                <span>Placed on</span>
+                <span className="font-semibold text-slate-900">
+                  {new Date(selectedAdminOrder.created_at).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                  })}
+                </span>
+              </div>
+
+              {/* ✅ Status dropdown */}
+              <div className="mt-4 flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
+                <span>Status</span>
+
+                <select
+                  value={selectedAdminOrder.status}
+                  onChange={async (e) => {
+                    const nextStatus = e.target.value;
+
+                    // optimistic UI update
+                    setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
+                    setAdminOrders((prev) =>
+                      prev.map((o) =>
+                        o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
+                      )
+                    );
+
+                    const { error } = await updateOrderStatusAdmin(
+                      selectedAdminOrder.id,
+                      nextStatus
+                    );
+
+                    if (error) {
+                      showToast(error.message || "Failed to update status", "error");
+                      loadAdminOrders(); // reload correct status from DB
+                    } else {
+                      showToast("Order status updated", "success");
+                    }
+                  }}
+                  className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+                >
+                  <option value="awaiting_approval">Awaiting Approval</option>
+                  <option value="in_transit">Confirmed (In Transit)</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              {/* Items */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
+                  <span>Item</span>
+                  <span>Total</span>
+                </div>
+
+                <div className="mt-3 space-y-3 border-b border-dashed border-slate-200 pb-4">
+                  {(selectedAdminOrder.order_items || []).map((item) => (
+                    <div key={item.id} className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-slate-900">{item.title}</p>
+                        <p className="text-xs text-slate-500">
+                          Qty {item.qty} - Rs. {Number(item.price).toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                      <div className="font-semibold text-slate-900">
+                        Rs.{" "}
+                        {Number(item.line_total || item.qty * item.price).toLocaleString(
+                          "en-IN"
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Delivery Address */}
+              <div className="mt-4 border-b border-dashed border-slate-200 pb-4">
+                <h3 className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Delivery Address
+                </h3>
+
+                <div className="mt-2 space-y-1 text-sm">
+                  <p className="font-semibold text-slate-900">
+                    {selectedAdminOrder.customer_name}
+                  </p>
+                  {selectedAdminOrder.customer_email && <p>{selectedAdminOrder.customer_email}</p>}
+                  <p>{selectedAdminOrder.customer_mobile}</p>
+                  <p>{selectedAdminOrder.address_line1}</p>
+                  {selectedAdminOrder.address_line2 && <p>{selectedAdminOrder.address_line2}</p>}
+                  {selectedAdminOrder.landmark && (
+                    <p>Landmark: {selectedAdminOrder.landmark}</p>
+                  )}
+                  <p>
+                    {selectedAdminOrder.city} - {selectedAdminOrder.pincode}
+                  </p>
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-slate-900">
+                    Rs. {Number(selectedAdminOrder.subtotal || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span>Standard shipping</span>
+                  <span className="font-semibold text-slate-900">
+                    Rs.{" "}
+                    {Number(selectedAdminOrder.shipping_fee || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-3 font-semibold text-slate-900">
+                  <span>Total</span>
+                  <span>
+                    Rs. {Number(selectedAdminOrder.total || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Receipt tear strip */}
+            <div className="h-4 w-full bg-white">
+              <svg className="h-full w-full" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <path
+                  d="M0 2 L5 8 L10 2 L15 8 L20 2 L25 8 L30 2 L35 8 L40 2 L45 8 L50 2 L55 8 L60 2 L65 8 L70 2 L75 8 L80 2 L85 8 L90 2 L95 8 L100 2"
+                  stroke="#e2e8f0"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 };

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import CategoryCard from './CategoryCard';
 
-const CategorySection = ({ categoryName, products }) => {
+const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
   const navigate = useNavigate();
   const categoryLabel = {
     'fishes': '🐠 Fishes',
@@ -18,6 +18,8 @@ const CategorySection = ({ categoryName, products }) => {
 
   // Take only the first 4 products for this category
   const displayProducts = products.slice(0, 4);
+  const productCount = subcategoryCount;
+  const showingCount = displayProducts.length;
   // console.log(displayProducts);
 
   return (
@@ -25,19 +27,24 @@ const CategorySection = ({ categoryName, products }) => {
       <div className="w-full px-0">
         <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h2
-              id={`category-${categoryName}`}
-              className="text-2xl sm:text-3xl font-bold text-gray-900"
-            >
-              {displayName}
-            </h2>
+          <div className="mb-4 flex flex-nowrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2
+                id={`category-${categoryName}`}
+                className="truncate text-xl font-bold text-gray-900 sm:text-2xl"
+              >
+                {displayName}
+              </h2>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                Showing {showingCount} of {productCount}
+              </p>
+            </div>
             <button
-              className="group inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,99,235,0.25)] focus:outline-none"
+              className="group relative inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-200 hover:shadow-[0_10px_20px_rgba(37,99,235,0.2)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-3.5 w-3.5"
@@ -51,6 +58,9 @@ const CategorySection = ({ categoryName, products }) => {
                 </svg>
               </span>
               <span>View All</span>
+              <span className="absolute -right-2 -top-2 inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white shadow ring-2 ring-blue-300">
+                {productCount}
+              </span>
             </button>
           </div>
 

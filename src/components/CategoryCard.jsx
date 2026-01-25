@@ -1,20 +1,28 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { getImageWithFallback } from "../assets";
+import plusIcon from "../assets/Icons/plus.png";
+import incPlusIcon from "../assets/Icons/iplus.png";
+import incMinusIcon from "../assets/Icons/iminus.png";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 const CategoryCard = ({
   categoryName,
   product,
   isSubCategory = false,
   onAddToCart,
-  showStockBadge
+  showStockBadge,
+  isMasonry = false
 }) => {
+  const EXPLORE_STYLE = "corner-badge";
   const navigate = useNavigate();
-  const [qty, setQty] = useState(0);
+  const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [showQtyHint, setShowQtyHint] = useState(false);
   const [showViewHint, setShowViewHint] = useState(false);
   const [showExpandHint, setShowExpandHint] = useState(false);
+  const [showAddedHint, setShowAddedHint] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState(false);
 
   const productTitle = isSubCategory
     ? product?.subcategoryName || product?.name || product?.title || "Category"
@@ -23,6 +31,9 @@ const CategoryCard = ({
   const productSubtitle = product?.subtitle || "";
   const productDescription =
     product?.description || product?.details || product?.summary || "";
+  const startFromPrice = Number.isFinite(Number(product?.startFromPrice))
+    ? Number(product?.startFromPrice)
+    : null;
 
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
@@ -61,12 +72,6 @@ const CategoryCard = ({
     };
   }, [isPreviewOpen]);
 
-  useEffect(() => {
-    if (!showQtyHint) return;
-    const timer = setTimeout(() => setShowQtyHint(false), 2000);
-    return () => clearTimeout(timer);
-  }, [showQtyHint]);
-
   // One-time hint to nudge users to view product details (subcategories only)
   useEffect(() => {
     if (!isSubCategory) return;
@@ -97,21 +102,29 @@ const CategoryCard = ({
     };
   }, [isSubCategory]);
 
+  useEffect(() => {
+    if (!showAddedHint) return;
+    const timer = setTimeout(() => setShowAddedHint(false), 1600);
+    return () => clearTimeout(timer);
+  }, [showAddedHint]);
+
   const handleAddToCart = (event) => {
     event?.stopPropagation();
     if (isSoldOut) return;
-    if (qty < 1) return;
+    if (currentQty > 0) return;
     runFlyToCartAnimation();
-    if (onAddToCart) {
-      onAddToCart(product, qty);
-      setQty(0);
-    }
+    const addHandler = onAddToCart || addToCart;
+    addHandler?.(product, 1);
+    setShowAddedHint(true);
   };
 
   const imageSrc =
     typeof productImage === "string" && productImage.startsWith("http")
       ? productImage
       : getImageWithFallback(productImage, productTitle);
+
+  const currentQty =
+    cartItems?.find((item) => item.id === product?.id)?.qty || 0;
 
   const runFlyToCartAnimation = () => {
     try {
@@ -197,9 +210,9 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
+      className={`group relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
-      } ${!isSubCategory && isSoldOut ? "cursor-not-allowed opacity-60 grayscale" : ""}`}
+      }`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
       aria-label={
@@ -207,26 +220,8 @@ const CategoryCard = ({
       }
       onClick={handleClick}
     >
-      {!isSubCategory && shouldShowStockBadge && (
-        <div className="absolute left-0 top-0 z-10">
-          <div
-            className={`h-8 w-8 ${
-              isSoldOut ? "bg-red-600" : "bg-emerald-600"
-            }`}
-            style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
-            aria-hidden="true"
-          />
-          <div
-            className={`absolute left-0 top-0 whitespace-nowrap rounded-br-md px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm ${
-              isSoldOut ? "bg-red-600" : "bg-emerald-600"
-            }`}
-          >
-            {isSoldOut ? "Out Of Stock" : "In Stock"}
-          </div>
-        </div>
-      )}
       <div className="relative w-full overflow-hidden rounded-b-none bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        <div className="relative aspect-[5/4] sm:aspect-[4/3] w-full border-b border-slate-200/60">
+        <div className="relative aspect-[4/3] sm:aspect-[4/3] w-full border-b border-slate-200/60">
           {isSubCategory && (
             <>
               <span
@@ -258,12 +253,9 @@ const CategoryCard = ({
           <img
             src={imageSrc}
             alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-            className={`h-full w-full transition-transform duration-300 group-hover:scale-105 ${
-              isSubCategory ? "object-cover" : "object-contain bg-white"
-            }`}
+            className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
             onClick={(event) => {
               if (isSubCategory) return;
-              if (isSoldOut) return;
               event.stopPropagation();
               setIsPreviewOpen(true);
             }}
@@ -276,10 +268,10 @@ const CategoryCard = ({
           />
           {!isSubCategory && (
             <>
-              <div className="pointer-events-none absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+              <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
                 <svg
                   viewBox="0 0 24 24"
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"
@@ -303,9 +295,46 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <div className={`p-3 sm:p-4 ${isSubCategory ? "flex flex-col gap-2 sm:gap-3" : "flex min-h-[180px] flex-col gap-3 sm:min-h-[200px]"}`}>
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-slate-900 line-clamp-3">
+      <div
+        className={`p-2 sm:p-3 ${
+          isSubCategory
+            ? "flex flex-col gap-2 pb-12 sm:gap-3 sm:pb-14"
+            : isMasonry
+              ? "flex flex-col gap-1 sm:gap-1.5"
+              : "flex min-h-[160px] flex-col gap-1 sm:min-h-[185px] sm:gap-1.5"
+        }`}
+      >
+        {!isSubCategory && shouldShowStockBadge && (
+          <div className="flex justify-center mb-2">
+            <div
+              className={`relative inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-md ${
+                isSoldOut ? "border-rose-200 bg-rose-500" : "border-emerald-200 bg-emerald-600"
+              }`}
+            >
+              <span
+                className="absolute left-1/2 -top-1.5 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border border-transparent"
+                style={{
+                  borderLeftColor: isSoldOut ? "#f43f5e" : "#059669",
+                  borderBottomColor: isSoldOut ? "#f43f5e" : "#059669",
+                  backgroundColor: isSoldOut ? "#f43f5e" : "#059669"
+                }}
+                aria-hidden="true"
+              />
+              <span className="h-1.5 w-1.5 rounded-full bg-white/90" aria-hidden="true" />
+              {isSoldOut ? "Sold Out" : "In Stock"}
+            </div>
+          </div>
+        )}
+        <div
+          className={`text-center ${isSubCategory ? "min-h-[38px]" : "min-h-[38px]"} ${
+            !isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""
+          }`}
+        >
+          <h3
+            className={`px-1 text-sm sm:text-base font-semibold text-slate-900 ${
+              isSubCategory ? "line-clamp-2" : "line-clamp-3"
+            }`}
+          >
             {productTitle}
           </h3>
           {!isSubCategory && productSubtitle && (
@@ -314,8 +343,8 @@ const CategoryCard = ({
             </p>
           )}
           {!isSubCategory && (
-            <div className="mt-3 flex items-center justify-center">
-              <p className="text-lg font-semibold text-slate-900">
+            <div className="mt-0.5 flex items-center justify-center">
+              <p className="text-sm font-semibold text-slate-900">
                 {"\u20B9"}
                 {Number(product?.price ?? 0).toLocaleString("en-IN")}
               </p>
@@ -326,66 +355,63 @@ const CategoryCard = ({
 
         {!isSubCategory && (
           <>
-            <div className="relative mt-auto flex items-center gap-2">
-              <div className="flex-1">
-                <div className="inline-flex w-full items-center justify-between overflow-hidden rounded-full border border-blue-100 bg-blue-50">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setQty((prev) => Math.max(0, prev - 1));
-                  }}
-                  disabled={isSoldOut}
-                  className="px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300"
-                  aria-label={`Decrease quantity for ${productTitle}`}
-                >
-                  -
-                </button>
-                <span className="px-3 text-sm font-semibold text-blue-700">
-                  {qty}
-                </span>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setQty((prev) => prev + 1);
-                  }}
-                  disabled={isSoldOut}
-                  className={`px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:text-blue-300 ${
-                    qty === 0 && !isSoldOut ? "plus-bounce" : ""
-                  }`}
-                  aria-label={`Increase quantity for ${productTitle}`}
-                >
-                  +
-                </button>
+            <div className="relative mt-auto pt-1">
+              {currentQty === 0 ? (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    disabled={isSoldOut}
+                    className="group inline-flex h-9 w-full max-w-[180px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                  >
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                      <img src={plusIcon} alt="" className="h-5 w-5" />
+                    </span>
+                    Add to cart
+                  </button>
                 </div>
-              </div>
-
-              <div
-                className="flex-1"
-                onPointerDown={() => {
-                  if (qty === 0 && !isSoldOut) {
-                    setShowQtyHint(true);
-                  }
-                }}
-                onMouseLeave={() => setShowQtyHint(false)}
-              >
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={isSoldOut || qty < 1}
-                  className="w-full whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 sm:text-[11px]"
-                >
-                  Add to cart
-                </button>
-              </div>
-              {qty === 0 && !isSoldOut && (
-                <span
-                  className={`pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-200 transition-opacity ${
-                    showQtyHint ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  Increase quantity first.
+              ) : (
+                <div className="flex justify-center">
+                  <div className="w-full max-w-[180px]">
+                    <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (currentQty <= 1) {
+                              setPendingRemove(true);
+                              return;
+                            }
+                            updateQty?.(product?.id, currentQty - 1);
+                          }}
+                          disabled={isSoldOut}
+                          className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+                          aria-label={`Decrease quantity for ${productTitle}`}
+                        >
+                          <img src={incMinusIcon} alt="" className="h-7 w-7" />
+                        </button>
+                      <span className="text-sm font-semibold text-blue-700">
+                        {currentQty}
+                      </span>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            updateQty?.(product?.id, currentQty + 1);
+                          }}
+                          disabled={isSoldOut}
+                          className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+                          aria-label={`Increase quantity for ${productTitle}`}
+                        >
+                          <img src={incPlusIcon} alt="" className="h-7 w-7" />
+                        </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {showAddedHint && !isPreviewOpen && (
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                  Added 1 item
                 </span>
               )}
             </div>
@@ -394,68 +420,282 @@ const CategoryCard = ({
       </div>
 
       {isSubCategory && (
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            handleClick();
-          }}
-          className="absolute inset-x-0 bottom-0 rounded-none bg-blue-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:px-4 sm:py-2.5"
-        >
-          View Product
-        </button>
+        (() => {
+          const count = Number.isFinite(product?.itemCount) ? product.itemCount : null;
+          const commonProps = {
+            type: "button",
+            onClick: (event) => {
+              event.stopPropagation();
+              handleClick();
+            },
+          };
+
+          const startFromBlock = startFromPrice !== null && (
+            <div className="absolute inset-x-3 bottom-10 flex justify-center sm:bottom-11">
+              <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "8px" }}>
+                Starts from {"\u20B9"}
+                {startFromPrice.toLocaleString("en-IN")}
+              </span>
+            </div>
+          );
+
+          if (EXPLORE_STYLE === "underline") {
+            return (
+              <>
+                {startFromBlock}
+                <button
+                  {...commonProps}
+                  className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-md backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.2)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+                >
+                  <span>Explore</span>
+                  {count !== null && (
+                    <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white">
+                      {count}
+                    </span>
+                  )}
+                  <span className="absolute inset-x-8 -bottom-1 h-[2px] rounded-full bg-blue-500/60" aria-hidden="true" />
+                </button>
+              </>
+            );
+          }
+
+          if (EXPLORE_STYLE === "outline") {
+            return (
+              <>
+                {startFromBlock}
+                <button
+                  {...commonProps}
+                  className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full border border-blue-300 bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.18)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+                >
+                  <span>Explore</span>
+                  {count !== null && (
+                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-2 text-[10px] font-semibold tracking-[0.12em] text-white shadow-sm">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </>
+            );
+          }
+
+          if (EXPLORE_STYLE === "corner-badge") {
+            return (
+              <>
+                {startFromBlock}
+                <button
+                  {...commonProps}
+                  className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+                >
+                  <span>Explore</span>
+                  {count !== null && (
+                    <span className="absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 shadow ring-2 ring-blue-400">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </>
+            );
+          }
+
+          if (EXPLORE_STYLE === "stacked") {
+            return (
+              <>
+                {startFromBlock}
+                <button
+                  {...commonProps}
+                  className="absolute inset-x-3 bottom-3 flex flex-col items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+                >
+                  <span>Explore</span>
+                  {count !== null && (
+                    <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white ring-1 ring-white/30">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </>
+            );
+          }
+
+          // split pill (default)
+          return (
+            <>
+              {startFromBlock}
+              <button
+                {...commonProps}
+                className="absolute inset-x-3 bottom-3 inline-flex items-center justify-between rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
+                      <path d="M5 12h14M12 5v14" />
+                    </svg>
+                  </span>
+                  <span>Explore</span>
+                </span>
+                {count !== null && (
+                  <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 ring-2 ring-blue-400">
+                    {count}
+                  </span>
+                )}
+              </button>
+            </>
+          );
+        })()
       )}
 
-      {isPreviewOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setIsPreviewOpen(false);
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setIsPreviewOpen(false)}
-              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-              aria-label="Close image preview"
-            >
-              X
-            </button>
-            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
-              <div className="w-full md:w-1/2">
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                  <img
-                    src={imageSrc}
-                    alt={productTitle}
-                    className="h-full w-full object-contain bg-white"
-                  />
+      {isPreviewOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setIsPreviewOpen(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
+              {showAddedHint && (
+                <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-md bg-emerald-600 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                  Added 1 item
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsPreviewOpen(false)}
+                className="absolute right-4 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                aria-label="Close image preview"
+              >
+                X
+              </button>
+              <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-start">
+                <div className="w-full md:w-1/2">
+                  <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                    <img
+                      src={imageSrc}
+                      alt={productTitle}
+                      className="h-full w-full object-contain bg-white"
+                    />
+                  </div>
+                  <div className="mt-4 flex flex-col items-center text-center gap-3">
+                    <div className="pt-1">
+                      {currentQty === 0 ? (
+                        <button
+                          type="button"
+                          onClick={handleAddToCart}
+                          disabled={isSoldOut}
+                          className="group mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                        >
+                          <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
+                            <img src={plusIcon} alt="" className="h-6 w-6" />
+                          </span>
+                          Add to cart
+                        </button>
+                      ) : (
+                        <div className="mx-auto inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (currentQty <= 1) {
+                                setPendingRemove(true);
+                                return;
+                              }
+                              updateQty?.(product?.id, currentQty - 1);
+                            }}
+                            disabled={isSoldOut}
+                            className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                            aria-label={`Decrease quantity for ${productTitle}`}
+                          >
+                            <img src={incMinusIcon} alt="" className="h-9 w-9" />
+                          </button>
+                          <span className="px-3 text-base font-semibold text-blue-700">
+                            {currentQty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              updateQty?.(product?.id, currentQty + 1);
+                            }}
+                            disabled={isSoldOut}
+                            className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
+                            aria-label={`Increase quantity for ${productTitle}`}
+                          >
+                            <img src={incPlusIcon} alt="" className="h-9 w-9" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <h2 className="text-2xl font-semibold text-slate-900">
+                      {productTitle}
+                    </h2>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {"\u20B9"}
+                      {Number(product?.price ?? 0).toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
+                  <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:max-h-none md:pr-0 md:overflow-visible">
+                    {productDescription ? (
+                      <p className="text-sm leading-relaxed text-slate-600">
+                        {productDescription}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-slate-500">
+                        Product details will be available soon.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex w-full flex-col gap-3 pr-12 md:w-1/2">
-                <h2 className="text-2xl font-semibold text-slate-900">
-                  {productTitle}
-                </h2>
-                <p className="text-lg font-semibold text-slate-900">
-                  {"\u20B9"}
-                  {Number(product?.price ?? 0).toLocaleString("en-IN")}
-                </p>
-                {productDescription ? (
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    {productDescription}
-                  </p>
-                ) : (
-                  <p className="text-sm text-slate-500">
-                    Product details will be available soon.
-                  </p>
-                )}
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {pendingRemove &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setPendingRemove(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Remove item?
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Remove {productTitle} from your cart?
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingRemove(false)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeItem?.(product?.id);
+                    setPendingRemove(false);
+                  }}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Remove
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </article>
   );
 };

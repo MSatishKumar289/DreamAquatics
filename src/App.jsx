@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
+import AdminOrdersDrawer from './components/AdminOrdersDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
@@ -11,10 +12,15 @@ import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
 import Terms from './pages/Terms';
+import Profile from './pages/Profile';
+import Search from './pages/Search';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { clearCartStorage } from './helpers/storage';
+import { ProfileProvider } from './context/ProfileContext';
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 function AppContent() {
   const [sessionUser, setSessionUser] = useState(null);
@@ -22,6 +28,9 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
+  const [adminOrders] = useState([]);
+  const [userOrders] = useState([]);
 
   const { clearCart, lastAddedAt } = useCart();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
@@ -52,6 +61,7 @@ function AppContent() {
           setSessionUser(null);
           setProfile(null);
           setAuthLoading(false);
+          localStorage.removeItem('da_profile_hint_seen');
 
           // 🔒 Cart cleanup happens ONLY here
           clearCart();
@@ -140,6 +150,11 @@ function AppContent() {
     return authUser ? `Welcome ${authUser.name}` : null;
   }, [authUser]);
 
+  const newOrdersCount = useMemo(
+    () => adminOrders.filter((order) => (order.status || "new") === "new").length,
+    [adminOrders]
+  );
+
   /* ================= LOGOUT ================= */
 
   const handleLogout = useCallback(async () => {
@@ -150,6 +165,7 @@ function AppContent() {
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
+  const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
     <BrowserRouter>
@@ -159,6 +175,9 @@ function AppContent() {
           onLogout={handleLogout}
           onRequestLogin={openLoginModal}
           onCartOpen={() => setIsCartOpen(true)}
+          onAdminOrdersOpen={() => setIsAdminOrdersOpen(true)}
+          isRoleResolved={isRoleResolved}
+          newOrdersCount={newOrdersCount}
         />
 
         {isLoginModalOpen && (
@@ -190,6 +209,13 @@ function AppContent() {
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
         />
+        {authUser?.role === 'admin' && (
+          <AdminOrdersDrawer
+            isOpen={isAdminOrdersOpen}
+            onClose={() => setIsAdminOrdersOpen(false)}
+            orders={adminOrders}
+          />
+        )}
 
         <main className="flex-1">
           <Routes>
@@ -207,20 +233,36 @@ function AppContent() {
               }
             />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/search" element={<Search />} />
             <Route
               path="/admin/add-product"
               element={
                 profile?.role === 'admin'
-                  ? <AdminAddProduct profile={profile} authLoading={authLoading} />
+                  ? (
+                    <AdminAddProduct
+                      profile={profile}
+                      authLoading={authLoading}
+                      adminOrders={adminOrders}
+                    />
+                  )
                   : <Navigate to="/" replace />
               }
             />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute user={sessionUser} loading={authLoading}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
 
         {showAddedBanner && (
-          <div className="fixed left-0 right-0 top-0 z-50 flex justify-center px-4">
+          <div className="fixed left-0 right-0 top-0 z-[80] flex justify-center px-4">
             <div className="w-full max-w-md -translate-y-2 animate-[slideDown_2s_ease-in-out] border border-emerald-200 bg-emerald-500 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.4em] text-white shadow-md">
               Added to cart
             </div>
@@ -236,7 +278,9 @@ function AppContent() {
 function App() {
   return (
     <CartProvider>
-      <AppContent />
+      <ProfileProvider>
+        <AppContent />
+      </ProfileProvider>
     </CartProvider>
   );
 }

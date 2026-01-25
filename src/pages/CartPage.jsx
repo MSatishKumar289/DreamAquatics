@@ -34,7 +34,7 @@ const CartPage = () => {
           <header className="flex flex-none items-center justify-between border-b border-emerald-100 px-6 py-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                Dream Aquatics
+                DreamAquatics
               </p>
               <h1 className="mt-1 text-lg font-semibold text-slate-900">
                 Cart
