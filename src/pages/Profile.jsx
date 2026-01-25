@@ -3,6 +3,7 @@ import AddressForm from "../components/AddressForm";
 import { useProfile } from "../context/ProfileContext";
 import edit_ic from "../assets/Icons/edit_ic.png";
 import bin_ic from "../assets/Icons/bin_ic.png";
+import { fetchMyOrders, formatOrderStatus } from "../lib/ordersApi";
 
 const Spinner = ({ size = 18 }) => (
   <div
@@ -46,36 +47,28 @@ const Profile = () => {
     setToast({ show: true, type, message });
     setTimeout(() => setToast({ show: false, type: "", message: "" }), 2500);
   };
-  
 
-  const orders = useMemo(
-    () => [
-      {
-        id: "DA-1001",
-        placedAt: "2025-01-12",
-        status: "Pending",
-        subtotal: 1350,
-        shipping: 100,
-        total: 1450,
-        address: {
-          name: "Satish",
-          email: "msatish289kumar@gmail.com",
-          phone: "3213123123",
-          line1: "33D, Gandhi Puram, Cross Street",
-          line2: "Dharapuram",
-          landmark: "Near Periyakaaliamman Kovil",
-          city: "Dharapuram",
-          pincode: "638656",
-        },
-        items: [
-          { id: "itm-1", title: "Full Moon Betta", qty: 2, price: 400 },
-          { id: "itm-2", title: "Albino Oscar", qty: 1, price: 650 },
-          { id: "itm-3", title: "Channa Andrao", qty: 1, price: 300 },
-        ],
-      },
-    ],
-    []
-  );
+  // ✅ Orders (DB)
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState("");
+
+  const loadMyOrders = async () => {
+    setOrdersLoading(true);
+    setOrdersError("");
+
+    const { data, error } = await fetchMyOrders();
+
+    if (error) {
+      setOrdersError(error.message || "Failed to load orders");
+      setOrders([]);
+      setOrdersLoading(false);
+      return;
+    }
+
+    setOrders(data || []);
+    setOrdersLoading(false);
+  };
 
   const canAddMore = addresses.length < 2;
 
@@ -146,7 +139,6 @@ const Profile = () => {
       line2: editing.address_line2 || "",
     };
   }, [editing]);
-  
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -154,11 +146,17 @@ const Profile = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const tab = params.get('tab');
-    if (tab === 'orders') {
-      setActiveTab('orders');
+    const tab = params.get("tab");
+    if (tab === "orders") {
+      setActiveTab("orders");
     }
   }, [location.search]);
+
+  // ✅ Load orders when Orders tab opens
+  useEffect(() => {
+    if (activeTab !== "orders") return;
+    loadMyOrders();
+  }, [activeTab]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">
@@ -207,6 +205,13 @@ const Profile = () => {
 
             {/* Top-right loader indicator */}
             {loadingAddresses && activeTab === "addresses" && (
+              <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                <Spinner size={14} />
+                Loading
+              </div>
+            )}
+
+            {ordersLoading && activeTab === "orders" && (
               <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
                 <Spinner size={14} />
                 Loading
@@ -310,7 +315,9 @@ const Profile = () => {
                                 {addr.email}
                               </p>
                             )}
-                            <p className="text-xs text-slate-600">{addr.mobile}</p>
+                            <p className="text-xs text-slate-600">
+                              {addr.mobile}
+                            </p>
                           </div>
 
                           <div className="flex flex-shrink-0 items-center gap-2">
@@ -355,7 +362,9 @@ const Profile = () => {
                         <div className="mt-2 text-xs text-slate-600">
                           <p>{addr.address_line1}</p>
                           {addr.address_line2 && <p>{addr.address_line2}</p>}
-                          {addr.landmark && <p>Landmark: {addr.landmark}</p>}
+                          {addr.landmark && (
+                            <p>Landmark: {addr.landmark}</p>
+                          )}
                           <p>
                             {addr.city} - {addr.pincode}
                           </p>
@@ -393,6 +402,14 @@ const Profile = () => {
                 </div>
               )}
             </>
+          ) : ordersLoading ? (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+              Loading your orders...
+            </div>
+          ) : ordersError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {ordersError}
+            </div>
           ) : orders.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
               No orders yet. Your future orders will appear here.
@@ -400,9 +417,11 @@ const Profile = () => {
           ) : (
             <div className="space-y-3">
               {orders.map((order) => {
-                const firstItem = order.items[0];
-                const extraCount = Math.max(order.items.length - 1, 0);
-                const dateLabel = new Date(order.placedAt).toLocaleDateString(
+                const items = order.order_items || [];
+                const firstItem = items[0];
+                const extraCount = Math.max(items.length - 1, 0);
+
+                const dateLabel = new Date(order.created_at).toLocaleDateString(
                   "en-IN",
                   {
                     day: "2-digit",
@@ -422,18 +441,18 @@ const Profile = () => {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                          Order {order.id}
+                          Order {order.order_number || order.id}
                         </p>
                         <p className="mt-2 text-sm font-semibold text-slate-900">
-                          {firstItem?.title}
+                          {firstItem?.title || "Order Items"}
                           {extraCount > 0 ? ` + ${extraCount} more` : ""}
                         </p>
                         <p className="mt-1 text-xs text-slate-600">
-                          {dateLabel} · {order.status}
+                          {dateLabel} · {formatOrderStatus(order.status)}
                         </p>
                       </div>
                       <div className="text-sm font-semibold text-slate-900">
-                        ₹{order.total.toLocaleString("en-IN")}
+                        ₹{Number(order.total || 0).toLocaleString("en-IN")}
                       </div>
                     </div>
                   </button>
@@ -509,18 +528,18 @@ const Profile = () => {
                 disabled={isBusy}
                 onClick={async () => {
                   if (isBusy) return;
-                
+
                   setSavingAddress(true);
                   try {
                     const deletedId = pendingDelete.id;
                     const wasDefault = !!pendingDelete.is_default;
-                
+
                     const res = await removeAddress(deletedId);
                     if (!res?.ok) {
                       showToast("Failed to delete address", "error");
                       return;
                     }
-                
+
                     // ✅ If default deleted -> set remaining address as default
                     if (wasDefault) {
                       const remaining = addresses.filter((a) => a.id !== deletedId);
@@ -528,14 +547,13 @@ const Profile = () => {
                         await setDefaultAddress(remaining[0].id);
                       }
                     }
-                
+
                     showToast("Address deleted", "success");
                     setPendingDelete(null);
                   } finally {
                     setSavingAddress(false);
                   }
                 }}
-                
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isBusy ? <Spinner size={16} /> : null}
@@ -546,7 +564,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* selectedOrder modal unchanged */}
+      {/* ✅ selectedOrder modal (DB) */}
       {selectedOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
@@ -573,6 +591,14 @@ const Profile = () => {
               <h2 className="mt-2 text-1xl font-semibold text-slate-900">
                 Order Details
               </h2>
+
+              <p className="mt-1 text-xs text-slate-600">
+                Status:{" "}
+                <span className="font-semibold">
+                  {formatOrderStatus(selectedOrder.status)}
+                </span>
+              </p>
+
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
@@ -587,7 +613,7 @@ const Profile = () => {
               <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
                 <span>Placed on</span>
                 <span className="font-semibold text-slate-900">
-                  {new Date(selectedOrder.placedAt).toLocaleDateString("en-IN", {
+                  {new Date(selectedOrder.created_at).toLocaleDateString("en-IN", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -600,8 +626,9 @@ const Profile = () => {
                   <span>Item</span>
                   <span>Total</span>
                 </div>
+
                 <div className="mt-3 space-y-3 border-b border-dashed border-slate-200 pb-4">
-                  {selectedOrder.items.map((item) => (
+                  {(selectedOrder.order_items || []).map((item) => (
                     <div
                       key={item.id}
                       className="flex items-start justify-between gap-4"
@@ -609,11 +636,11 @@ const Profile = () => {
                       <div>
                         <p className="font-semibold text-slate-900">{item.title}</p>
                         <p className="text-xs text-slate-500">
-                          Qty {item.qty} · ₹{item.price.toLocaleString("en-IN")}
+                          Qty {item.qty} · ₹{Number(item.price).toLocaleString("en-IN")}
                         </p>
                       </div>
                       <div className="font-semibold text-slate-900">
-                        ₹{(item.qty * item.price).toLocaleString("en-IN")}
+                        ₹{Number(item.line_total || item.qty * item.price).toLocaleString("en-IN")}
                       </div>
                     </div>
                   ))}
@@ -624,18 +651,18 @@ const Profile = () => {
                 <div className="flex items-center justify-between">
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-900">
-                    ₹{selectedOrder.subtotal.toLocaleString("en-IN")}
+                    ₹{Number(selectedOrder.subtotal || 0).toLocaleString("en-IN")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Standard shipping</span>
                   <span className="font-semibold text-slate-900">
-                    ₹{selectedOrder.shipping.toLocaleString("en-IN")}
+                    ₹{Number(selectedOrder.shipping_fee || 0).toLocaleString("en-IN")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-3 font-semibold text-slate-900">
                   <span>Total</span>
-                  <span>₹{selectedOrder.total.toLocaleString("en-IN")}</span>
+                  <span>₹{Number(selectedOrder.total || 0).toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
@@ -645,17 +672,17 @@ const Profile = () => {
                 </h3>
                 <div className="mt-2 space-y-1 text-sm">
                   <p className="font-semibold text-slate-900">
-                    {selectedOrder.address.name}
+                    {selectedOrder.customer_name}
                   </p>
-                  <p>{selectedOrder.address.email}</p>
-                  <p>{selectedOrder.address.phone}</p>
-                  <p>{selectedOrder.address.line1}</p>
-                  {selectedOrder.address.line2 && <p>{selectedOrder.address.line2}</p>}
-                  {selectedOrder.address.landmark && (
-                    <p>Landmark: {selectedOrder.address.landmark}</p>
+                  {selectedOrder.customer_email && <p>{selectedOrder.customer_email}</p>}
+                  <p>{selectedOrder.customer_mobile}</p>
+                  <p>{selectedOrder.address_line1}</p>
+                  {selectedOrder.address_line2 && <p>{selectedOrder.address_line2}</p>}
+                  {selectedOrder.landmark && (
+                    <p>Landmark: {selectedOrder.landmark}</p>
                   )}
                   <p>
-                    {selectedOrder.address.city} - {selectedOrder.address.pincode}
+                    {selectedOrder.city} - {selectedOrder.pincode}
                   </p>
                 </div>
               </div>

@@ -4,6 +4,9 @@ import { useProfile } from "../context/ProfileContext";
 import { useCart } from "../context/CartContext";
 import { getImageWithFallback } from "../assets";
 import editIc from "../assets/Icons/edit_ic.png";
+import { createOrder, createOrderItems } from "../lib/ordersApi";
+
+
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -185,17 +188,61 @@ const Checkout = ({ user, onRequestLogin }) => {
   // const hasDbAddress = isLoggedIn && addresses && addresses.length > 0;
 
 
-  const placeOrder = () => {
-    console.info("Checkout details:", form);
-    setOrderSnapshot({
-      items: cartItems,
-      subtotal,
-      address: form,
-    });
-    setOrderPlaced(true);
-    setShowCelebration(true);
-    clearCart();
+  const placeOrder = async () => {
+    try {
+      const payload = {
+        customer_name: form.name,
+        customer_email: form.email || null,
+        customer_mobile: form.mobile,
+        address_line1: form.addressLine1,
+        address_line2: form.addressLine2 || null,
+        city: form.city,
+        landmark: form.landmark || null,
+        pincode: form.pincode,
+        subtotal,
+        shipping_fee: STANDARD_SHIPPING,
+        total: subtotal + STANDARD_SHIPPING,
+        status: "awaiting_approval",
+      };
+  
+      // 1) create order
+      const { data: order, error: orderErr } = await createOrder(payload);
+      if (orderErr) {
+        console.error(orderErr);
+        showToast(orderErr.message || "Order create failed", "error");
+        return;
+      }
+  
+      // 2) create order items
+      const { error: itemsErr } = await createOrderItems({
+        orderId: order.id,
+        cartItems,
+      });
+  
+      if (itemsErr) {
+        console.error(itemsErr);
+        showToast(itemsErr.message || "Order items insert failed", "error");
+        return;
+      }
+  
+      // 3) success UI
+      setOrderSnapshot({
+        items: cartItems,
+        subtotal,
+        address: form,
+        order,
+      });
+  
+      setOrderPlaced(true);
+      setShowCelebration(true);
+      clearCart();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to place order", "error");
+    }
   };
+  
+  
   
   const mapDbAddressToForm = (dbAddr) => {
     if (!dbAddr) return null;
