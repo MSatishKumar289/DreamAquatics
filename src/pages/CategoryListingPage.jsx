@@ -202,6 +202,13 @@ const CategoryListingPage = () => {
           : latest;
       }, null);
 
+      const minPrice = group.reduce((min, current) => {
+        const priceValue = Number(current?.price);
+        if (!Number.isFinite(priceValue)) return min;
+        if (min === null) return priceValue;
+        return priceValue < min ? priceValue : min;
+      }, null);
+
       const sub = latestProduct?.subcategory;
       if (!sub?.id) return null;
 
@@ -214,6 +221,7 @@ const CategoryListingPage = () => {
         latestProductDate: latestProduct?.created_at || "",
         image: latestProduct?.product_images?.[0]?.url || "",
         itemCount: group.length,
+        startFromPrice: minPrice,
       };
     });
 
