@@ -265,7 +265,7 @@ const CategoryCard = ({
           />
           {!isSubCategory && (
             <>
-              <div className="pointer-events-none absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+              <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-4 w-4"
