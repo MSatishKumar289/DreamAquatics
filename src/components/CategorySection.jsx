@@ -19,6 +19,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
   // Take only the first 4 products for this category
   const displayProducts = products.slice(0, 4);
   const productCount = subcategoryCount;
+  const showingCount = displayProducts.length;
   // console.log(displayProducts);
 
   return (
@@ -27,12 +28,17 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
         <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
           <div className="mb-4 flex flex-nowrap items-center justify-between gap-3">
-            <h2
-              id={`category-${categoryName}`}
-              className="truncate text-xl font-bold text-gray-900 sm:text-2xl"
-            >
-              {displayName}
-            </h2>
+            <div className="min-w-0">
+              <h2
+                id={`category-${categoryName}`}
+                className="truncate text-xl font-bold text-gray-900 sm:text-2xl"
+              >
+                {displayName}
+              </h2>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                Showing {showingCount} of {productCount}
+              </p>
+            </div>
             <button
               className="group relative inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-200 hover:shadow-[0_10px_20px_rgba(37,99,235,0.2)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
               aria-label={`View all ${displayName.toLowerCase()}`}

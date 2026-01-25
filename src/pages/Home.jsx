@@ -177,6 +177,13 @@ const Home = ({ profile }) => {
                 return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
               }, null);
 
+              const minPrice = group.reduce((min, current) => {
+                const priceValue = Number(current?.price);
+                if (!Number.isFinite(priceValue)) return min;
+                if (min === null) return priceValue;
+                return priceValue < min ? priceValue : min;
+              }, null);
+
               const subcategory = latestProduct?.subcategory;
               if (!subcategory?.id) return null;
 
@@ -187,6 +194,7 @@ const Home = ({ profile }) => {
                 latestProductDate: latestProduct?.created_at || '',
                 image: latestProduct?.product_images?.[0]?.url || '',
                 itemCount: group.length,
+                startFromPrice: minPrice
               };
             })
             .filter(Boolean)

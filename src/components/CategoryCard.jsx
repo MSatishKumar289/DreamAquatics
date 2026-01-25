@@ -31,6 +31,9 @@ const CategoryCard = ({
   const productSubtitle = product?.subtitle || "";
   const productDescription =
     product?.description || product?.details || product?.summary || "";
+  const startFromPrice = Number.isFinite(Number(product?.startFromPrice))
+    ? Number(product?.startFromPrice)
+    : null;
 
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
@@ -309,7 +312,7 @@ const CategoryCard = ({
               }`}
             >
               <span
-                className="absolute left-1/2 -bottom-1.5 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border border-transparent"
+                className="absolute left-1/2 -top-1.5 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border border-transparent"
                 style={{
                   borderLeftColor: isSoldOut ? "#f43f5e" : "#059669",
                   borderBottomColor: isSoldOut ? "#f43f5e" : "#059669",
@@ -330,6 +333,12 @@ const CategoryCard = ({
           <h3 className="px-1 text-sm sm:text-base font-semibold text-slate-900 line-clamp-3">
             {productTitle}
           </h3>
+          {isSubCategory && startFromPrice !== null && (
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Starts from {"\u20B9"}
+              {startFromPrice.toLocaleString("en-IN")}
+            </p>
+          )}
           {!isSubCategory && productSubtitle && (
             <p className="mt-1 text-sm text-slate-500 line-clamp-1">
               {productSubtitle}
