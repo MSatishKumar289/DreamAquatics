@@ -7,7 +7,6 @@ import Spinner from '../components/Spinner';
 import ProductModal from '../components/ProductModal';
 import { useCart } from '../context/CartContext';
 import BgImage from '../assets/Images/homebgnew.png';
-import MobileBgImage from '../assets/Images/mbarca.png';
 import CallIcon from '../assets/Images/call.png';
 import WhatsIcon from '../assets/Images/whatsapp.jpeg';
 import HighlightOne from '../assets/Images/go.jpg';
@@ -366,7 +365,7 @@ const Home = ({ profile }) => {
             <div
               className={`absolute top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSearchCollapsed
-                  ? "right-3 translate-y-0 scale-100 opacity-100"
+                  ? "right-3 -translate-y-3 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
               }`}
             >
@@ -396,8 +395,8 @@ const Home = ({ profile }) => {
                 </svg>
               </button>
               {isSearchCollapsed && showSearchHint && (
-                <div className="absolute left-1/5 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-blue-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
-                  <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-blue-600/90" aria-hidden="true" />
+                <div className="absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-blue-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+                  <span className="absolute left-full top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-blue-600/90" aria-hidden="true" />
                   Tap to search
                 </div>
               )}
@@ -420,33 +419,37 @@ const Home = ({ profile }) => {
           />
           <div
             className="absolute inset-0 left-1/2 w-screen -translate-x-1/2 scale-105 bg-cover bg-center blur-[2px] md:hidden"
-            style={{ backgroundImage: `url(${MobileBgImage})` }}
+            style={{ backgroundImage: `url(${BgImage})` }}
             aria-hidden
           />
           <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
         </div>
 
-        <div className="relative mx-auto grid max-w-6xl gap-6 px-5 text-white lg:grid-cols-[1.2fr_0.8fr] md:px-10">
+        <div className="relative mx-auto grid max-w-6xl gap-6 px-3 text-white sm:px-4 md:px-8 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
-            <div className="space-y-3 text-center md:text-left">
-              <h1 className="text-[1.5rem] font-light leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem]">
-                <span className="font-semibold text-sky-200">Exclusive</span> and <span className="font-semibold text-sky-200">Exotics</span>
+            <div className="space-y-3 text-center">
+              <h1 className="text-[1.5rem] font-semibold leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem] text-blue-600">
+                <span className="font-semibold text-blue-600">Exclusive and Exotics</span>
               </h1>
-              <p className="text-base text-sky-50/90">
+              <p className="text-base font-semibold text-white">
                 Welcome to the wonderful world of fish keeping. Your trusted source for exotic aquarium fishes with expert advice and nationwide shipping.
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-sky-900/30 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-sky-200">Custom-built aquariums</p>
-                <p className="mt-2 text-sm tracking-[0.2em] font-semibold text-white">
-                  Designed for your space with the right tech to keep vibrant fish like neon tetras healthy and active.
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 text-center shadow-inner shadow-sky-900/30 backdrop-blur">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] line-clamp-2">
+                  Custom-built aquariums
+                </p>
+                <p className="mt-2 text-base font-semibold text-white">
+                 An elegant custom aquarium with a timeless aesthetic, tailored to your space and style, creating a stunning aquatic centerpiece. 
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-sky-900/30 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-sky-200">Professional maintenance</p>
-                <p className="mt-2 text-sm tracking-[0.2em] font-semibold text-white">
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 text-center shadow-inner shadow-sky-900/30 backdrop-blur">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] line-clamp-2">
+                  Professional maintenance
+                </p>
+                <p className="mt-2 text-base font-semibold text-white">
                   Scheduled care, water checks, and quick cleanups to keep your aquarium crystal clear and stress-free.
                 </p>
               </div>
@@ -472,7 +475,9 @@ const Home = ({ profile }) => {
 
           <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
             <div className="space-y-1">
-              <p className="text-sm uppercase tracking-[0.2em] text-sky-200">Store highlights</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
+                Store highlights
+              </p>
               <p className="text-xl font-semibold text-white">This week at the studio</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
