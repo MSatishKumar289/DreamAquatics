@@ -301,7 +301,7 @@ const CategoryCard = ({
             ? "flex flex-col gap-2 pb-12 sm:gap-3 sm:pb-14"
             : isMasonry
               ? "flex flex-col gap-1 sm:gap-1.5"
-              : "flex min-h-[160px] flex-col gap-1 sm:min-h-[185px] sm:gap-1.5"
+              : "flex min-h-[120px] flex-col gap-1 sm:min-h-[160px] sm:gap-1.5"
         }`}
       >
         {!isSubCategory && shouldShowStockBadge && (

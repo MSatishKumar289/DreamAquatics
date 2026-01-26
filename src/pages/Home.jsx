@@ -430,23 +430,23 @@ const Home = ({ profile }) => {
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
             <div className="space-y-3 text-center md:text-left">
               <h1 className="text-[1.5rem] font-light leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem]">
-                Exclusive and <span className="font-semibold text-sky-200">Exotics</span>
+                <span className="font-semibold text-sky-200">Exclusive</span> and <span className="font-semibold text-sky-200">Exotics</span>
               </h1>
-              <p className="text-base text-sky-50/90 md:text-lg">
+              <p className="text-base text-sky-50/90">
                 Welcome to the wonderful world of fish keeping. Your trusted source for exotic aquarium fishes with expert advice and nationwide shipping.
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-sky-900/30 backdrop-blur">
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-200">Custom-built aquariums</p>
-                <p className="mt-2 text-lg font-semibold text-white">
+                <p className="text-sm uppercase tracking-[0.2em] text-sky-200">Custom-built aquariums</p>
+                <p className="mt-2 text-sm tracking-[0.2em] font-semibold text-white">
                   Designed for your space with the right tech to keep vibrant fish like neon tetras healthy and active.
                 </p>
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-sky-900/30 backdrop-blur">
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-200">Professional maintenance</p>
-                <p className="mt-2 text-lg font-semibold text-white">
+                <p className="text-sm uppercase tracking-[0.2em] text-sky-200">Professional maintenance</p>
+                <p className="mt-2 text-sm tracking-[0.2em] font-semibold text-white">
                   Scheduled care, water checks, and quick cleanups to keep your aquarium crystal clear and stress-free.
                 </p>
               </div>
@@ -472,7 +472,7 @@ const Home = ({ profile }) => {
 
           <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.4em] text-sky-200">Store highlights</p>
+              <p className="text-sm uppercase tracking-[0.2em] text-sky-200">Store highlights</p>
               <p className="text-xl font-semibold text-white">This week at the studio</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
