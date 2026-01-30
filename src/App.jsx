@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
@@ -18,6 +18,7 @@ import TrackOrder from './pages/TrackOrder';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
+import { fetchAllOrdersAdmin, normalizeAdminOrders } from './lib/ordersApi';
 import { clearCartStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -30,8 +31,12 @@ function AppContent() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
-  const [adminOrders] = useState([]);
+  const [adminOrders, setAdminOrders] = useState([]);
+  const [adminOrdersLastRefreshedAt, setAdminOrdersLastRefreshedAt] = useState(null);
   const [userOrders] = useState([]);
+  const adminPollTimerRef = useRef(null);
+  const adminPollInFlightRef = useRef(false);
+  const location = useLocation();
 
   const { clearCart, lastAddedAt } = useCart();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
@@ -152,9 +157,84 @@ function AppContent() {
   }, [authUser]);
 
   const newOrdersCount = useMemo(
-    () => adminOrders.filter((order) => (order.status || "new") === "new").length,
+    () =>
+      adminOrders.filter(
+        (order) => (order.status || "awaiting_approval") === "awaiting_approval"
+      ).length,
     [adminOrders]
   );
+
+  const fetchAdminOrders = useCallback(async () => {
+    if (adminPollInFlightRef.current) return;
+    adminPollInFlightRef.current = true;
+    try {
+      const { data, error } = await fetchAllOrdersAdmin();
+      if (error) {
+        return;
+      }
+      setAdminOrders(normalizeAdminOrders(data || []));
+      setAdminOrdersLastRefreshedAt(Date.now());
+    } finally {
+      adminPollInFlightRef.current = false;
+    }
+  }, []);
+
+  const clearAdminPollTimer = () => {
+    if (adminPollTimerRef.current) {
+      clearTimeout(adminPollTimerRef.current);
+      adminPollTimerRef.current = null;
+    }
+  };
+
+  const scheduleAdminPoll = useCallback(() => {
+    clearAdminPollTimer();
+    adminPollTimerRef.current = setTimeout(async () => {
+      if (document.hidden) {
+        scheduleAdminPoll();
+        return;
+      }
+      await fetchAdminOrders();
+      scheduleAdminPoll();
+    }, 3 * 60 * 1000);
+  }, [fetchAdminOrders]);
+
+  useEffect(() => {
+    if (!authUser?.role || authUser.role !== "admin") return;
+
+    const handleFocus = () => {
+      if (document.hidden) return;
+      fetchAdminOrders();
+      scheduleAdminPoll();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearAdminPollTimer();
+        return;
+      }
+      fetchAdminOrders();
+      scheduleAdminPoll();
+    };
+
+    const handleAdminOrdersUpdated = () => {
+      if (document.hidden) return;
+      fetchAdminOrders();
+      scheduleAdminPoll();
+    };
+
+    fetchAdminOrders();
+    scheduleAdminPoll();
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("adminOrdersUpdated", handleAdminOrdersUpdated);
+
+    return () => {
+      clearAdminPollTimer();
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("adminOrdersUpdated", handleAdminOrdersUpdated);
+    };
+  }, [authUser?.role, fetchAdminOrders, scheduleAdminPoll]);
 
   /* ================= LOGOUT ================= */
 
@@ -169,8 +249,7 @@ function AppContent() {
   const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
-    <BrowserRouter>
-      <div className="App flex min-h-screen flex-col">
+    <div className="App flex min-h-screen flex-col">
         <Header
           user={authUser}
           onLogout={handleLogout}
@@ -215,6 +294,7 @@ function AppContent() {
             isOpen={isAdminOrdersOpen}
             onClose={() => setIsAdminOrdersOpen(false)}
             orders={adminOrders}
+            lastRefreshedAt={adminOrdersLastRefreshedAt}
           />
         )}
 
@@ -234,19 +314,22 @@ function AppContent() {
               }
             />
             <Route path="/terms" element={<Terms />} />
-            <Route path="/search" element={<Search />} />`n            <Route path="/track-order" element={<TrackOrder />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/track-order" element={<TrackOrder />} />
             <Route
               path="/admin/add-product"
               element={
-                profile?.role === 'admin'
-                  ? (
-                    <AdminAddProduct
-                      profile={profile}
-                      authLoading={authLoading}
-                      adminOrders={adminOrders}
-                    />
-                  )
-                  : <Navigate to="/" replace />
+                authLoading || !profile
+                  ? <div className="p-6 text-sm text-slate-500">Loading admin…</div>
+                  : profile.role === 'admin'
+                    ? (
+                      <AdminAddProduct
+                        profile={profile}
+                        authLoading={authLoading}
+                        adminOrders={adminOrders}
+                      />
+                    )
+                    : <Navigate to="/" replace />
               }
             />
             <Route
@@ -272,17 +355,18 @@ function AppContent() {
 
         <Footer />
       </div>
-    </BrowserRouter>
   );
 }
 
 function App() {
   return (
-    <CartProvider>
-      <ProfileProvider>
-        <AppContent />
-      </ProfileProvider>
-    </CartProvider>
+    <BrowserRouter>
+      <CartProvider>
+        <ProfileProvider>
+          <AppContent />
+        </ProfileProvider>
+      </CartProvider>
+    </BrowserRouter>
   );
 }
 

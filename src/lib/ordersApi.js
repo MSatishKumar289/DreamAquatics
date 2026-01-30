@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient"; // adjust path if your supabase cli
 // ---------- Shared ----------
 export const STATUS_LABELS = {
   awaiting_approval: "Awaiting Approval",
+  accepted: "Order Confirmed",
   in_transit: "Confirmed (In Transit)",
   delivered: "Delivered",
   cancelled: "Cancelled",
@@ -11,6 +12,13 @@ export const STATUS_LABELS = {
 
 export const formatOrderStatus = (status) =>
   STATUS_LABELS[status] || status || "Unknown";
+
+export const normalizeAdminOrders = (orders = []) =>
+  orders.map((order) => ({
+    ...order,
+    placedAt: order.created_at,
+    items: order.order_items || [],
+  }));
 
 // ---------- USER ----------
 export const fetchMyOrders = async () => {
@@ -91,10 +99,16 @@ export const updateOrderStatusAdmin = async (orderId, status) => {
     .from("orders")
     .update({ status })
     .eq("id", orderId)
-    .select("id,status")
-    .single();
+    .select("id,status");
 
-  return { data, error };
+  if (error) return { data: null, error };
+  if (!data || data.length === 0) {
+    return {
+      data: null,
+      error: new Error("No rows updated (check RLS policy for orders update).")
+    };
+  }
+  return { data: data[0], error: null };
 };
 
 // ---------- CREATE ORDER ----------
