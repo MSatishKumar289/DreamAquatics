@@ -476,6 +476,7 @@ const AdminAddProduct = ({
 
     setSelectedAdminOrder(targetOrder);
     setSelectedOrderStatusDraft(targetOrder.status || "awaiting_approval");
+    navigate("/admin/add-product", { replace: true });
   }, [location.search, adminOrders]);
   
 
