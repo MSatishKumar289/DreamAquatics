@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import closeIcon from "../assets/Icons/close_one.png";
 import { useNavigate } from "react-router-dom";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
 import CategoryCard from "../components/CategoryCard";
@@ -190,10 +191,10 @@ const Search = () => {
                       setSearchQuery("");
                       navigate("/");
                     }}
-                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
                     aria-label="Clear search"
                   >
-                    X
+                    <img src={closeIcon} alt="" className="h-4 w-4" aria-hidden="true" />
                   </button>
                 ) : (
                   <svg
@@ -287,3 +288,4 @@ const Search = () => {
 };
 
 export default Search;
+

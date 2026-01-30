@@ -13,6 +13,7 @@ import HighlightOne from '../assets/Images/go.jpg';
 import HighlightTwo from '../assets/Images/prey.jpg';
 import HighlightThree from '../assets/Images/ram.jpg';
 import HighlightVideo from '../assets/Videos/video.mp4';
+import closeIcon from '../assets/Icons/close_one.png';
 
 const Home = ({ profile }) => {
   const { addToCart } = useCart();
@@ -340,10 +341,10 @@ const Home = ({ profile }) => {
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
                     aria-label="Clear search"
                   >
-                    X
+                    <img src={closeIcon} alt="" className="h-4 w-4" aria-hidden="true" />
                   </button>
                 ) : (
                   <svg
@@ -649,13 +650,13 @@ const Home = ({ profile }) => {
         >
           <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
             <button
-  type="button"
-  onClick={() => setActiveHighlight(null)}
-  className="absolute right-4 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-  aria-label="Close image preview"
->
-  X
-</button>
+              type="button"
+              onClick={() => setActiveHighlight(null)}
+              className="absolute right-4 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+              aria-label="Close image preview"
+            >
+              <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+            </button>
             <img
               src={activeHighlight}
               alt="Highlight preview"
@@ -675,3 +676,5 @@ const Home = ({ profile }) => {
 };
 
 export default Home;
+
+

@@ -371,13 +371,13 @@ const CategoryListingPage = () => {
               />
             {searchQuery.trim() ? (
               <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
-                aria-label="Clear search"
-              >
-                X
-              </button>
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
+                    aria-label="Clear search"
+                  >
+                    <img src={closeIcon} alt="" className="h-4 w-4" aria-hidden="true" />
+                  </button>
             ) : (
               <svg
                 viewBox="0 0 24 24"
@@ -656,3 +656,4 @@ const CategoryListingPage = () => {
 };
 
 export default CategoryListingPage;
+

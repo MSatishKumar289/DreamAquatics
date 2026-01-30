@@ -4,6 +4,7 @@ import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
+import closeIcon from "../assets/Icons/close_one.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
@@ -570,10 +571,10 @@ const CategoryCard = ({
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
-                className="absolute right-4 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
                 aria-label="Close image preview"
               >
-                X
+                <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
               </button>
               <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-start">
                 <div className="w-full md:w-1/2">
@@ -708,3 +709,4 @@ const CategoryCard = ({
 };
 
 export default CategoryCard;
+

@@ -1,8 +1,9 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
+import closeIcon from "../assets/Icons/close_one.png";
 import { useCart } from "../context/CartContext";
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
@@ -11,7 +12,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   const [qty, setQty] = useState(0);
   const [pendingRemove, setPendingRemove] = useState(false);
 
-  // ✅ always compute safe values (even when closed) to keep Hooks stable
+  // ? always compute safe values (even when closed) to keep Hooks stable
   const safeProduct = product || {};
   const title = safeProduct?.title || safeProduct?.name || "Product";
 
@@ -76,7 +77,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     }, 2000);
   };
 
-  // ✅ return AFTER hooks
+  // ? return AFTER hooks
   if (!isOpen || !product) return null;
 
   return (
@@ -91,10 +92,10 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
         <div className="mb-4 flex justify-end">
           <button
             onClick={onClose}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 !bg-red-600 !text-white"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
             aria-label="Close modal"
           >
-            <span className="text-base font-semibold leading-none">X</span>
+            <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -106,7 +107,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               {showConfirmation && (
                 <div className="pointer-events-none absolute inset-x-4 bottom-4 flex justify-center">
                   <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-white/95 px-3 py-2 text-emerald-600 shadow-lg">
-                    <span className="text-base font-bold">✓</span>
+                    <span className="text-base font-bold">?</span>
                     <span className="text-xs font-semibold uppercase tracking-[0.3em]">
                       Added to cart
                     </span>
@@ -241,3 +242,4 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 };
 
 export default ProductModal;
+
