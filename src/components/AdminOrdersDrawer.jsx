@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AdminOrdersDrawer = ({
   isOpen,
   onClose,
   orders = [],
-  onUpdateOrderStatus,
-  onUpdateOrderFulfillment
+  lastRefreshedAt
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
-  const [editingOrderId, setEditingOrderId] = useState(null);
-  const [pendingFulfillment, setPendingFulfillment] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -42,14 +41,8 @@ const AdminOrdersDrawer = ({
     };
   }, [isOpen, onClose]);
 
-  useEffect(() => {
-    if (isOpen) return;
-    setEditingOrderId(null);
-    setPendingFulfillment({});
-  }, [isOpen]);
-
   const getOrderStatusKey = (order) => {
-    const state = order.status || "new";
+    const state = order.status || "awaiting_approval";
     if (state === "cancelled") return "cancelled";
     if (state !== "accepted") return state;
     return order.fulfillment || "accepted";
@@ -57,9 +50,18 @@ const AdminOrdersDrawer = ({
 
   const sortedOrders = useMemo(() => {
     return orders
-      .filter((order) => getOrderStatusKey(order) === "new")
+      .filter((order) => getOrderStatusKey(order) === "awaiting_approval")
       .sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime());
   }, [orders]);
+
+  const lastRefreshedLabel = useMemo(() => {
+    if (!lastRefreshedAt) return "Never";
+    const diffMs = Date.now() - lastRefreshedAt;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin <= 0) return "Just now";
+    if (diffMin === 1) return "1 min ago";
+    return `${diffMin} min ago`;
+  }, [lastRefreshedAt]);
 
   if (!shouldRender) return null;
 
@@ -97,6 +99,10 @@ const AdminOrdersDrawer = ({
         </header>
 
         <div className="flex flex-1 min-h-0 flex-col px-6 py-4">
+          <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
+            <span className="uppercase tracking-[0.2em]">Last refreshed</span>
+            <span className="font-semibold text-slate-700">{lastRefreshedLabel}</span>
+          </div>
           {sortedOrders.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
               <p className="text-sm font-semibold text-slate-800">
@@ -109,8 +115,9 @@ const AdminOrdersDrawer = ({
           ) : (
             <section className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1">
               {sortedOrders.map((order) => {
-                const firstItem = order.items[0];
-                const extraCount = Math.max(order.items.length - 1, 0);
+                const items = order.items || [];
+                const firstItem = items[0];
+                const extraCount = Math.max(items.length - 1, 0);
                 const dateLabel = new Date(order.placedAt).toLocaleDateString(
                   "en-IN",
                   {
@@ -119,161 +126,51 @@ const AdminOrdersDrawer = ({
                     year: "numeric",
                   }
                 );
-                const orderState = order.status || "new";
-                const committedFulfillment = order.fulfillment || null;
-                const isEditing = editingOrderId === order.id;
-                const fulfillment =
-                  pendingFulfillment[order.id] ?? committedFulfillment ?? "in-transit";
-                const statusLabel =
-                  orderState === "cancelled"
-                    ? {
-                        text: "Canceled",
-                        cls: "bg-rose-50 text-rose-700 border-rose-200",
-                      }
-                    : orderState === "accepted" && !committedFulfillment
-                    ? {
-                        text: "Accepted",
-                        cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                      }
-                    : orderState === "accepted" &&
-                      committedFulfillment === "cancelled"
-                    ? {
-                        text: "Canceled",
-                        cls: "bg-rose-50 text-rose-700 border-rose-200",
-                      }
-                    : orderState === "accepted" &&
-                      committedFulfillment === "in-transit"
-                    ? {
-                        text: "In Transit",
-                        cls: "bg-amber-50 text-amber-700 border-amber-200",
-                      }
-                    : orderState === "accepted" &&
-                      committedFulfillment === "completed"
-                    ? {
-                        text: "Completed",
-                        cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                      }
-                    : null;
-                const isDirty = fulfillment !== (committedFulfillment ?? "in-transit");
+                const statusLabel = {
+                  text: "Awaiting Approval",
+                  cls: "bg-slate-50 text-slate-600 border-slate-200",
+                };
+                const orderLabel = order.order_number || order.id;
+                const itemLine = firstItem
+                  ? `${firstItem.title}${extraCount > 0 ? ` + ${extraCount} more` : ""}`
+                  : "Items pending";
 
                 return (
                   <div
                     key={order.id}
-                    className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm"
+                    className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-md shadow-slate-200/60 transition hover:shadow-lg"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="min-w-[200px] flex-1">
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                          Order {order.id}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.25em] text-slate-400">
+                        <span>Order {orderLabel}</span>
+                        <span>{dateLabel}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-slate-900">{itemLine}</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          Rs. {order.total.toLocaleString("en-IN")}
                         </p>
-                        <p className="mt-2 text-sm font-semibold text-slate-900">
-                          <span className="inline-flex flex-wrap items-center gap-2">
-                            <span>
-                              {firstItem?.title}
-                              {extraCount > 0 ? ` + ${extraCount} more` : ""}
-                            </span>
-                            {statusLabel && (
-                              <span
-                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}
-                              >
-                                {statusLabel.text}
-                              </span>
-                            )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        {statusLabel && (
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}
+                          >
+                            {statusLabel.text}
                           </span>
-                        </p>
-                        <p className="mt-1 text-xs text-slate-600">{dateLabel}</p>
-                      </div>
-
-                      <div className="text-sm font-semibold text-slate-900">
-                        Rs. {order.total.toLocaleString("en-IN")}
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        {orderState === "new" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => onUpdateOrderStatus?.(order.id, "accepted")}
-                              className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onUpdateOrderStatus?.(order.id, "cancelled")}
-                              className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
-                            >
-                              Cancel
-                            </button>
-                          </>
                         )}
-
-                          {orderState === "accepted" && (
-                            <>
-                              {!isEditing ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingOrderId(order.id);
-                                    setPendingFulfillment((prev) => ({
-                                      ...prev,
-                                      [order.id]: committedFulfillment ?? "in-transit"
-                                    }));
-                                  }}
-                                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                                >
-                                  Edit
-                                </button>
-                              ) : (
-                                <>
-                                  <select
-                                    value={fulfillment}
-                                    onChange={(event) =>
-                                      setPendingFulfillment((prev) => ({
-                                        ...prev,
-                                        [order.id]: event.target.value
-                                      }))
-                                    }
-                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
-                                  >
-                                    <option value="in-transit">In transit</option>
-                                    <option value="completed">Order completed</option>
-                                    <option value="cancelled">Order cancelled</option>
-                                  </select>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onUpdateOrderFulfillment?.(order.id, fulfillment);
-                                      setEditingOrderId(null);
-                                      setPendingFulfillment((prev) => {
-                                        const next = { ...prev };
-                                        delete next[order.id];
-                                        return next;
-                                      });
-                                    }}
-                                    disabled={!isDirty}
-                                    className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-                                  >
-                                    Save
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingOrderId(null);
-                                      setPendingFulfillment((prev) => {
-                                        const next = { ...prev };
-                                        delete next[order.id];
-                                        return next;
-                                      });
-                                    }}
-                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
-                                  >
-                                    Cancel
-                                </button>
-                              </>
-                            )}
-                          </>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigate(`/admin/add-product?orderId=${order.id}`);
+                            onClose?.();
+                          }}
+                          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                        >
+                          View ->
+                        </button>
                       </div>
                     </div>
                   </div>

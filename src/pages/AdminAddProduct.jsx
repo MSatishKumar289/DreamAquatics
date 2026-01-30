@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import edit_ic from "../assets/Icons/edit_ic.png";
 import bin_ic from "../assets/Icons/bin_ic.png";
 import {
@@ -20,6 +20,7 @@ import {
 } from "../lib/catalogApi.js";
 import {
   fetchAllOrdersAdmin,
+  normalizeAdminOrders,
   updateOrderStatusAdmin,
   formatOrderStatus
 } from "../lib/ordersApi.js";
@@ -67,6 +68,7 @@ const AdminAddProduct = ({
   onUpdateOrderFulfillment
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
   const subcategoryFileInputRef = useRef(null);
 
@@ -186,6 +188,7 @@ const AdminAddProduct = ({
   const [adminOrderFilter, setAdminOrderFilter] = useState("all");
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [pendingFulfillment, setPendingFulfillment] = useState({});
+  const [selectedOrderStatusDraft, setSelectedOrderStatusDraft] = useState("");
 
   const loadHomeMediaFromStorage = () => {
     const stored = localStorage.getItem("dream-aquatics-home-media");
@@ -250,39 +253,52 @@ const AdminAddProduct = ({
       return;
     }
   
-    setAdminOrders(data || []);
+    setAdminOrders(normalizeAdminOrders(data || []));
     setOrdersLoading(false);
   };
   
   const getOrderStatusKey = (order) => {
-    const state = order.status || "new";
+    const state = order.status || "awaiting_approval";
     if (state === "cancelled") return "cancelled";
     if (state !== "accepted") return state;
     return order.fulfillment || "accepted";
   };
 
   const getOrderStatusLabel = (order) => {
-    const state = order.status || "new";
-    const fulfillment = order.fulfillment || null;
-    if (state === "cancelled") {
-      return { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" };
-    }
-    if (state === "accepted" && !fulfillment) {
-      return { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
-    }
-    if (state === "accepted" && fulfillment === "cancelled") {
-      return { text: "Canceled", cls: "bg-rose-50 text-rose-700 border-rose-200" };
-    }
-    if (state === "accepted" && fulfillment === "in-transit") {
-      return { text: "In Transit", cls: "bg-amber-50 text-amber-700 border-amber-200" };
-    }
-    if (state === "accepted" && fulfillment === "completed") {
-      return { text: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    const state = order.status || "awaiting_approval";
+    if (state === "awaiting_approval") {
+      return { text: "Awaiting Approval", cls: "bg-slate-50 text-slate-600 border-slate-200" };
     }
     if (state === "accepted") {
-      return { text: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+      return { text: "Order Confirmed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (state === "in_transit") {
+      return { text: "In Transit", cls: "bg-amber-50 text-amber-700 border-amber-200" };
+    }
+    if (state === "completed") {
+      return { text: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (state === "cancelled") {
+      return { text: "Rejected", cls: "bg-rose-50 text-rose-700 border-rose-200" };
     }
     return null;
+  };
+
+  const handleQuickOrderStatusUpdate = async (orderId, nextStatus) => {
+    setAdminOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: nextStatus } : order
+      )
+    );
+
+    const { error } = await updateOrderStatusAdmin(orderId, nextStatus);
+    if (error) {
+      showToast(error.message || "Failed to update order status", "error");
+      loadAdminOrders();
+      return;
+    }
+    showToast("Order status updated", "success");
+    window.dispatchEvent(new Event("adminOrdersUpdated"));
   };
 
   const filteredAdminOrders = useMemo(() => {
@@ -294,8 +310,8 @@ const AdminAddProduct = ({
     return filtered.sort((a, b) => {
       const statusA = getOrderStatusKey(a);
       const statusB = getOrderStatusKey(b);
-      if (statusA === "new" && statusB !== "new") return -1;
-      if (statusA !== "new" && statusB === "new") return 1;
+      if (statusA === "awaiting_approval" && statusB !== "awaiting_approval") return -1;
+      if (statusA !== "awaiting_approval" && statusB === "awaiting_approval") return 1;
       return new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime();
     });
   }, [adminOrders, adminOrderFilter]);
@@ -431,7 +447,8 @@ const AdminAddProduct = ({
 
   useEffect(() => {
     if (authLoading) return;
-    if (!profile || profile.role !== "admin") {
+    if (!profile) return;
+    if (profile.role !== "admin") {
       navigate("/", { replace: true });
     }
   }, [profile, authLoading, navigate]);
@@ -440,6 +457,26 @@ const AdminAddProduct = ({
     if (adminView !== "orders") return;
     loadAdminOrders();
   }, [adminView]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get("orderId");
+    if (!orderId) return;
+    setAdminView("orders");
+  }, [location.search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get("orderId");
+    if (!orderId) return;
+    if (!adminOrders.length) return;
+
+    const targetOrder = adminOrders.find((order) => order.id === orderId);
+    if (!targetOrder) return;
+
+    setSelectedAdminOrder(targetOrder);
+    setSelectedOrderStatusDraft(targetOrder.status || "awaiting_approval");
+  }, [location.search, adminOrders]);
   
 
   /* =========================
@@ -1159,8 +1196,8 @@ const AdminAddProduct = ({
                   className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
                 >
                   <option value="all">All</option>
-                  <option value="new">New</option>
-                  <option value="accepted">Accepted</option>
+                  <option value="awaiting_approval">Awaiting Approval</option>
+                  <option value="accepted">Order Confirmed</option>
                   <option value="in-transit">In Transit</option>
                   <option value="completed">Completed</option>
                   <option value="cancelled">Canceled</option>
@@ -1176,7 +1213,7 @@ const AdminAddProduct = ({
               <p className="mt-4 text-sm text-slate-500">No orders received yet.</p>
             ) : (
               <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 lg:max-h-[520px]">
-                {adminOrders.map((order) => {
+                {filteredAdminOrders.map((order) => {
                   const items = order.order_items || [];
                   const firstItem = items[0];
                   const extraCount = Math.max(items.length - 1, 0);
@@ -1188,7 +1225,7 @@ const AdminAddProduct = ({
                   });
                   
 
-                  const orderState = order.status || "new";
+                  const orderState = order.status || "awaiting_approval";
                   const committedFulfillment = order.fulfillment || null;
                   const isEditing = editingOrderId === order.id;
                   const fulfillment =
@@ -1204,7 +1241,10 @@ const AdminAddProduct = ({
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <button
                           type="button"
-                          onClick={() => setSelectedAdminOrder(order)}
+                          onClick={() => {
+                            setSelectedAdminOrder(order);
+                            setSelectedOrderStatusDraft(order.status || "awaiting_approval");
+                          }}
                           className="min-w-[220px] flex-1 text-left"
                         >
                           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -1216,32 +1256,40 @@ const AdminAddProduct = ({
                                 {firstItem?.title}
                                 {extraCount > 0 ? ` + ${extraCount} more` : ""}
                               </span>
-                              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                Accepted
-                              </span>
+                              {statusLabel && (
+                                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}>
+                                  {statusLabel.text}
+                                </span>
+                              )}
                             </span>
                           </p>
-                          <p className="mt-1 text-xs text-slate-600">{dateLabel} · {formatOrderStatus(order.status)}</p>
+                          <p className="mt-1 text-xs text-slate-600">
+                            {dateLabel} - {statusLabel?.text || formatOrderStatus(order.status)}
+                          </p>
                         </button>
 
                         <div className="text-sm font-semibold text-slate-900">
                           Rs. {Number(order.total || 0).toLocaleString("en-IN")}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
-                          >
-                            Cancel
-                          </button>
-                        </div>
+                        {orderState === "awaiting_approval" && (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleQuickOrderStatusUpdate(order.id, "accepted")}
+                              className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickOrderStatusUpdate(order.id, "cancelled")}
+                              className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -1646,14 +1694,21 @@ const AdminAddProduct = ({
 
               <div className="mt-2 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <span>Status</span>
-                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                  Approved
-                </span>
+                {getOrderStatusLabel(selectedAdminOrder) ? (
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${getOrderStatusLabel(selectedAdminOrder).cls}`}
+                  >
+                    {getOrderStatusLabel(selectedAdminOrder).text}
+                  </span>
+                ) : null}
               </div>
 
               <button
                 type="button"
-                onClick={() => setSelectedAdminOrder(null)}
+                onClick={() => {
+                  setSelectedOrderStatusDraft("");
+                  setSelectedAdminOrder(null);
+                }}
                 className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700"
                 aria-label="Close order receipt"
               >
@@ -1663,6 +1718,14 @@ const AdminAddProduct = ({
 
             {/* Body */}
             <div className="max-h-[75vh] overflow-y-auto px-5 py-4 text-sm text-slate-700">
+              {/* Order ID */}
+              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
+                <span>Order ID</span>
+                <span className="font-semibold text-slate-900">
+                  {selectedAdminOrder.order_number || selectedAdminOrder.id}
+                </span>
+              </div>
+
               {/* Placed on */}
               <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
                 <span>Placed on</span>
@@ -1681,18 +1744,21 @@ const AdminAddProduct = ({
 
                 <div className="flex items-center gap-2">
                   <select
-                    value={selectedAdminOrder.status}
-                    onChange={async (e) => {
-                      const nextStatus = e.target.value;
+                    value={selectedOrderStatusDraft || selectedAdminOrder.status}
+                    onChange={(e) => setSelectedOrderStatusDraft(e.target.value)}
+                    className="min-w-[170px] rounded-full border border-blue-500 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none"
+                  >
+                    <option value="awaiting_approval">Awaiting Approval</option>
+                    <option value="accepted">Order Confirmed</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Rejected</option>
+                  </select>
 
-                      // optimistic UI update
-                      setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
-                      setAdminOrders((prev) =>
-                        prev.map((o) =>
-                          o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
-                        )
-                      );
-
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const nextStatus = selectedOrderStatusDraft || selectedAdminOrder.status;
                       const { error } = await updateOrderStatusAdmin(
                         selectedAdminOrder.id,
                         nextStatus
@@ -1700,26 +1766,29 @@ const AdminAddProduct = ({
 
                       if (error) {
                         showToast(error.message || "Failed to update status", "error");
-                        loadAdminOrders(); // reload correct status from DB
-                      } else {
-                        showToast("Order status updated", "success");
+                        loadAdminOrders();
+                        return;
                       }
-                    }}
-                    className="min-w-[170px] rounded-full border border-blue-500 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none"
-                  >
-                    <option value="in_transit">In Transit</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
 
-                  <button
-                    type="button"
+                      setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
+                      setAdminOrders((prev) =>
+                        prev.map((o) =>
+                          o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
+                        )
+                      );
+                      showToast("Order status updated", "success");
+                      window.dispatchEvent(new Event("adminOrdersUpdated"));
+                    }}
                     className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
                   >
                     Save
                   </button>
                   <button
                     type="button"
+                    onClick={() => {
+                      setSelectedOrderStatusDraft(selectedAdminOrder.status || "awaiting_approval");
+                      setSelectedAdminOrder(null);
+                    }}
                     className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                   >
                     Cancel
