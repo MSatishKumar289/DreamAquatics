@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import Terms from './pages/Terms';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
+import TrackOrder from './pages/TrackOrder';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
@@ -233,7 +234,7 @@ function AppContent() {
               }
             />
             <Route path="/terms" element={<Terms />} />
-            <Route path="/search" element={<Search />} />
+            <Route path="/search" element={<Search />} />`n            <Route path="/track-order" element={<TrackOrder />} />
             <Route
               path="/admin/add-product"
               element={
@@ -286,3 +287,4 @@ function App() {
 }
 
 export default App;
+

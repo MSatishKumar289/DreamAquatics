@@ -5,6 +5,7 @@ import { useCart } from "../context/CartContext";
 import { getImageWithFallback } from "../assets";
 import editIc from "../assets/Icons/edit_ic.png";
 import { createOrder, createOrderItems } from "../lib/ordersApi";
+import { sendOrderWhatsappNotification } from "../lib/whatsappApi";
 
 
 
@@ -225,7 +226,34 @@ const Checkout = ({ user, onRequestLogin }) => {
         return;
       }
   
-      // 3) success UI
+      // 3) WhatsApp notification (non-blocking)
+      try {
+        const orderTotal = subtotal + STANDARD_SHIPPING;
+        const itemsText = cartItems
+          .map((item) => `${item.title || item.name || "Item"} x${item.qty || 1}`)
+          .join(" ");
+        const adminOrderBaseUrl = import.meta.env.VITE_ADMIN_ORDER_URL || "";
+        const orderNumber = order.order_number || null;
+        const orderLink = adminOrderBaseUrl
+          ? `${adminOrderBaseUrl}/${orderNumber || order.id}`
+          : "";
+
+        const { error: whatsappError } = await sendOrderWhatsappNotification({
+          orderId: order.id,
+          orderNumber,
+          customerName: form.name,
+          customerMobile: form.mobile,
+          total: orderTotal,
+          itemCount: cartItems.length,
+          itemsText,
+          orderLink,
+        });
+        if (whatsappError) console.error(whatsappError);
+      } catch (whatsappErr) {
+        console.error(whatsappErr);
+      }
+
+      // 4) success UI
       setOrderSnapshot({
         items: cartItems,
         subtotal,
@@ -389,6 +417,7 @@ const Checkout = ({ user, onRequestLogin }) => {
     const orderSubtotal = orderSnapshot?.subtotal ?? subtotal;
     const orderTotal = orderSubtotal + STANDARD_SHIPPING;
     const address = orderSnapshot?.address || form;
+    const placedOrder = orderSnapshot?.order || null;
 
     const addressLines = [
       address.addressLine1?.trim(),
@@ -852,3 +881,5 @@ const Checkout = ({ user, onRequestLogin }) => {
 };
 
 export default Checkout;
+
+
