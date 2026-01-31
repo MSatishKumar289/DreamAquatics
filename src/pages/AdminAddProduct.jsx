@@ -1780,7 +1780,8 @@ const AdminAddProduct = ({
                       showToast("Order status updated", "success");
                       window.dispatchEvent(new Event("adminOrdersUpdated"));
                     }}
-                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    disabled={((selectedOrderStatusDraft || selectedAdminOrder.status) === (selectedAdminOrder.status || "awaiting_approval"))}
                   >
                     Save
                   </button>
@@ -1893,3 +1894,4 @@ const AdminAddProduct = ({
 };
 
 export default AdminAddProduct;
+
