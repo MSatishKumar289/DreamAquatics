@@ -39,7 +39,14 @@ const AuthForm = ({
             {isRegisterMode ? 'Join us' : 'Welcome back'}
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900">
-            {isRegisterMode ? 'Create an account' : 'Log in to Dream Aquatics'}
+            {isRegisterMode ? (
+              'Create an account'
+            ) : (
+              <>
+                <span className="block">Log in to</span>
+                <span className="block">DreamAquatics</span>
+              </>
+            )}
           </h1>
           <p className="text-sm text-slate-600">
             {isRegisterMode
@@ -102,7 +109,7 @@ const AuthForm = ({
             type="button"
             onClick={isRegisterMode ? handleRegisterSubmit : handleLoginSubmit}
             disabled={authLoading}
-            className="w-full rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-600 px-6 py-3 text-base font-semibold text-white shadow-[0_15px_40px_rgba(59,130,246,0.45)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white"
+            className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
           >
             {authLoading ? 'Please wait...' : isRegisterMode ? 'Register' : 'Login'}
           </button>
@@ -163,3 +170,5 @@ const AuthForm = ({
 };
 
 export default AuthForm;
+
+

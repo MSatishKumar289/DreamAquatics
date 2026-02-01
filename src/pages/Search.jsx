@@ -78,7 +78,7 @@ const Search = () => {
         searchCategory === "all"
           ? true
           : CATEGORY_SLUG_MAP[searchCategory] === product.subcategory?.category?.slug;
-      return matchCategory && (title.includes(query) || subcategory.includes(query));
+      return matchCategory && title.includes(query);
     });
   }, [allProducts, searchCategory, searchQuery, CATEGORY_SLUG_MAP]);
 

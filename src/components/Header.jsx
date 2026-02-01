@@ -83,7 +83,7 @@ const Header = ({
           <Link
             to="/"
             className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
-            aria-label="Dream Aquatics home"
+            aria-label="DreamAquatics home"
           >
             <div className="flex items-baseline leading-none">
               <span className="text-[1.5rem] sm:text-[rem] md:text-[3rem] font-extrabold tracking-[0.04em]">D</span>
@@ -149,7 +149,7 @@ const Header = ({
                   type="button"
                   onClick={() => onRequestLogin?.()}
                   className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
-                  aria-label="Login to your Dream Aquatics account"
+                  aria-label="Login to your DreamAquatics account"
                 >
                   <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
                   <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
@@ -310,7 +310,7 @@ const Header = ({
                   type="button"
                   onClick={() => onRequestLogin?.()}
                   className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
-                  aria-label="Login to your Dream Aquatics account"
+                  aria-label="Login to your DreamAquatics account"
                 >
                   <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
                   <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
