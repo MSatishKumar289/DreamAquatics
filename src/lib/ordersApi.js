@@ -118,20 +118,15 @@ export const createOrder = async (payload) => {
   if (userErr) return { data: null, error: userErr };
 
   const authUserId = userRes?.user?.id ?? null;
-
-  // IMPORTANT:
-  // If logged in, force correct user_id
-  // If not logged in, do not send user_id key at all (so it becomes NULL)
-  const finalPayload = {
-    ...payload,
-    ...(authUserId ? { user_id: authUserId } : {}),
-  };
-
   if (!authUserId) {
-    // remove user_id if it exists but undefined/null
-    delete finalPayload.user_id;
+    return { data: null, error: new Error("Login required to place an order.") };
   }
 
+  // Always set correct user_id for logged-in users
+  const finalPayload = {
+    ...payload,
+    user_id: authUserId,
+  };
   const { data, error } = await supabase
     .from("orders")
     .insert(finalPayload)
@@ -163,4 +158,7 @@ export const createOrderItems = async ({ orderId, cartItems }) => {
 
   return { data, error };
 };
+
+
+
 

@@ -71,8 +71,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   const isLoggedIn = !!user?.email;
   const submitLabel = "Review your order";
   const STANDARD_SHIPPING = 100;
-
-  const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
+const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
   // Prevent repeated auto-review trigger
   const autoReviewTriggeredRef = useRef(false);
@@ -186,7 +185,7 @@ const Checkout = ({ user, onRequestLogin }) => {
     return next;
   }, [form]);
 
-  // const hasDbAddress = isLoggedIn && addresses && addresses.length > 0;
+// const hasDbAddress = isLoggedIn && addresses && addresses.length > 0;
 
 
   const placeOrder = async () => {
@@ -649,16 +648,16 @@ const Checkout = ({ user, onRequestLogin }) => {
             </div>
 
             {!orderPlaced && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  type="button"
-                  onClick={placeOrder}
-                  className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                >
-                  Confirm order
-                </button>
-              </div>
-            )}
+  <div className="mt-6 flex flex-col items-center gap-4">
+    <button
+      type="button"
+      onClick={placeOrder}
+      className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+    >
+      Confirm order
+    </button>
+</div>
+)}
 
             {orderPlaced && (
               <style>{`
@@ -854,8 +853,7 @@ const Checkout = ({ user, onRequestLogin }) => {
                   >
                     {savingAddress ? "Saving..." : submitLabel}
                   </button>
-
-                  {/* Cancel button only when edit from review */}
+{/* Cancel button only when edit from review */}
                   {editingFromReview && (
                     <button
                       type="button"

@@ -1,8 +1,31 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthForm from '../components/AuthForm';
+import { useCart } from '../context/CartContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { cartItems, subtotal } = useCart();
+  const cameFromCheckout = Boolean(location.state?.from?.pathname?.startsWith('/checkout'));
+  const adminWhatsAppNumber = '918667418965';
+
+  const buildWhatsAppOrderLink = () => {
+    if (!adminWhatsAppNumber) return '';
+    const orderSubtotal = subtotal || 0;
+    const orderTotal = orderSubtotal + 100;
+    const itemsText = (cartItems || [])
+      .map((item) => {
+        const title = item.title || item.name || 'Item';
+        const qty = item.qty || 1;
+        const price = Number(item.price || 0);
+        return `${title} x${qty} - Rs. ${price.toLocaleString('en-IN')}`;
+      })
+      .join('\n');
+    const message = itemsText
+      ? `Hi Dream Aquatics, I want to place an order via WhatsApp.\n\nItems: ${itemsText}\nSubtotal: Rs. ${orderSubtotal.toLocaleString('en-IN')}\nShipping: Rs. 100\nTotal: Rs. ${orderTotal.toLocaleString('en-IN')}`
+      : 'Hi Dream Aquatics, I want to place an order via WhatsApp.';
+    return `https://wa.me/${adminWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+  };
 
   const handleAuthSuccess = () => {
     navigate('/');
@@ -23,6 +46,24 @@ const Login = () => {
             variant="page"
             onSuccess={handleAuthSuccess}
           />
+          {cameFromCheckout && (
+            <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-center text-sm text-emerald-900">
+              <p className="font-semibold">Prefer WhatsApp?</p>
+              <p className="mt-1 text-xs text-emerald-800">
+                You can place your order directly with our team if you need help.
+              </p>
+              <div className="mt-3 flex justify-center">
+                <a
+                  href={buildWhatsAppOrderLink()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/70 bg-emerald-500 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5"
+                >
+                  WhatsApp to order
+                </a>
+              </div>
+            </div>
+          )}
           <div className="mt-4 text-center">
             <p className="text-sm text-slate-600">
               <Link to="/" className="font-semibold text-sky-600 hover:text-sky-700">

@@ -23,7 +23,7 @@ const Footer = () => {
             </Link>
           </div>
           <p className="text-sky-100/60 text-xs mt-4">
-            (c) {new Date().getFullYear()} Dream Aquatics. All rights reserved.
+            (c) {new Date().getFullYear()} DreamAquatics. All rights reserved.
           </p>
         </div>
       </div>

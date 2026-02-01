@@ -310,7 +310,9 @@ function AppContent() {
             <Route
               path="/checkout"
               element={
-                <Checkout user={authUser} onRequestLogin={openLoginModal} />
+                authUser
+                  ? <Checkout user={authUser} onRequestLogin={openLoginModal} />
+                  : <Navigate to="/login" replace state={{ from: location }} />
               }
             />
             <Route path="/terms" element={<Terms />} />
@@ -371,4 +373,8 @@ function App() {
 }
 
 export default App;
+
+
+
+
 
