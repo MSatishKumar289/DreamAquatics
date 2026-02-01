@@ -301,6 +301,23 @@ const AdminAddProduct = ({
     window.dispatchEvent(new Event("adminOrdersUpdated"));
   };
 
+
+  const adminOrderCounts = useMemo(() => {
+    const counts = {
+      all: adminOrders.length,
+      awaiting_approval: 0,
+      accepted: 0,
+      in_transit: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    adminOrders.forEach((order) => {
+      const key = getOrderStatusKey(order);
+      if (counts[key] !== undefined) counts[key] += 1;
+    });
+    return counts;
+  }, [adminOrders]);
+
   const filteredAdminOrders = useMemo(() => {
     const filtered = adminOrders.filter((order) => {
       if (adminOrderFilter === "all") return true;
@@ -1186,6 +1203,7 @@ const AdminAddProduct = ({
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Orders</p>
                 <h2 className="text-lg font-semibold text-slate-900">Recent orders</h2>
+                <p className="mt-1 text-xs text-slate-500">Showing {filteredAdminOrders.length} of {adminOrders.length}</p>
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1196,12 +1214,12 @@ const AdminAddProduct = ({
                   onChange={(event) => setAdminOrderFilter(event.target.value)}
                   className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
                 >
-                  <option value="all">All</option>
-                  <option value="awaiting_approval">Awaiting Approval</option>
-                  <option value="accepted">Order Confirmed</option>
-                  <option value="in-transit">In Transit</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Canceled</option>
+                  <option value="all">All ({adminOrderCounts.all})</option>
+<option value="awaiting_approval">Awaiting Approval ({adminOrderCounts.awaiting_approval})</option>
+<option value="accepted">Order Confirmed ({adminOrderCounts.accepted})</option>
+<option value="in_transit">In Transit ({adminOrderCounts.in_transit})</option>
+<option value="completed">Completed ({adminOrderCounts.completed})</option>
+<option value="cancelled">Canceled ({adminOrderCounts.cancelled})</option>
                 </select>
               </div>
             </div>
