@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAuthForm } from '../hooks/useAuthForm';
 
 /**
@@ -11,22 +12,29 @@ const AuthForm = ({
   showCloseButton = false,
   onClose,
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     isRegisterMode,
+    isResetMode,
     name,
     email,
     password,
+    confirmPassword,
     error,
     notice,
     authLoading,
+    resetCountdown,
     setName,
     setEmail,
     setPassword,
-    setError,
-    setIsRegisterMode,
+    setConfirmPassword,
     handleLoginSubmit,
     handleRegisterSubmit,
-    toggleMode,
+    handleResetSubmit,
+    switchToLogin,
+    switchToRegister,
+    switchToReset,
   } = useAuthForm({ onSuccess, onProfileUpdate });
 
   const isPageVariant = variant === 'page';
@@ -39,7 +47,9 @@ const AuthForm = ({
             {isRegisterMode ? 'Join us' : 'Welcome back'}
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900">
-            {isRegisterMode ? (
+            {isResetMode ? (
+              'Reset your password'
+            ) : isRegisterMode ? (
               'Create an account'
             ) : (
               <>
@@ -49,9 +59,11 @@ const AuthForm = ({
             )}
           </h1>
           <p className="text-sm text-slate-600">
-            {isRegisterMode
-              ? 'Enter your details to create an account.'
-              : 'Enter your email and password to continue.'}
+            {isResetMode
+              ? 'We will send a reset link to your email.'
+              : isRegisterMode
+                ? 'Enter your details to create an account.'
+                : 'Enter your email and password to continue.'}
           </p>
         </div>
       )}
@@ -59,18 +71,20 @@ const AuthForm = ({
       {!isPageVariant && (
         <>
           <h2 className="text-xl font-bold text-slate-900">
-            {isRegisterMode ? 'Create an account' : 'Sign in'}
+            {isResetMode ? 'Reset your password' : isRegisterMode ? 'Create an account' : 'Sign in'}
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            {isRegisterMode
-              ? 'Enter your details to create an account.'
-              : 'Enter your email and password to continue.'}
+            {isResetMode
+              ? 'We will send a reset link to your email.'
+              : isRegisterMode
+                ? 'Enter your details to create an account.'
+                : 'Enter your email and password to continue.'}
           </p>
         </>
       )}
 
       <div className={isPageVariant ? 'space-y-4' : 'mt-4 space-y-4'}>
-        {isRegisterMode && (
+        {isRegisterMode && !isResetMode && (
           <label className="block text-sm font-semibold text-slate-700">
             Name
             <input
@@ -92,26 +106,75 @@ const AuthForm = ({
             className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
           />
         </label>
-        <label className="block text-sm font-semibold text-slate-700">
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
-          />
-        </label>
+        {!isResetMode && (
+          <label className="block text-sm font-semibold text-slate-700">
+            Password
+            <div className="relative mt-2">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-slate-500 hover:text-slate-700"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </label>
+        )}
+        {isRegisterMode && !isResetMode && (
+          <label className="block text-sm font-semibold text-slate-700">
+            Confirm password
+            <div className="relative mt-2">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-slate-500 hover:text-slate-700"
+              >
+                {showConfirmPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </label>
+        )}
         {error && <p className="text-sm font-semibold text-rose-600">{error}</p>}
         {notice && <p className="text-sm font-semibold text-emerald-600">{notice}</p>}
+        {isResetMode && resetCountdown > 0 && (
+          <p className="text-xs font-semibold text-slate-500">
+            You can resend in {resetCountdown}s.
+          </p>
+        )}
         {isPageVariant ? (
           <button
             type="button"
-            onClick={isRegisterMode ? handleRegisterSubmit : handleLoginSubmit}
-            disabled={authLoading}
+            onClick={
+              isResetMode
+                ? handleResetSubmit
+                : isRegisterMode
+                  ? handleRegisterSubmit
+                  : handleLoginSubmit
+            }
+            disabled={authLoading || (isResetMode && resetCountdown > 0)}
             className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
           >
-            {authLoading ? 'Please wait...' : isRegisterMode ? 'Register' : 'Login'}
+            {authLoading
+              ? 'Please wait...'
+              : isResetMode
+                ? 'Send reset link'
+                : isRegisterMode
+                  ? 'Register'
+                  : 'Login'}
           </button>
         ) : (
           <div className="mt-6 flex items-center justify-center gap-3">
@@ -124,25 +187,47 @@ const AuthForm = ({
             </button>
             <button
               type="button"
-              onClick={isRegisterMode ? handleRegisterSubmit : handleLoginSubmit}
-              disabled={authLoading}
+              onClick={
+                isResetMode
+                  ? handleResetSubmit
+                  : isRegisterMode
+                    ? handleRegisterSubmit
+                    : handleLoginSubmit
+              }
+              disabled={authLoading || (isResetMode && resetCountdown > 0)}
               className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 disabled:opacity-70"
             >
-              {authLoading ? 'Please wait...' : isRegisterMode ? 'Register' : 'Login'}
+              {authLoading
+                ? 'Please wait...'
+                : isResetMode
+                  ? 'Send reset link'
+                  : isRegisterMode
+                    ? 'Register'
+                    : 'Login'}
             </button>
           </div>
         )}
       </div>
 
       <div className={isPageVariant ? 'mt-6 text-center' : 'mt-4 text-center'}>
-        {isRegisterMode ? (
+        {isResetMode ? (
+          <p className="text-sm text-slate-600">
+            Remembered your password?{' '}
+            <button
+              type="button"
+              onClick={switchToLogin}
+              className="font-semibold text-sky-600 hover:text-sky-700"
+            >
+              Login
+            </button>
+          </p>
+        ) : isRegisterMode ? (
           <p className="text-sm text-slate-600">
             Already have an account?{' '}
             <button
               type="button"
               onClick={() => {
-                setIsRegisterMode(false);
-                setError('');
+                switchToLogin();
               }}
               className="font-semibold text-sky-600 hover:text-sky-700"
             >
@@ -155,8 +240,7 @@ const AuthForm = ({
             <button
               type="button"
               onClick={() => {
-                setIsRegisterMode(true);
-                setError('');
+                switchToRegister();
               }}
               className="font-semibold text-sky-600 hover:text-sky-700"
             >
@@ -165,6 +249,18 @@ const AuthForm = ({
           </p>
         )}
       </div>
+
+      {!isRegisterMode && !isResetMode && (
+        <div className={isPageVariant ? 'mt-3 text-center' : 'mt-3 text-center'}>
+          <button
+            type="button"
+            onClick={switchToReset}
+            className="text-sm font-semibold text-sky-600 hover:text-sky-700"
+          >
+            Forgot password?
+          </button>
+        </div>
+      )}
     </>
   );
 };
