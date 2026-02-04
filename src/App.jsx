@@ -11,6 +11,7 @@ import Checkout from './pages/Checkout.jsx';
 import CategoryListingPage from './pages/CategoryListingPage';
 import AdminAddProduct from './pages/AdminAddProduct';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import Terms from './pages/Terms';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
@@ -344,6 +345,7 @@ function AppContent() {
             />
 
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
 
