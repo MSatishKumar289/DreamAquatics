@@ -3,6 +3,7 @@ import AddressForm from "../components/AddressForm";
 import { useProfile } from "../context/ProfileContext";
 import edit_ic from "../assets/Icons/edit_ic.png";
 import bin_ic from "../assets/Icons/bin_ic.png";
+import closeIcon from "../assets/Icons/close_one.png";
 import { fetchMyOrders, formatOrderStatus } from "../lib/ordersApi";
 
 const Spinner = ({ size = 18 }) => (
@@ -613,10 +614,10 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="absolute right-4 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700"
+                className="absolute right-4 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
                 aria-label="Close order details"
               >
-                X
+                <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 

@@ -639,10 +639,10 @@ const CategoryListingPage = () => {
               <button
                 type="button"
                 onClick={() => setShowDescriptionModal(false)}
-                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-300"
                 aria-label="Close description"
               >
-                X
+                <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             <div className="max-h-[70vh] overflow-y-auto px-5 py-4 text-base text-slate-600">
