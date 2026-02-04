@@ -147,8 +147,10 @@ const AdminOrdersDrawer = ({
                       </div>
 
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-slate-900">{itemLine}</p>
-                        <p className="text-sm font-semibold text-slate-900">
+                        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900">
+                          {itemLine}
+                        </p>
+                        <p className="shrink-0 whitespace-nowrap text-sm font-semibold text-slate-900">
                           Rs. {order.total.toLocaleString("en-IN")}
                         </p>
                       </div>

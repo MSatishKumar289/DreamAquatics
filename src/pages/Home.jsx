@@ -14,6 +14,7 @@ import HighlightTwo from '../assets/Images/prey.jpg';
 import HighlightThree from '../assets/Images/ram.jpg';
 import HighlightVideo from '../assets/Videos/video.mp4';
 import closeIcon from '../assets/Icons/close_one.png';
+import { fetchHomeMedia } from '../lib/homeMediaApi';
 
 const Home = ({ profile }) => {
   const { addToCart } = useCart();
@@ -109,19 +110,22 @@ const Home = ({ profile }) => {
   }, [allProducts, searchCategory, searchQuery, CATEGORY_SLUG_MAP]);
 
   useEffect(() => {
-    const storedMedia = localStorage.getItem('dream-aquatics-home-media');
-    if (storedMedia) {
-      try {
-        const parsed = JSON.parse(storedMedia);
-        setHomeMedia({
-          videoUrl: parsed.videoUrl || '',
-          imageOneUrl: parsed.imageOneUrl || '',
-          imageTwoUrl: parsed.imageTwoUrl || ''
-        });
-      } catch (error) {
-        console.error('Failed to parse home media settings', error);
+    let active = true;
+    const loadHomeMedia = async () => {
+      const { data, error } = await fetchHomeMedia();
+      if (!active) return;
+      if (error) {
+        console.error('Failed to load home media settings', error);
+        return;
       }
-    }
+      setHomeMedia({
+        videoUrl: data?.video_url || '',
+        imageOneUrl: data?.image_one_url || '',
+        imageTwoUrl: data?.image_two_url || ''
+      });
+    };
+
+    loadHomeMedia();
 
     async function loadProducts() {
       try {
@@ -216,6 +220,9 @@ const Home = ({ profile }) => {
     }
 
     loadProducts();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
