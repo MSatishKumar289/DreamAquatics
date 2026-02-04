@@ -18,6 +18,7 @@ import {
   updateSubcategory,
   deleteSubcategoryCascade
 } from "../lib/catalogApi.js";
+import { fetchHomeMedia, upsertHomeMedia } from "../lib/homeMediaApi.js";
 import {
   fetchAllOrdersAdmin,
   normalizeAdminOrders,
@@ -28,6 +29,7 @@ import {
 
 const MAX_IMAGE_BYTES = 300 * 1024;
 const MAX_IMAGE_DIMENSION = 720;
+const MAX_VIDEO_SECONDS = 5;
 
 const blankItemDraft = {
   name: "",
@@ -178,7 +180,21 @@ const AdminAddProduct = ({
     imageOneUrl: "",
     imageTwoUrl: ""
   });
+  const [homeMediaSaved, setHomeMediaSaved] = useState({
+    videoUrl: "",
+    videoPath: "",
+    imageOneUrl: "",
+    imageOnePath: "",
+    imageTwoUrl: "",
+    imageTwoPath: ""
+  });
+  const [homeMediaFiles, setHomeMediaFiles] = useState({
+    video: null,
+    imageOne: null,
+    imageTwo: null
+  });
   const [homeMediaError, setHomeMediaError] = useState("");
+  const [isHomeMediaSaving, setIsHomeMediaSaving] = useState(false);
   const [selectedAdminOrder, setSelectedAdminOrder] = useState(null);
   const [adminView, setAdminView] = useState("catalog");
   const [adminOrders, setAdminOrders] = useState([]);
@@ -190,55 +206,86 @@ const AdminAddProduct = ({
   const [pendingFulfillment, setPendingFulfillment] = useState({});
   const [selectedOrderStatusDraft, setSelectedOrderStatusDraft] = useState("");
 
-  const loadHomeMediaFromStorage = () => {
-    const stored = localStorage.getItem("dream-aquatics-home-media");
-    if (!stored) {
-      setHomeMediaDraft({
-        videoUrl: "",
-        imageOneUrl: "",
-        imageTwoUrl: ""
-      });
+  const loadHomeMediaFromDb = async () => {
+    setHomeMediaError("");
+    const { data, error } = await fetchHomeMedia();
+    if (error) {
+      console.error("Failed to load home media", error);
+      setHomeMediaError("Unable to load home media settings.");
       return;
     }
-    try {
-      const parsed = JSON.parse(stored);
-      setHomeMediaDraft({
-        videoUrl: parsed.videoUrl || "",
-        imageOneUrl: parsed.imageOneUrl || "",
-        imageTwoUrl: parsed.imageTwoUrl || ""
-      });
-    } catch (error) {
-      console.error("Failed to parse home media settings", error);
-    }
+
+    const saved = {
+      videoUrl: data?.video_url || "",
+      videoPath: data?.video_path || "",
+      imageOneUrl: data?.image_one_url || "",
+      imageOnePath: data?.image_one_path || "",
+      imageTwoUrl: data?.image_two_url || "",
+      imageTwoPath: data?.image_two_path || ""
+    };
+
+    setHomeMediaSaved(saved);
+    setHomeMediaDraft({
+      videoUrl: saved.videoUrl,
+      imageOneUrl: saved.imageOneUrl,
+      imageTwoUrl: saved.imageTwoUrl
+    });
+    setHomeMediaFiles({ video: null, imageOne: null, imageTwo: null });
   };
 
   useEffect(() => {
-    loadHomeMediaFromStorage();
+    loadHomeMediaFromDb();
   }, []);
 
-  const handleSaveHomeMedia = () => {
+  const handleSaveHomeMedia = async () => {
+    if (isHomeMediaSaving) return;
+    setIsHomeMediaSaving(true);
+    setHomeMediaError("");
     try {
-      localStorage.setItem("dream-aquatics-home-media", JSON.stringify(homeMediaDraft));
-      setHomeMediaError("");
+      const { data, error } = await upsertHomeMedia({
+        current: homeMediaSaved,
+        videoFile: homeMediaFiles.video,
+        imageOneFile: homeMediaFiles.imageOne,
+        imageTwoFile: homeMediaFiles.imageTwo
+      });
+
+      if (error) {
+        setHomeMediaError(error.message || "Unable to save home media settings.");
+        return;
+      }
+
+      const saved = {
+        videoUrl: data?.video_url || "",
+        videoPath: data?.video_path || "",
+        imageOneUrl: data?.image_one_url || "",
+        imageOnePath: data?.image_one_path || "",
+        imageTwoUrl: data?.image_two_url || "",
+        imageTwoPath: data?.image_two_path || ""
+      };
+
+      setHomeMediaSaved(saved);
+      setHomeMediaDraft({
+        videoUrl: saved.videoUrl,
+        imageOneUrl: saved.imageOneUrl,
+        imageTwoUrl: saved.imageTwoUrl
+      });
+      setHomeMediaFiles({ video: null, imageOne: null, imageTwo: null });
       showToast("Home media updated", "success");
       window.dispatchEvent(
-        new CustomEvent("dreamAquaticsHomeMediaUpdated", { detail: homeMediaDraft })
+        new CustomEvent("dreamAquaticsHomeMediaUpdated", {
+          detail: {
+            videoUrl: saved.videoUrl,
+            imageOneUrl: saved.imageOneUrl,
+            imageTwoUrl: saved.imageTwoUrl
+          }
+        })
       );
     } catch (error) {
       console.error("Failed to save home media", error);
       setHomeMediaError("Unable to save home media settings.");
+    } finally {
+      setIsHomeMediaSaving(false);
     }
-  };
-
-  const handleResetHomeMedia = () => {
-    localStorage.removeItem("dream-aquatics-home-media");
-    setHomeMediaDraft({
-      videoUrl: "",
-      imageOneUrl: "",
-      imageTwoUrl: ""
-    });
-    setHomeMediaError("");
-    showToast("Home media reset", "success");
   };
 
   const loadAdminOrders = async () => {
@@ -346,6 +393,13 @@ const AdminAddProduct = ({
           setHomeMediaError("Video is too large. Please upload a smaller file.");
           return;
         }
+        const duration = await getVideoDurationSeconds(file);
+        if (duration > MAX_VIDEO_SECONDS) {
+          setHomeMediaError(
+            `Video is too long (${Math.round(duration)}s). Please upload a video up to ${MAX_VIDEO_SECONDS}s.`
+          );
+          return;
+        }
         dataUrl = await readFileAsDataUrl(file);
       } else {
         dataUrl = await prepareImageData(file);
@@ -356,6 +410,12 @@ const AdminAddProduct = ({
         ...(type === "video" ? { videoUrl: dataUrl } : null),
         ...(type === "imageOne" ? { imageOneUrl: dataUrl } : null),
         ...(type === "imageTwo" ? { imageTwoUrl: dataUrl } : null)
+      }));
+      setHomeMediaFiles((prev) => ({
+        ...prev,
+        ...(type === "video" ? { video: file } : null),
+        ...(type === "imageOne" ? { imageOne: file } : null),
+        ...(type === "imageTwo" ? { imageTwo: file } : null)
       }));
     } catch (error) {
       console.error("Failed to upload home media", error);
@@ -676,6 +736,24 @@ const AdminAddProduct = ({
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(file);
+    });
+
+  const getVideoDurationSeconds = (file) =>
+    new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      const objectUrl = URL.createObjectURL(file);
+      const cleanup = () => URL.revokeObjectURL(objectUrl);
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        const duration = Number(video.duration) || 0;
+        cleanup();
+        resolve(duration);
+      };
+      video.onerror = () => {
+        cleanup();
+        reject(new Error("Unable to read video metadata"));
+      };
+      video.src = objectUrl;
     });
 
   const resizeImageDataUrl = (dataUrl, maxDimension) =>
@@ -1425,7 +1503,7 @@ const AdminAddProduct = ({
               <div className="mt-6 flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={loadHomeMediaFromStorage}
+                  onClick={loadHomeMediaFromDb}
                   className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -1433,9 +1511,10 @@ const AdminAddProduct = ({
                 <button
                   type="button"
                   onClick={handleSaveHomeMedia}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:opacity-70"
+                  disabled={isHomeMediaSaving}
                 >
-                  Save
+                  {isHomeMediaSaving ? "Saving..." : "Save"}
                 </button>
               </div>
             </section>
