@@ -14,7 +14,8 @@ const Header = ({
   onCartOpen,
   onAdminOrdersOpen,
   isRoleResolved,
-  newOrdersCount = 0
+  newOrdersCount = 0,
+  showAddedBanner = false
 }) => {
   const { itemCount } = useCart();
   const cartCount = itemCount;
@@ -246,23 +247,32 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => onCartOpen?.()}
-                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-                aria-label={`Shopping cart with ${cartCount} items`}
-                data-cart-target="cart"
-              >
-                <img src={cart_ic} alt="Cart" />
-                {cartCount > 0 && (
-                  <span
-                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                    aria-label={`${cartCount} items in cart`}
-                  >
-                    {cartCount}
-                  </span>
+              <div className="relative">
+                {showAddedBanner && (
+                  <div className="pointer-events-none absolute right-0 top-12 z-50 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-emerald-600 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_8px_20px_rgba(16,185,129,0.35)]">
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/20 text-[10px]">✓</span>
+                    Added to cart
+                    <span className="absolute -top-1 right-5 h-3 w-3 rotate-45 bg-emerald-600" aria-hidden />
+                  </div>
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onCartOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Shopping cart with ${cartCount} items`}
+                  data-cart-target="cart"
+                >
+                  <img src={cart_ic} alt="Cart" />
+                  {cartCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${cartCount} items in cart`}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             )}
           </div>
 
@@ -406,23 +416,32 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => onCartOpen?.()}
-                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${cartCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
-                aria-label={`Shopping cart with ${cartCount} items`}
-                data-cart-target="cart"
-              >
-                <img src={mobile_cart_ic} alt="Cart" />
-                {cartCount > 0 && (
-                  <span
-                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                    aria-label={`${cartCount} items in cart`}
-                  >
-                    {cartCount}
-                  </span>
+              <div className="relative">
+                {showAddedBanner && (
+                  <div className="pointer-events-none absolute right-0 top-10 z-50 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-emerald-600 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_8px_20px_rgba(16,185,129,0.35)] xl:hidden">
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/20 text-[10px]">✓</span>
+                    Added to cart
+                    <span className="absolute -top-1 right-5 h-3 w-3 rotate-45 bg-emerald-600" aria-hidden />
+                  </div>
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onCartOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Shopping cart with ${cartCount} items`}
+                  data-cart-target="cart"
+                >
+                  <img src={mobile_cart_ic} alt="Cart" />
+                  {cartCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${cartCount} items in cart`}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             )}
 
             {/* Hamburger Menu Button */}

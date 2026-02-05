@@ -30,6 +30,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [editingFromReview, setEditingFromReview] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -189,6 +190,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
 
   const placeOrder = async () => {
+    if (isPlacingOrder) return;
+    setIsPlacingOrder(true);
     try {
       const payload = {
         customer_name: form.name,
@@ -266,6 +269,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
     } catch (err) {
       console.error(err);
       showToast(err.message || "Failed to place order", "error");
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
   
@@ -432,6 +437,15 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <section className="relative min-h-[calc(100dvh-1.5rem)] overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:min-h-0">
+            {isPlacingOrder && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-lg">
+                  <Spinner size={28} />
+                  <p className="text-sm font-semibold text-slate-800">Placing your order…</p>
+                  <p className="text-xs text-slate-500">Please wait</p>
+                </div>
+              </div>
+            )}
             {orderPlaced ? (
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
                 Your order has been placed successfully.
@@ -475,8 +489,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
             )}
 
             {orderPlaced && showCelebration && (
-              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-                <div className="celebrate-pop text-5xl">🎉</div>
+              <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
+                <div className="celebrate-pop text-5xl">{"\u{1F389}"}</div>
               </div>
             )}
 
@@ -652,20 +666,16 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
     <button
       type="button"
       onClick={placeOrder}
-      className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+      disabled={isPlacingOrder}
+      className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
     >
-      Confirm order
+      {isPlacingOrder ? "Placing order..." : "Confirm order"}
     </button>
 </div>
 )}
 
             {orderPlaced && (
               <style>{`
-                @keyframes bubbleRise {
-                  0% { transform: translateY(0) scale(0.9); opacity: 0; }
-                  10% { opacity: 1; }
-                  100% { transform: translateY(-460px) scale(1.15); opacity: 0; }
-                }
                 @keyframes celebratePop {
                   0% { transform: scale(0.6); opacity: 0; }
                   20% { opacity: 1; }
@@ -879,5 +889,6 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 };
 
 export default Checkout;
+
 
 
