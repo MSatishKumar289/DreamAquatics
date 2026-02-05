@@ -308,8 +308,8 @@ const CategoryCard = ({
             : isMasonry
               ? "flex flex-col gap-1 sm:gap-1.5"
               : compact
-                ? "flex min-h-[130px] flex-col gap-1 sm:gap-1.5"
-                : "flex min-h-[160px] flex-col gap-1 sm:min-h-[185px] sm:gap-1.5"
+                ? "flex min-h-[111px] flex-col gap-1 sm:gap-1.5"
+                : "flex min-h-[137px] flex-col gap-1 sm:min-h-[159px] sm:gap-1.5"
         }`}
       >
         {!isSubCategory && shouldShowStockBadge && (
@@ -335,7 +335,7 @@ const CategoryCard = ({
         )}
         <div
           className={`text-center ${
-            isSubCategory ? "min-h-[38px]" : "min-h-[90px]"
+            isSubCategory ? "min-h-[32px]" : "min-h-[77px]"
           } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""}`}
         >
           <h3
