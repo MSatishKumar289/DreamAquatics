@@ -29,7 +29,7 @@ import {
 
 const MAX_IMAGE_BYTES = 300 * 1024;
 const MAX_IMAGE_DIMENSION = 720;
-const MAX_VIDEO_SECONDS = 5;
+const MAX_VIDEO_SECONDS = 31;
 
 const blankItemDraft = {
   name: "",
