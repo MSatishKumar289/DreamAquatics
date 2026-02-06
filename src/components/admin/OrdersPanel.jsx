@@ -3,6 +3,8 @@ const OrdersPanel = ({
   filteredAdminOrders,
   adminOrderFilter,
   setAdminOrderFilter,
+  adminOrderSearch,
+  setAdminOrderSearch,
   adminOrderCounts,
   ordersLoading,
   ordersError,
@@ -21,7 +23,16 @@ const OrdersPanel = ({
           Showing {filteredAdminOrders.length} of {adminOrders.length}
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <input
+            type="text"
+            value={adminOrderSearch}
+            onChange={(event) => setAdminOrderSearch(event.target.value)}
+            placeholder="Search order ID"
+            className="w-44 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+          />
+        </div>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
           Filter
         </label>

@@ -213,6 +213,7 @@ const AdminAddProduct = ({
   const [ordersError, setOrdersError] = useState("");
 
   const [adminOrderFilter, setAdminOrderFilter] = useState("all");
+  const [adminOrderSearch, setAdminOrderSearch] = useState("");
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [pendingFulfillment, setPendingFulfillment] = useState({});
   const [selectedOrderStatusDraft, setSelectedOrderStatusDraft] = useState("");
@@ -397,7 +398,15 @@ const AdminAddProduct = ({
   }, [adminOrders]);
 
   const filteredAdminOrders = useMemo(() => {
+    const search = adminOrderSearch.trim().toLowerCase();
     const filtered = adminOrders.filter((order) => {
+      if (search) {
+        const orderId = String(order.id || "").toLowerCase();
+        const orderNumber = String(order.order_number || "").toLowerCase();
+        if (!orderId.includes(search) && !orderNumber.includes(search)) {
+          return false;
+        }
+      }
       if (adminOrderFilter === "all") return true;
       return getOrderStatusKey(order) === adminOrderFilter;
     });
@@ -409,7 +418,7 @@ const AdminAddProduct = ({
       if (statusA !== "awaiting_approval" && statusB === "awaiting_approval") return 1;
       return new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime();
     });
-  }, [adminOrders, adminOrderFilter]);
+  }, [adminOrders, adminOrderFilter, adminOrderSearch]);
 
   const handleHomeMediaUpload = (type) => async (event) => {
     const file = event.target.files?.[0];
@@ -1036,6 +1045,8 @@ const AdminAddProduct = ({
               filteredAdminOrders={filteredAdminOrders}
               adminOrderFilter={adminOrderFilter}
               setAdminOrderFilter={setAdminOrderFilter}
+              adminOrderSearch={adminOrderSearch}
+              setAdminOrderSearch={setAdminOrderSearch}
               adminOrderCounts={adminOrderCounts}
               ordersLoading={ordersLoading}
               ordersError={ordersError}

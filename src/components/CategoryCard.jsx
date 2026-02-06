@@ -162,8 +162,13 @@ const CartControls = ({
   productTitle,
 }) => (
   <div className="relative mt-auto pt-1">
+    {showAddedHint && !isPreviewOpen && (
+      <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+        Added 1 item
+      </span>
+    )}
     {currentQty === 0 ? (
-      <div className="flex justify-center">
+      <div className="relative flex justify-center">
         <button
           type="button"
           onClick={onAddToCart}
@@ -204,11 +209,6 @@ const CartControls = ({
           </div>
         </div>
       </div>
-    )}
-    {showAddedHint && !isPreviewOpen && (
-      <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
-        Added 1 item
-      </span>
     )}
   </div>
 );
@@ -364,11 +364,6 @@ const PreviewModal = ({
       aria-modal="true"
     >
       <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
-        {showAddedHint && (
-          <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-md bg-emerald-600 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
-            Added 1 item
-          </div>
-        )}
         <button
           type="button"
           onClick={onClose}
@@ -408,7 +403,12 @@ const PreviewModal = ({
                 </p>
               )}
             </div>
-            <div className="mt-auto flex justify-center pt-1">
+            <div className="relative mt-auto flex justify-center pt-1">
+              {showAddedHint && (
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                  Added 1 item
+                </span>
+              )}
               {currentQty === 0 ? (
                 <button
                   type="button"
