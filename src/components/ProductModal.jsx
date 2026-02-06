@@ -116,7 +116,28 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               )}
             </div>
 
-            <div className="flex w-full items-stretch justify-center gap-3">
+            <div className="space-y-2 text-center">
+              <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
+                {title}
+              </h2>
+              <p className="text-2xl font-bold text-gray-900">
+                {"\u20B9"}
+                {priceValue.toLocaleString("en-IN")}
+              </p>
+              <p className="mt-2 text-center text-xs text-sky-600/80">
+                Images are for reference. Actual product appearance may vary.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
+            <section className="space-y-4 flex flex-col min-h-0">
+              <p className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
+                {safeProduct?.description || ""}
+              </p>
+            </section>
+
+            <div className="flex w-full items-stretch justify-end gap-3 md:pt-2">
               {qty === 0 ? (
                 <button
                   onClick={handleAddToCart}
@@ -170,27 +191,6 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
                 </div>
               )}
             </div>
-
-            <div className="space-y-2 text-center">
-              <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
-                {title}
-              </h2>
-              <p className="text-2xl font-bold text-gray-900">
-                {"\u20B9"}
-                {priceValue.toLocaleString("en-IN")}
-              </p>
-              <p className="mt-2 text-center text-xs text-sky-600/80">
-                Images are for reference. Actual product appearance may vary.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
-            <section className="space-y-4 flex flex-col min-h-0">
-              <p className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
-                {safeProduct?.description || ""}
-              </p>
-            </section>
           </div>
         </div>
       </div>

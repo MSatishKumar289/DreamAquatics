@@ -523,8 +523,9 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
               {confirmStep === "summary" ? (
                 <div className="space-y-4">
                   <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-900 shadow-[0_0_18px_rgba(37,99,235,0.35)]">
-                    Payment details will be shared via WhatsApp after you confirm
-                    your order.
+                    {orderPlaced
+                      ? "Our team will reach out shortly with payment and delivery details."
+                      : "Payment details will be shared via WhatsApp after you confirm your order."}
                   </div>
 
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
