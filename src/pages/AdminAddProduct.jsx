@@ -25,6 +25,17 @@ import {
   updateOrderStatusAdmin,
   formatOrderStatus
 } from "../lib/ordersApi.js";
+import AdminToast from "../components/admin/AdminToast.jsx";
+import AdminConfirmPopup from "../components/admin/AdminConfirmPopup.jsx";
+import AdminSidebar from "../components/admin/AdminSidebar.jsx";
+import SubcategoryPanel from "../components/admin/SubcategoryPanel.jsx";
+import ItemsPanel from "../components/admin/ItemsPanel.jsx";
+import OrdersPanel from "../components/admin/OrdersPanel.jsx";
+import LiveUpdatePanel from "../components/admin/LiveUpdatePanel.jsx";
+import ItemModal from "../components/admin/ItemModal.jsx";
+import SubcategoryModal from "../components/admin/SubcategoryModal.jsx";
+import PendingDeleteModal from "../components/admin/PendingDeleteModal.jsx";
+import OrderReceiptModal from "../components/admin/OrderReceiptModal.jsx";
 
 
 const MAX_IMAGE_BYTES = 300 * 1024;
@@ -344,6 +355,26 @@ const AdminAddProduct = ({
       loadAdminOrders();
       return;
     }
+    showToast("Order status updated", "success");
+    window.dispatchEvent(new Event("adminOrdersUpdated"));
+  };
+
+  const handleReceiptOrderStatusSave = async (nextStatus) => {
+    if (!selectedAdminOrder) return;
+
+    const { error } = await updateOrderStatusAdmin(selectedAdminOrder.id, nextStatus);
+    if (error) {
+      showToast(error.message || "Failed to update status", "error");
+      loadAdminOrders();
+      return;
+    }
+
+    setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
+    setAdminOrders((prev) =>
+      prev.map((order) =>
+        order.id === selectedAdminOrder.id ? { ...order, status: nextStatus } : order
+      )
+    );
     showToast("Order status updated", "success");
     window.dispatchEvent(new Event("adminOrdersUpdated"));
   };
@@ -942,75 +973,12 @@ const AdminAddProduct = ({
 
   return (
     <>
-      {/* ✅ Toast UI (Animated) */}
-      {toast.show && (
-        <div className="fixed left-1/2 top-4 z-[9999] -translate-x-1/2">
-          <div
-            className={`animate-[toastIn_220ms_ease-out] rounded-md px-4 py-3 text-center text-sm font-semibold shadow-lg border ${
-              toast.type === "success"
-                ? "bg-emerald-600 text-white border-emerald-700"
-                : "bg-rose-600 text-white border-rose-700"
-            }`}
-          >
-            {`${getToastPrefix(toast.type)} ${toast.message}`}
-          </div>
-
-          <style>
-            {`
-              @keyframes toastIn {
-                0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
-                100% { opacity: 1; transform: translateY(0) scale(1); }
-              }
-            `}
-          </style>
-        </div>
-      )}
-
-      {/* ✅ Confirm Popup (Animated) */}
-      {confirmPopup.open && (
-        <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 px-4 animate-[fadeIn_180ms_ease-out]"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeConfirm();
-          }}
-        >
-          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl border border-slate-200 animate-[popIn_200ms_ease-out]">
-            <h3 className="text-base font-semibold text-slate-900">{confirmPopup.title}</h3>
-            <p className="mt-2 text-sm text-slate-600">{confirmPopup.message}</p>
-
-            <div className="mt-5 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={closeConfirm}
-                className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-800"
-              >
-                {confirmPopup.cancelText}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-rose-700"
-              >
-                {confirmPopup.confirmText}
-              </button>
-            </div>
-          </div>
-
-          <style>
-            {`
-              @keyframes fadeIn {
-                0% { opacity: 0; }
-                100% { opacity: 1; }
-              }
-              @keyframes popIn {
-                0% { opacity: 0; transform: translateY(8px) scale(0.96); }
-                100% { opacity: 1; transform: translateY(0) scale(1); }
-              }
-            `}
-          </style>
-        </div>
-      )}
+      <AdminToast toast={toast} getToastPrefix={getToastPrefix} />
+      <AdminConfirmPopup
+        confirmPopup={confirmPopup}
+        closeConfirm={closeConfirm}
+        handleConfirmDelete={handleConfirmDelete}
+      />
 
       <div className="min-h-screen bg-slate-50">
         <header className="border-b border-slate-200 bg-white">
@@ -1023,972 +991,120 @@ const AdminAddProduct = ({
         </header>
 
         <div className="container mx-auto grid max-w gap-6 px-4 py-6 md:grid-cols-[220px_260px_1fr]">
-          <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-700">Categories</h2>
-            <div className="mt-3 space-y-2">
-              {orderedCategories.map((category) => {
-                const isActive = category.id === selectedCategoryId;
-
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => {
-                      setAdminView("catalog");
-                      setSelectedCategory(category.name);
-                      setSelectedCategoryId(category.id);
-                    }}
-                    className={`w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                    }`}
-                  >
-                    {category.name}
-                  </button>
-                );
-              })}
-              <div className="mt-4 border-t border-slate-100 pt-3">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                  Admin Tools
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setAdminView("live")}
-                  className={`mt-3 w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
-                    adminView === "live"
-                      ? "bg-blue-600 text-white"
-                      : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                  }`}
-                >
-                  Live update
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAdminView("orders")}
-                  className={`mt-3 w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
-                    adminView === "orders"
-                      ? "bg-blue-600 text-white"
-                      : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                  }`}
-                >
-                  Orders
-                </button>
-              </div>
-            </div>
-          </aside>
+          <AdminSidebar
+            orderedCategories={orderedCategories}
+            selectedCategoryId={selectedCategoryId}
+            setAdminView={setAdminView}
+            setSelectedCategory={setSelectedCategory}
+            setSelectedCategoryId={setSelectedCategoryId}
+            adminView={adminView}
+          />
 
           {adminView === "catalog" && (
           <div className="contents">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Subcategories</p>
-                <h2 className="text-lg font-semibold text-slate-900">{selectedCategory}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={handleOpenAddSubcategory}
-                className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
-              >
-                Add
-              </button>
-            </div>
+            <SubcategoryPanel
+              selectedCategory={selectedCategory}
+              handleOpenAddSubcategory={handleOpenAddSubcategory}
+              subcategorySearch={subcategorySearch}
+              setSubcategorySearch={setSubcategorySearch}
+              filteredSubcategories={filteredSubcategories}
+              selectedSubcategoryId={selectedSubcategoryId}
+              setSelectedSubcategoryId={setSelectedSubcategoryId}
+              handleOpenEditSubcategory={handleOpenEditSubcategory}
+              requestDeleteSubcategory={requestDeleteSubcategory}
+              editIcon={edit_ic}
+              deleteIcon={bin_ic}
+            />
 
-            <div className="mt-4 space-y-2">
-              <input
-                type="search"
-                value={subcategorySearch}
-                onChange={(event) => setSubcategorySearch(event.target.value)}
-                placeholder="Search subcategories"
-                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
-              <span className="text-xs text-slate-400">
-                {filteredSubcategories.length} subcategories
-              </span>
-            </div>
-
-            <div className="mt-3 max-h-[420px] space-y-2 overflow-y-auto pr-1 sm:max-h-[520px]">
-              {filteredSubcategories.map((subcategory) => {
-                const isActive = subcategory.id === selectedSubcategoryId;
-                return (
-                  <div
-                    key={subcategory.id}
-                    className={`flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition ${
-                      isActive
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setSelectedSubcategoryId(subcategory.id)}
-                      className="flex flex-1 items-center gap-3 text-left"
-                    >
-                      <div>
-                        <p className="text-sm font-semibold">{subcategory.name}</p>
-                      </div>
-                    </button>
-                    <div className="ml-2 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditSubcategory(subcategory)}
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
-                          isActive ? "hover:bg-white/10" : "hover:bg-slate-100"
-                        }`}
-                        aria-label={`Edit ${subcategory.name}`}
-                        title="Edit"
-                      >
-                        <img src={edit_ic} alt="" className="h-6 w-6" aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => requestDeleteSubcategory(subcategory)}
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${isActive
-                          ? "hover:bg-white/10"
-                          : "hover:bg-rose-50"
-                          }`}
-                        aria-label={`Delete ${subcategory.name}`}
-                        title="Delete"
-                      >
-                        <img src={bin_ic} alt="" className="h-6 w-6" aria-hidden />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-              {filteredSubcategories.length === 0 && (
-                <p className="text-sm text-slate-500">No subcategories available.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="space-y-5">
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Items</p>
-                  <h2 className="text-xl font-semibold text-slate-900">
-                    {selectedSubcategory ? selectedSubcategory.name : "Select a subcategory"}
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleOpenAddItem}
-                  disabled={!selectedSubcategoryId}
-                  className="inline-flex min-w-[140px] items-center justify-center rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-                >
-                  Add Item
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h3 className="text-sm font-semibold text-slate-700">Items list</h3>
-                <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-                  <input
-                    type="search"
-                    value={itemSearch}
-                    onChange={(event) => setItemSearch(event.target.value)}
-                    placeholder="Search items"
-                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:max-w-[220px]"
-                  />
-                  <span className="text-xs text-slate-400">
-                    {filteredItems.length} items
-                  </span>
-                </div>
-              </div>
-
-              {filteredItems.length === 0 ? (
-                <p className="mt-4 text-sm text-slate-500">
-                  No items yet. Use “Add Item” to create one for this subcategory.
-                </p>
-              ) : (
-                <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1 sm:max-h-[420px] lg:max-h-[520px]">
-                  {filteredItems.map((item) => {
-                    const count = Number(item.stock_count);
-                    const availabilityText = String(item.availability || "").toLowerCase();
-                    const isOut = Number.isFinite(count)
-                      ? count <= 0
-                      : availabilityText === "out-of-stock";
-                    const statusLabel = isOut ? "Out of stock" : "In stock";
-                    return (
-                      <div
-                        key={item.id}
-                        className={`flex items-center justify-between gap-4 rounded-lg px-3 py-3 ${
-                          isOut
-                            ? "bg-rose-50 text-rose-700"
-                            : "bg-emerald-50 text-emerald-700"
-                        }`}
-                      >
-                      <div className="flex items-center gap-3">
-                        {item.imageData ? (
-                          <img
-                            src={item.imageData}
-                            alt={item.imageName || item.name}
-                            className="h-12 w-12 rounded border border-slate-200 object-cover"
-                          />
-                        ) : (
-                          <div className="h-12 w-12 rounded border border-dashed border-slate-200 bg-slate-50" />
-                        )}
-
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">{item.name}</p>
-
-                          <p className="text-xs text-slate-500">
-                            {item.price ? `Price: ${item.price}` : "No price set"}
-                            {` · ${statusLabel}`}
-                          </p>
-
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditItem(item)}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-slate-100"
-                          aria-label={`Edit ${item.name}`}
-                          title="Edit"
-                        >
-                          <img src={edit_ic} alt="" className="h-6 w-6" aria-hidden />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => requestDeleteItem(item)}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-rose-50"
-                          aria-label={`Delete ${item.name}`}
-                          title="Delete"
-                        >
-                          <img src={bin_ic} alt="" className="h-6 w-6" aria-hidden />
-                        </button>
-                      </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </section>
+            <ItemsPanel
+              selectedSubcategory={selectedSubcategory}
+              selectedSubcategoryId={selectedSubcategoryId}
+              handleOpenAddItem={handleOpenAddItem}
+              itemSearch={itemSearch}
+              setItemSearch={setItemSearch}
+              filteredItems={filteredItems}
+              handleOpenEditItem={handleOpenEditItem}
+              requestDeleteItem={requestDeleteItem}
+              editIcon={edit_ic}
+              deleteIcon={bin_ic}
+            />
           </div>
           )}
-
           {adminView === "orders" && (
-          <section className="md:col-span-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Orders</p>
-                <h2 className="text-lg font-semibold text-slate-900">Recent orders</h2>
-                <p className="mt-1 text-xs text-slate-500">Showing {filteredAdminOrders.length} of {adminOrders.length}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Filter
-                </label>
-                <select
-                  value={adminOrderFilter}
-                  onChange={(event) => setAdminOrderFilter(event.target.value)}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="all">All ({adminOrderCounts.all})</option>
-<option value="awaiting_approval">Awaiting Approval ({adminOrderCounts.awaiting_approval})</option>
-<option value="accepted">Order Confirmed ({adminOrderCounts.accepted})</option>
-<option value="in_transit">In Transit ({adminOrderCounts.in_transit})</option>
-<option value="completed">Completed ({adminOrderCounts.completed})</option>
-<option value="cancelled">Canceled ({adminOrderCounts.cancelled})</option>
-                </select>
-              </div>
-            </div>
-
-            {ordersLoading ? (
-              <p className="mt-4 text-sm text-slate-500">Loading orders...</p>
-            ) : ordersError ? (
-              <p className="mt-4 text-sm text-rose-600">{ordersError}</p>
-            ) : adminOrders.length === 0 ? (
-              <p className="mt-4 text-sm text-slate-500">No orders received yet.</p>
-            ) : (
-              <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 lg:max-h-[520px]">
-                {filteredAdminOrders.map((order) => {
-                  const items = order.order_items || [];
-                  const firstItem = items[0];
-                  const extraCount = Math.max(items.length - 1, 0);
-                  
-                  const dateLabel = new Date(order.created_at).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                  });
-                  
-
-                  const orderState = order.status || "awaiting_approval";
-                  const committedFulfillment = order.fulfillment || null;
-                  const isEditing = editingOrderId === order.id;
-                  const fulfillment =
-                    pendingFulfillment[order.id] ?? committedFulfillment ?? "in-transit";
-                  const isDirty = fulfillment !== (committedFulfillment ?? "in-transit");
-                  const statusLabel = getOrderStatusLabel(order);
-
-                  return (
-                    <div
-                      key={order.id}
-                      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm transition hover:shadow-md"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedAdminOrder(order);
-                            setSelectedOrderStatusDraft(order.status || "awaiting_approval");
-                          }}
-                          className="min-w-[220px] flex-1 text-left"
-                        >
-                          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                            Order {order.order_number || order.id}
-                          </p>
-                          <p className="mt-2 text-sm font-semibold text-slate-900">
-                            <span className="inline-flex flex-wrap items-center gap-2">
-                              <span>
-                                {firstItem?.title}
-                                {extraCount > 0 ? ` + ${extraCount} more` : ""}
-                              </span>
-                              {statusLabel && (
-                                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusLabel.cls}`}>
-                                  {statusLabel.text}
-                                </span>
-                              )}
-                            </span>
-                          </p>
-                          <p className="mt-1 text-xs text-slate-600">
-                            {dateLabel} - {statusLabel?.text || formatOrderStatus(order.status)}
-                          </p>
-                        </button>
-
-                        <div className="text-sm font-semibold text-slate-900">
-                          Rs. {Number(order.total || 0).toLocaleString("en-IN")}
-                        </div>
-
-                        {orderState === "awaiting_approval" && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleQuickOrderStatusUpdate(order.id, "accepted")}
-                              className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleQuickOrderStatusUpdate(order.id, "cancelled")}
-                              className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+            <OrdersPanel
+              adminOrders={adminOrders}
+              filteredAdminOrders={filteredAdminOrders}
+              adminOrderFilter={adminOrderFilter}
+              setAdminOrderFilter={setAdminOrderFilter}
+              adminOrderCounts={adminOrderCounts}
+              ordersLoading={ordersLoading}
+              ordersError={ordersError}
+              handleQuickOrderStatusUpdate={handleQuickOrderStatusUpdate}
+              getOrderStatusLabel={getOrderStatusLabel}
+              formatOrderStatus={formatOrderStatus}
+              setSelectedAdminOrder={setSelectedAdminOrder}
+              setSelectedOrderStatusDraft={setSelectedOrderStatusDraft}
+            />
           )}
-
           {adminView === "live" && (
-            <section className="md:col-span-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Home screen</p>
-                  <h2 className="text-lg font-semibold text-slate-900">Live update</h2>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1fr]">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Video</p>
-                    <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">
-                      Upload video
-                      <input
-                        type="file"
-                        accept="video/*"
-                        onChange={handleHomeMediaUpload("video")}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Image one</p>
-                    <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">
-                      Upload image one
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleHomeMediaUpload("imageOne")}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Image two</p>
-                    <label className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">
-                      Upload image two
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleHomeMediaUpload("imageTwo")}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  {homeMediaError && (
-                    <p className="text-sm text-rose-600">{homeMediaError}</p>
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
-                    <p className="mb-2 font-semibold text-slate-600">Video preview</p>
-                    {homeMediaDraft.videoUrl ? (
-                      <video
-                        src={homeMediaDraft.videoUrl}
-                        className="h-36 w-full rounded-md object-cover"
-                        muted
-                        controls
-                      />
-                    ) : (
-                      <div className="flex h-36 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
-                        Upload a video to preview.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
-                    <p className="mb-2 font-semibold text-slate-600">Image one preview</p>
-                    {homeMediaDraft.imageOneUrl ? (
-                      <img
-                        src={homeMediaDraft.imageOneUrl}
-                        alt="Highlight one preview"
-                        className="h-28 w-full rounded-md object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-28 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
-                        Upload an image to preview.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
-                    <p className="mb-2 font-semibold text-slate-600">Image two preview</p>
-                    {homeMediaDraft.imageTwoUrl ? (
-                      <img
-                        src={homeMediaDraft.imageTwoUrl}
-                        alt="Highlight two preview"
-                        className="h-28 w-full rounded-md object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-28 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
-                        Upload an image to preview.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={loadHomeMediaFromDb}
-                  className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveHomeMedia}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:opacity-70"
-                  disabled={isHomeMediaSaving}
-                >
-                  {isHomeMediaSaving ? "Saving..." : "Save"}
-                </button>
-              </div>
-            </section>
+            <LiveUpdatePanel
+              handleHomeMediaUpload={handleHomeMediaUpload}
+              homeMediaError={homeMediaError}
+              homeMediaDraft={homeMediaDraft}
+              loadHomeMediaFromDb={loadHomeMediaFromDb}
+              handleSaveHomeMedia={handleSaveHomeMedia}
+              isHomeMediaSaving={isHomeMediaSaving}
+            />
           )}
         </div>
+      </div>
 
         {/* =========================
            ITEM MODAL (UNCHANGED)
         ========================= */}
-        {isItemModalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 px-4 py-8"
-            onClick={(event) => {
-              if (event.target === event.currentTarget) {
-                handleCloseItemModal();
-              }
-            }}
-          >
-            <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {editingItemId ? "Edit Item" : "Add Item"}
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleCloseItemModal}
-                  className="text-sm font-semibold text-slate-500 hover:text-slate-700"
-                >
-                  Close
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveItem} className="mt-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Name</label>
-                  <input
-                    type="text"
-                    value={itemDraft.name}
-                    onChange={(e) => setItemDraft((prev) => ({ ...prev, name: e.target.value }))}
-                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="Item name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Price</label>
-                  <input
-                    type="text"
-                    value={itemDraft.price}
-                    onChange={(e) => setItemDraft((prev) => ({ ...prev, price: e.target.value }))}
-                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="Price"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Description</label>
-                  <textarea
-                    rows={4}
-                    value={itemDraft.description}
-                    onChange={(e) => setItemDraft((prev) => ({ ...prev, description: e.target.value }))}
-                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="Description"
-                  />
-                </div>
-
-                {editingItemId && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700">Availability</label>
-                    <div className="mt-2 inline-flex w-full rounded-md border border-slate-200 bg-white p-1">
-                      <button
-                        type="button"
-                        onClick={() => setItemDraft((prev) => ({ ...prev, availability: "in-stock" }))}
-                        className={`flex-1 rounded-md px-3 py-2 text-sm font-semibold transition ${
-                          itemDraft.availability === "in-stock"
-                            ? "bg-emerald-600 text-white"
-                            : "text-slate-600 hover:bg-slate-100"
-                        }`}
-                        aria-pressed={itemDraft.availability === "in-stock"}
-                      >
-                        In stock
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setItemDraft((prev) => ({ ...prev, availability: "out-of-stock" }))}
-                        className={`flex-1 rounded-md px-3 py-2 text-sm font-semibold transition ${
-                          itemDraft.availability === "out-of-stock"
-                            ? "bg-rose-600 text-white"
-                            : "text-slate-600 hover:bg-slate-100"
-                        }`}
-                        aria-pressed={itemDraft.availability === "out-of-stock"}
-                      >
-                        Out of stock
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Image Upload</label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleItemImageUpload}
-                    className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  />
-                  {itemDraft.imageData && (
-                    <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
-                      <img
-                        src={itemDraft.imageData}
-                        alt={itemDraft.imageName || "Preview"}
-                        className="h-32 w-full rounded object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {itemError && <p className="text-sm text-rose-600">{itemError}</p>}
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleCloseItemModal}
-                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isItemImageProcessing || isSavingItem}
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
+        <ItemModal
+          isOpen={isItemModalOpen}
+          onClose={handleCloseItemModal}
+          editingItemId={editingItemId}
+          itemDraft={itemDraft}
+          setItemDraft={setItemDraft}
+          fileInputRef={fileInputRef}
+          handleItemImageUpload={handleItemImageUpload}
+          itemError={itemError}
+          isItemImageProcessing={isItemImageProcessing}
+          isSavingItem={isSavingItem}
+          handleSaveItem={handleSaveItem}
+        />
         {/* =========================
            SUBCATEGORY MODAL (UNCHANGED)
         ========================= */}
-        {isSubcategoryModalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 px-4 py-8"
-            onClick={(event) => {
-              if (event.target === event.currentTarget) {
-                handleCloseSubcategoryModal();
-              }
-            }}
-          >
-            <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {editingSubcategoryId ? "Edit Subcategory" : "Add Subcategory"}
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleCloseSubcategoryModal}
-                  className="text-sm font-semibold text-slate-500 hover:text-slate-700"
-                >
-                  Close
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveSubcategory} className="mt-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Name</label>
-                  <input
-                    type="text"
-                    value={subcategoryDraft.name}
-                    onChange={(e) => setSubcategoryDraft((prev) => ({ ...prev, name: e.target.value }))}
-                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="Subcategory name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">Description</label>
-                  <textarea
-                    rows={4}
-                    value={subcategoryDraft.description}
-                    onChange={(e) =>
-                      setSubcategoryDraft((prev) => ({ ...prev, description: e.target.value }))
-                    }
-                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="Description"
-                  />
-                </div>
-
-                {subcategoryError && <p className="text-sm text-rose-600">{subcategoryError}</p>}
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleCloseSubcategoryModal}
-                    className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-      {pendingDelete && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-            onClick={(event) => {
-              if (event.target === event.currentTarget) setPendingDelete(null);
-            }}
-          >
-            <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Confirm delete
-              </h3>
-              <p className="mt-2 text-sm text-slate-600">
-                Delete {pendingDelete.name}? This cannot be undone.
-              </p>
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPendingDelete(null)}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (pendingDelete.type === "subcategory") {
-                      await handleDeleteSubcategory(pendingDelete.id);
-                    } else {
-                      await handleDeleteItem(pendingDelete.id);
-                    }
-                    setPendingDelete(null);
-                  }}
-                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {selectedAdminOrder && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setSelectedAdminOrder(null);
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
-            {/* Header */}
-            <div className="relative border-b border-dashed border-slate-200 px-5 py-4 text-center">
-              <p className="flex items-baseline justify-center text-blue-600">
-                <span className="text-base font-bold tracking-[0.2em]">D</span>
-                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">REAM</span>
-                <span className="ml-0.5 text-base font-bold tracking-[0.2em]">A</span>
-                <span className="-ml-0.5 text-xs font-semibold tracking-[0.2em]">QUATICS</span>
-              </p>
-
-              <h2 className="mt-2 text-1xl font-semibold text-slate-900">Order receipt</h2>
-
-              <div className="mt-2 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                <span>Status</span>
-                {getOrderStatusLabel(selectedAdminOrder) ? (
-                  <span
-                    className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${getOrderStatusLabel(selectedAdminOrder).cls}`}
-                  >
-                    {getOrderStatusLabel(selectedAdminOrder).text}
-                  </span>
-                ) : null}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedOrderStatusDraft("");
-                  setSelectedAdminOrder(null);
-                }}
-                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700"
-                aria-label="Close order receipt"
-              >
-                X
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="max-h-[75vh] overflow-y-auto px-5 py-4 text-sm text-slate-700">
-              {/* Order ID */}
-              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
-                <span>Order ID</span>
-                <span className="font-semibold text-slate-900">
-                  {selectedAdminOrder.order_number || selectedAdminOrder.id}
-                </span>
-              </div>
-
-              {/* Placed on */}
-              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-3">
-                <span>Placed on</span>
-                <span className="font-semibold text-slate-900">
-                  {new Date(selectedAdminOrder.created_at).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                  })}
-                </span>
-              </div>
-
-              {/* ✅ Status dropdown */}
-              <div className="mt-4 flex flex-col items-start gap-3 border-b border-dashed border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm font-semibold text-slate-500">Status</span>
-
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedOrderStatusDraft || selectedAdminOrder.status}
-                    onChange={(e) => setSelectedOrderStatusDraft(e.target.value)}
-                    className="min-w-[170px] rounded-full border border-blue-500 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none"
-                  >
-                    <option value="awaiting_approval">Awaiting Approval</option>
-                    <option value="accepted">Order Confirmed</option>
-                    <option value="in_transit">In Transit</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Rejected</option>
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const nextStatus = selectedOrderStatusDraft || selectedAdminOrder.status;
-                      const { error } = await updateOrderStatusAdmin(
-                        selectedAdminOrder.id,
-                        nextStatus
-                      );
-
-                      if (error) {
-                        showToast(error.message || "Failed to update status", "error");
-                        loadAdminOrders();
-                        return;
-                      }
-
-                      setSelectedAdminOrder((prev) => ({ ...prev, status: nextStatus }));
-                      setAdminOrders((prev) =>
-                        prev.map((o) =>
-                          o.id === selectedAdminOrder.id ? { ...o, status: nextStatus } : o
-                        )
-                      );
-                      showToast("Order status updated", "success");
-                      window.dispatchEvent(new Event("adminOrdersUpdated"));
-                    }}
-                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-                    disabled={((selectedOrderStatusDraft || selectedAdminOrder.status) === (selectedAdminOrder.status || "awaiting_approval"))}
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedOrderStatusDraft(selectedAdminOrder.status || "awaiting_approval");
-                      setSelectedAdminOrder(null);
-                    }}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-
-              {/* Items */}
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
-                  <span>Item</span>
-                  <span>Total</span>
-                </div>
-
-                <div className="mt-3 space-y-3 border-b border-dashed border-slate-200 pb-4">
-                  {(selectedAdminOrder.order_items || []).map((item) => (
-                    <div key={item.id} className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="break-words font-semibold text-slate-900">{item.title}</p>
-                        <p className="text-xs text-slate-500">
-                          Qty {item.qty} - Rs. {Number(item.price).toLocaleString("en-IN")}
-                        </p>
-                      </div>
-                      <div className="font-semibold text-slate-900">
-                        Rs.{" "}
-                        {Number(item.line_total || item.qty * item.price).toLocaleString(
-                          "en-IN"
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Delivery Address */}
-              <div className="mt-4 border-b border-dashed border-slate-200 pb-4">
-                <h3 className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                  Delivery Address
-                </h3>
-
-                <div className="mt-2 space-y-1 text-sm">
-                  <p className="font-semibold text-slate-900">
-                    {selectedAdminOrder.customer_name}
-                  </p>
-                  {selectedAdminOrder.customer_email && <p>{selectedAdminOrder.customer_email}</p>}
-                  <p>{selectedAdminOrder.customer_mobile}</p>
-                  <p>{selectedAdminOrder.address_line1}</p>
-                  {selectedAdminOrder.address_line2 && <p>{selectedAdminOrder.address_line2}</p>}
-                  {selectedAdminOrder.landmark && (
-                    <p>Landmark: {selectedAdminOrder.landmark}</p>
-                  )}
-                  <p>
-                    {selectedAdminOrder.city} - {selectedAdminOrder.pincode}
-                  </p>
-                </div>
-              </div>
-
-              {/* Totals */}
-              <div className="mt-4 space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-slate-900">
-                    Rs. {Number(selectedAdminOrder.subtotal || 0).toLocaleString("en-IN")}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span>Standard shipping</span>
-                  <span className="font-semibold text-slate-900">
-                    Rs.{" "}
-                    {Number(selectedAdminOrder.shipping_fee || 0).toLocaleString("en-IN")}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-3 font-semibold text-slate-900">
-                  <span>Total</span>
-                  <span>
-                    Rs. {Number(selectedAdminOrder.total || 0).toLocaleString("en-IN")}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Receipt tear strip */}
-            <div className="h-4 w-full bg-white">
-              <svg className="h-full w-full" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path
-                  d="M0 2 L5 8 L10 2 L15 8 L20 2 L25 8 L30 2 L35 8 L40 2 L45 8 L50 2 L55 8 L60 2 L65 8 L70 2 L75 8 L80 2 L85 8 L90 2 L95 8 L100 2"
-                  stroke="#e2e8f0"
-                  strokeWidth="1.5"
-                  fill="none"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-      )}
-
+        <SubcategoryModal
+          isOpen={isSubcategoryModalOpen}
+          onClose={handleCloseSubcategoryModal}
+          editingSubcategoryId={editingSubcategoryId}
+          subcategoryDraft={subcategoryDraft}
+          setSubcategoryDraft={setSubcategoryDraft}
+          subcategoryError={subcategoryError}
+          handleSaveSubcategory={handleSaveSubcategory}
+        />
+        <PendingDeleteModal
+          pendingDelete={pendingDelete}
+          setPendingDelete={setPendingDelete}
+          handleDeleteSubcategory={handleDeleteSubcategory}
+          handleDeleteItem={handleDeleteItem}
+        />
+        <OrderReceiptModal
+          selectedAdminOrder={selectedAdminOrder}
+          setSelectedAdminOrder={setSelectedAdminOrder}
+          selectedOrderStatusDraft={selectedOrderStatusDraft}
+          setSelectedOrderStatusDraft={setSelectedOrderStatusDraft}
+          getOrderStatusLabel={getOrderStatusLabel}
+          onSaveOrderStatus={handleReceiptOrderStatusSave}
+        />
     </>
   );
 };
 
 export default AdminAddProduct;
+
 
