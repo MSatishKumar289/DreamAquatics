@@ -40,12 +40,12 @@ const ProductImageArea = ({
   showExpandHint,
   onImageClick,
 }) => (
-  <div className="relative w-full overflow-hidden rounded-b-none bg-gradient-to-br from-slate-50 via-white to-slate-100">
-    <div
-      className={`relative w-full border-b border-slate-200/60 ${
-        compact ? "aspect-[1/1]" : "aspect-[4/3] sm:aspect-[4/3]"
-      }`}
-    >
+      <div className="relative w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <div
+          className={`relative w-full border-b border-slate-200/60 rounded-t-2xl overflow-hidden ${
+            compact ? "aspect-[1/1]" : "aspect-[4/3] sm:aspect-[4/3]"
+          }`}
+        >
       {isSubCategory && (
         <>
           <span
@@ -700,7 +700,7 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ${
+      className={`group relative overflow-visible rounded-2xl border border-slate-300 bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
       } ${compact ? "h-full" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
