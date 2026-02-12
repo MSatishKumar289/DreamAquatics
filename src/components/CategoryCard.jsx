@@ -7,6 +7,7 @@ import incMinusIcon from "../assets/Icons/iminus.png";
 import closeIcon from "../assets/Icons/close_one.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { renderFormattedDescription } from "../utils/formatDescription";
 
 const StockBadge = ({ isSoldOut }) => (
   <div className="flex justify-center mb-2">
@@ -394,9 +395,9 @@ const PreviewModal = ({
           <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
             <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:pr-0">
               {productDescription ? (
-                <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600">
-                  {productDescription}
-                </p>
+                <div className="text-sm leading-relaxed text-slate-600">
+                  {renderFormattedDescription(productDescription)}
+                </div>
               ) : (
                 <p className="text-sm text-slate-500">
                   Product details will be available soon.

@@ -113,11 +113,13 @@ const ItemModal = ({
             />
             {itemDraft.imageData && (
               <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
+                <div className="flex h-40 items-center justify-center overflow-hidden rounded bg-white">
                 <img
                   src={itemDraft.imageData}
                   alt={itemDraft.imageName || "Preview"}
-                  className="h-32 w-full rounded object-cover"
+                  className="max-h-full w-full object-contain"
                 />
+                </div>
               </div>
             )}
           </div>

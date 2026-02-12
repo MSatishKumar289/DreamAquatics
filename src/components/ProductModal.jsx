@@ -5,6 +5,7 @@ import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
 import closeIcon from "../assets/Icons/close_one.png";
 import { useCart } from "../context/CartContext";
+import { renderFormattedDescription } from "../utils/formatDescription";
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -132,9 +133,9 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
           <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
             <section className="space-y-4 flex flex-col min-h-0">
-              <p className="text-md whitespace-pre-line text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
-                {safeProduct?.description || ""}
-              </p>
+              <div className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
+                {renderFormattedDescription(safeProduct?.description || "")}
+              </div>
             </section>
 
             <div className="flex w-full items-stretch justify-end gap-3 md:pt-2">
