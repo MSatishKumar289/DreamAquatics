@@ -394,7 +394,7 @@ const PreviewModal = ({
           <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
             <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:pr-0">
               {productDescription ? (
-                <p className="text-sm leading-relaxed text-slate-600">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600">
                   {productDescription}
                 </p>
               ) : (

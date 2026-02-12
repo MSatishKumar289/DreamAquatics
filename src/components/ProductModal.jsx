@@ -132,7 +132,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
 
           <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
             <section className="space-y-4 flex flex-col min-h-0">
-              <p className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
+              <p className="text-md whitespace-pre-line text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
                 {safeProduct?.description || ""}
               </p>
             </section>
