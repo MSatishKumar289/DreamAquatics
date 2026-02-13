@@ -441,14 +441,14 @@ const CategoryListingPage = () => {
   );
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-white pb-12">
+    <main className="min-h-screen bg-transparent pb-12">
       <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
         {searchBar}
       </section>
       <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
       <div className="container mx-auto px-4 pt-6 sm:px-6 lg:px-8">
         {!isSearching && (
-          <section className="rounded-3xl border border-white/40 bg-white/80 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
+          <section className="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
           <nav
             className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400"
             aria-label="Breadcrumb"
@@ -524,7 +524,7 @@ const CategoryListingPage = () => {
         )}
 
         <section
-          className={`rounded-3xl border border-white/60 bg-white/90 p-5 shadow-lg shadow-blue-100/80 ${
+          className={`rounded-3xl border border-white/60 bg-white/78 p-5 shadow-lg shadow-blue-100/80 ${
             isSearching ? "mt-4" : "mt-8"
           }`}
         >
@@ -536,7 +536,7 @@ const CategoryListingPage = () => {
             <div
               className={`rounded-3xl ${
                 isSearching
-                  ? "bg-white/95 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10"
+                  ? "bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10"
                   : ""
               }`}
             >
@@ -588,7 +588,7 @@ const CategoryListingPage = () => {
               )}
             </div>
           ) : isSearching ? (
-            <div className="rounded-3xl bg-white/95 px-4 py-6 text-center text-sm text-slate-600 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
+            <div className="rounded-3xl bg-white/80 px-4 py-6 text-center text-sm text-slate-600 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
               <p className="text-sm font-semibold text-slate-700">
                 Didn’t find what you were looking for?
               </p>

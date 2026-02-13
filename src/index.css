@@ -50,7 +50,17 @@
 
   body {
     font-family: 'Trajan Pro', 'Times New Roman', serif;
-    @apply bg-gray-50 text-gray-900;
+    color: #111827;
+    background-color: #f3f8fe;
+    background-image: linear-gradient(
+      180deg,
+      #5eaeea 0%,
+      #9dcdf0 30%,
+      #d7eaf8 68%,
+      #fdfefe 100%
+    );
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 
   main {

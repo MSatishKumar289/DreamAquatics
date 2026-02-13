@@ -250,7 +250,16 @@ function AppContent() {
   const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
-    <div className="App flex min-h-screen flex-col">
+    <div className="App relative flex min-h-screen flex-col">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(180deg, #5eaeea 0%, #9dcdf0 30%, #d7eaf8 68%, #fdfefe 100%)",
+          }}
+        />
+        <div className="relative z-10 flex min-h-screen flex-col">
         <Header
           user={authUser}
           onLogout={handleLogout}
@@ -364,6 +373,7 @@ function AppContent() {
         )}
 
         <Footer />
+        </div>
       </div>
   );
 }

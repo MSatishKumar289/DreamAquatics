@@ -285,7 +285,7 @@ const Home = ({ profile }) => {
   const highlightPoster = homeMedia.imageOneUrl || HighlightOne;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white pb-12">
+    <main className="min-h-screen bg-transparent pb-12">
       <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
         <div className="container mx-auto flex justify-center md:justify-start">
           <div
@@ -581,7 +581,7 @@ const Home = ({ profile }) => {
 
       {isSearching && (
         <section className="container mx-auto px-4 pt-24 sm:px-6 md:pt-28">
-          <div className="rounded-3xl bg-white/95 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
+          <div className="rounded-3xl bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400">

@@ -25,7 +25,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
   return (
     <section className="px-4 pt-6 sm:px-6 container mx-auto" aria-labelledby={`category-${categoryName}`}>
       <div className="w-full px-0">
-        <div className="rounded-none bg-white/95 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="rounded-none bg-white/75 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
           {/* Section Header */}
           <div className="mb-4 flex flex-nowrap items-center justify-between gap-3">
             <div className="min-w-0">
