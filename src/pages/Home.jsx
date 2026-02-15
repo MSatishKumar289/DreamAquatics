@@ -202,8 +202,7 @@ const Home = ({ profile }) => {
               };
             })
             .filter(Boolean)
-            .sort((a, b) => new Date(b.latestProductDate) - new Date(a.latestProductDate))
-            .slice(0, 4);
+            .sort((a, b) => new Date(b.latestProductDate) - new Date(a.latestProductDate));
 
           acc[categoryKey] = subcategoryCards;
           return acc;

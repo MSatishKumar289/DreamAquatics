@@ -32,6 +32,15 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   }, [imageRaw, title]);
 
   const priceValue = Number(safeProduct?.price ?? 0);
+  const originalPriceValue = Math.round(priceValue * 1.15);
+  const formattedPriceValue = priceValue.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedOriginalPriceValue = originalPriceValue.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   // Handle Escape key press
   useEffect(() => {
@@ -121,10 +130,20 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
                 {title}
               </h2>
-              <p className="text-2xl font-bold text-gray-900">
-                {"\u20B9"}
-                {priceValue.toLocaleString("en-IN")}
-              </p>
+              <div className="mx-auto inline-flex items-center justify-center gap-2 sm:gap-3">
+                {priceValue > 0 ? (
+                  <p className="text-xl font-medium text-gray-400 line-through">
+                    {"\u20B9"}
+                    {formattedOriginalPriceValue}
+                  </p>
+                ) : (
+                  <span />
+                )}
+                <p className="text-3xl font-semibold text-blue-700">
+                  {"\u20B9"}
+                  {formattedPriceValue}
+                </p>
+              </div>
               <p className="mt-2 text-center text-xs text-sky-600/80">
                 Images are for reference. Actual product appearance may vary.
               </p>

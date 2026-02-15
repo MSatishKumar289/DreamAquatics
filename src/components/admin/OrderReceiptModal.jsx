@@ -8,6 +8,28 @@ const OrderReceiptModal = ({
 }) => {
   if (!selectedAdminOrder) return null;
 
+  const rawMobile = String(selectedAdminOrder.customer_mobile || "");
+  const digitsOnly = rawMobile.replace(/\D/g, "");
+  const buildWhatsappNumber = () => {
+    if (!digitsOnly) return "";
+    if (digitsOnly.startsWith("91") && digitsOnly.length >= 12) return digitsOnly;
+    if (digitsOnly.length === 11 && digitsOnly.startsWith("0")) return `91${digitsOnly.slice(1)}`;
+    if (digitsOnly.length === 10) {
+      if (digitsOnly.startsWith("0")) return `91${digitsOnly.slice(1)}`;
+      return `91${digitsOnly}`;
+    }
+    if (digitsOnly.length > 10) return `91${digitsOnly.slice(-10)}`;
+    return digitsOnly;
+  };
+  const whatsappNumber = buildWhatsappNumber();
+  const hasWhatsappNumber = digitsOnly.length > 0;
+  const whatsappMessage = encodeURIComponent(
+    `Hi ${selectedAdminOrder.customer_name || ""}, this is DreamAquatics regarding your order ${selectedAdminOrder.order_number || selectedAdminOrder.id}.`
+  );
+  const whatsappLink = hasWhatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
+    : null;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
@@ -145,7 +167,19 @@ const OrderReceiptModal = ({
                 {selectedAdminOrder.customer_name}
               </p>
               {selectedAdminOrder.customer_email && <p>{selectedAdminOrder.customer_email}</p>}
-              <p>{selectedAdminOrder.customer_mobile}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p>{selectedAdminOrder.customer_mobile}</p>
+                {whatsappLink && (
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                  >
+                    WhatsApp customer
+                  </a>
+                )}
+              </div>
               <p>{selectedAdminOrder.address_line1}</p>
               {selectedAdminOrder.address_line2 && <p>{selectedAdminOrder.address_line2}</p>}
               {selectedAdminOrder.landmark && <p>Landmark: {selectedAdminOrder.landmark}</p>}

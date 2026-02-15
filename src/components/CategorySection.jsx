@@ -16,8 +16,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
     navigate(`/category/${categoryName}`);
   };
 
-  // Take only the first 4 products for this category
-  const displayProducts = products.slice(0, 4);
+  const displayProducts = products;
   const productCount = subcategoryCount;
   const showingCount = displayProducts.length;
   // console.log(displayProducts);
@@ -64,17 +63,33 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
             </button>
           </div>
 
-          {/* Product Grid */}
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 sm:gap-5 md:grid-cols-4 md:gap-5">
-            {displayProducts.map((product) => (
-              <CategoryCard
-                key={product.subcategoryId || product.id}
-                categoryName={categoryName}
-                product={product}
-                isSubCategory
-                showStockBadge={false}
-              />
-            ))}
+          <div className="mb-2 flex items-center justify-end">
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 sm:text-[11px]">
+              Swipe
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="m13 6 6 6-6 6" />
+              </svg>
+            </span>
+          </div>
+
+          {/* Two-row horizontal scroll for all breakpoints */}
+          <div className="-mx-2 overflow-x-auto px-2 pb-2">
+            <div className="grid w-max snap-x snap-mandatory grid-flow-col grid-rows-2 gap-4 auto-cols-[230px] sm:auto-cols-[250px] lg:auto-cols-[270px]">
+              {displayProducts.map((product) => (
+                <div
+                  key={product.subcategoryId || product.id}
+                  className="snap-start"
+                >
+                  <CategoryCard
+                    categoryName={categoryName}
+                    product={product}
+                    isSubCategory
+                    showStockBadge={false}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

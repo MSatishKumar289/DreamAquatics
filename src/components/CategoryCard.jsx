@@ -7,6 +7,7 @@ import incMinusIcon from "../assets/Icons/iminus.png";
 import closeIcon from "../assets/Icons/close_one.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useFavorites } from "../context/FavoritesContext";
 import { renderFormattedDescription } from "../utils/formatDescription";
 
 const StockBadge = ({ isSoldOut }) => (
@@ -39,6 +40,8 @@ const ProductImageArea = ({
   productSubtitle,
   showViewHint,
   showExpandHint,
+  isFavorite,
+  onToggleFavorite,
   onImageClick,
 }) => (
       <div className="relative w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -89,6 +92,32 @@ const ProductImageArea = ({
       />
       {!isSubCategory && (
         <>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleFavorite?.();
+            }}
+            className={`absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
+              isFavorite
+                ? "border-rose-200 bg-rose-50 text-rose-600"
+                : "border-slate-200 bg-white/95 text-slate-600 hover:text-rose-600"
+            }`}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill={isFavorite ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+            </svg>
+          </button>
           <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
             <svg
               viewBox="0 0 24 24"
@@ -123,34 +152,83 @@ const ProductInfo = ({
   productTitle,
   productSubtitle,
   price,
-}) => (
-  <div
-    className={`text-center ${
-      isSubCategory ? "min-h-[32px]" : "min-h-[77px]"
-    } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""}`}
-  >
-    <h3
-      className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-slate-900 ${
-        isSubCategory ? "line-clamp-2" : "line-clamp-3"
-      }`}
+}) => {
+  const currentPrice = Number(price ?? 0);
+  const originalPrice = Math.round(currentPrice * 1.15);
+  const savingsAmount = Math.max(0, originalPrice - currentPrice);
+  const formattedCurrentPrice = currentPrice.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedOriginalPrice = originalPrice.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedSavingsAmount = savingsAmount.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return (
+    <div
+      className={`text-center ${
+        isSubCategory ? "min-h-[32px]" : "min-h-[77px]"
+      } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
-      {productTitle}
-    </h3>
-    {!isSubCategory && productSubtitle && (
-      <p className="mt-1 text-sm text-slate-500 line-clamp-1">
-        {productSubtitle}
-      </p>
-    )}
-    {!isSubCategory && (
-      <div className="mt-0.5 flex items-center justify-center">
-        <p className="text-sm font-semibold text-slate-900">
-          {"\u20B9"}
-          {Number(price ?? 0).toLocaleString("en-IN")}
-        </p>
+      <div
+        className={`${
+          isSubCategory ? "" : "flex min-h-[56px] items-center justify-center"
+        }`}
+      >
+        <h3
+          className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-slate-900 ${
+            isSubCategory ? "line-clamp-2" : "line-clamp-none sm:line-clamp-2"
+          }`}
+        >
+          {productTitle}
+        </h3>
       </div>
-    )}
-  </div>
-);
+      {!isSubCategory && productSubtitle && (
+        <p className="mt-1 text-sm text-slate-500 line-clamp-1">
+          {productSubtitle}
+        </p>
+      )}
+      {!isSubCategory && (
+        <div className="mt-1 flex justify-center">
+          <span className="inline-block rounded-sm bg-gradient-to-b from-amber-200/80 from-55% to-transparent px-1 text-[11px] font-semibold tracking-wide text-slate-700">
+            Peaceful {"\u2022"} Easy Care
+          </span>
+        </div>
+      )}
+      {!isSubCategory && (
+        <div className="mt-1 flex min-h-[48px] w-full flex-col items-center justify-center">
+          <div className="flex h-[32px] w-full items-center justify-center">
+            <div className="inline-flex items-center justify-center gap-2 sm:gap-3">
+              {currentPrice > 0 ? (
+                <p className="text-[12px] font-medium text-slate-400 line-through">
+                  {"\u20B9"}
+                  {formattedOriginalPrice}
+                </p>
+              ) : (
+                <span />
+              )}
+              <p className="text-[1.05rem] font-semibold text-blue-700">
+                {"\u20B9"}
+                {formattedCurrentPrice}
+              </p>
+            </div>
+          </div>
+          {savingsAmount > 0 && (
+            <p className="text-[11px] font-semibold text-emerald-600">
+              You Save {"\u20B9"}
+              {formattedSavingsAmount}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CartControls = ({
   currentQty,
@@ -509,6 +587,7 @@ const CategoryCard = ({
   const EXPLORE_STYLE = "corner-badge";
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
+  const { toggleFavorite, isFavorite: isProductFavorite } = useFavorites();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [showViewHint, setShowViewHint] = useState(false);
   const [showExpandHint, setShowExpandHint] = useState(false);
@@ -601,6 +680,7 @@ const CategoryCard = ({
 
   const currentQty =
     cartItems?.find((item) => item.id === product?.id)?.qty || 0;
+  const favoriteSelected = !isSubCategory && isProductFavorite(product?.id);
 
   const handleAddToCart = (event) => {
     event?.stopPropagation();
@@ -719,6 +799,8 @@ const CategoryCard = ({
         productSubtitle={productSubtitle}
         showViewHint={showViewHint}
         showExpandHint={showExpandHint}
+        isFavorite={favoriteSelected}
+        onToggleFavorite={() => toggleFavorite(product)}
         onImageClick={(event) => {
           if (isSubCategory) return;
           event.stopPropagation();

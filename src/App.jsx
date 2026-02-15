@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
+import { FavoritesProvider, useFavorites } from './context/FavoritesContext';
 import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
+import FavoritesDrawer from './components/FavoritesDrawer';
 import AdminOrdersDrawer from './components/AdminOrdersDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -20,7 +22,7 @@ import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { fetchAllOrdersAdmin, normalizeAdminOrders } from './lib/ordersApi';
-import { clearCartStorage } from './helpers/storage';
+import { clearCartStorage, clearFavoritesStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -31,6 +33,7 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
   const [adminOrders, setAdminOrders] = useState([]);
   const [adminOrdersLastRefreshedAt, setAdminOrdersLastRefreshedAt] = useState(null);
@@ -40,6 +43,7 @@ function AppContent() {
   const location = useLocation();
 
   const { clearCart, lastAddedAt, lastAddedItem } = useCart();
+  const { clearFavorites } = useFavorites();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
 
   /* ================= AUTH LISTENER (SESSION ONLY) ================= */
@@ -73,6 +77,8 @@ function AppContent() {
           // 🔒 Cart cleanup happens ONLY here
           clearCart();
           clearCartStorage();
+          clearFavorites();
+          clearFavoritesStorage();
 
           return;
         }
@@ -87,7 +93,7 @@ function AppContent() {
       active = false;
       subscription.unsubscribe();
     };
-  }, [clearCart]);
+  }, [clearCart, clearFavorites]);
 
   /* ================= PROFILE FETCH + SAFE CREATION ================= */
 
@@ -265,6 +271,7 @@ function AppContent() {
           onLogout={handleLogout}
           onRequestLogin={openLoginModal}
           onCartOpen={() => setIsCartOpen(true)}
+          onFavoritesOpen={() => setIsFavoritesOpen(true)}
           onAdminOrdersOpen={() => setIsAdminOrdersOpen(true)}
           isRoleResolved={isRoleResolved}
           newOrdersCount={newOrdersCount}
@@ -299,6 +306,10 @@ function AppContent() {
         <CartDrawer
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
+        />
+        <FavoritesDrawer
+          isOpen={isFavoritesOpen}
+          onClose={() => setIsFavoritesOpen(false)}
         />
         {authUser?.role === 'admin' && (
           <AdminOrdersDrawer
@@ -381,11 +392,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <CartProvider>
-        <ProfileProvider>
-          <AppContent />
-        </ProfileProvider>
-      </CartProvider>
+      <FavoritesProvider>
+        <CartProvider>
+          <ProfileProvider>
+            <AppContent />
+          </ProfileProvider>
+        </CartProvider>
+      </FavoritesProvider>
     </BrowserRouter>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
 import close_ic from '../assets/Icons/close_ic.svg';
@@ -12,12 +13,14 @@ const Header = ({
   onLogout,
   onRequestLogin,
   onCartOpen,
+  onFavoritesOpen,
   onAdminOrdersOpen,
   isRoleResolved,
   newOrdersCount = 0,
   showAddedBanner = false
 }) => {
   const { itemCount } = useCart();
+  const { favoriteCount } = useFavorites();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -247,7 +250,35 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <div className="relative">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onFavoritesOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Favorites with ${favoriteCount} items`}
+                  data-favorites-target="favorites"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                  </svg>
+                  {favoriteCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${favoriteCount} items in favorites`}
+                    >
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => onCartOpen?.()}
@@ -409,7 +440,35 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <div className="relative">
+              <div className="flex items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => onFavoritesOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Favorites with ${favoriteCount} items`}
+                  data-favorites-target="favorites"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                  </svg>
+                  {favoriteCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${favoriteCount} items in favorites`}
+                    >
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => onCartOpen?.()}
