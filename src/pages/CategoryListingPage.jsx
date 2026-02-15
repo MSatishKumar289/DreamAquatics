@@ -446,7 +446,7 @@ const CategoryListingPage = () => {
         {searchBar}
       </section>
       <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
-      <div className={`container mx-auto pt-6 sm:px-6 lg:px-8 ${isSubcategoryMode ? "px-1" : "px-4"}`}>
+      <div className="container mx-auto px-1 pt-6 sm:px-6 lg:px-8">
         {!isSearching && (
           <section className="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
           <nav
@@ -524,11 +524,7 @@ const CategoryListingPage = () => {
         )}
 
         <section
-          className={`${
-            isSubcategoryMode
-              ? "rounded-none border-0 bg-transparent p-0 shadow-none"
-              : "rounded-3xl border border-white/60 bg-white/78 p-5 shadow-lg shadow-blue-100/80"
-          } ${isSearching ? "mt-4" : "mt-8"}`}
+          className={`${isSearching ? "mt-4" : "mt-8"} rounded-none border-0 bg-transparent p-0 shadow-none`}
         >
           {loading ? (
             <div className="py-12 text-center">
@@ -560,7 +556,7 @@ const CategoryListingPage = () => {
               {isSearching ? (
                 <div
                   className={`grid grid-cols-2 max-h-[70vh] overflow-y-auto overflow-x-hidden pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:grid-cols-3 lg:grid-cols-4 ${
-                    isSubcategoryMode ? "gap-2" : "gap-4"
+                    isSubcategoryMode ? "gap-2" : "gap-2"
                   }`}
                   onScroll={() => searchInputRef.current?.blur()}
                 >
@@ -572,13 +568,13 @@ const CategoryListingPage = () => {
                         isSubCategory={!isSubcategoryMode}
                         onAddToCart={handleAddToCart}
                         showStockBadge={isSubcategoryMode}
-                        borderless={isSubcategoryMode}
+                        borderless
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className={`grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 ${isSubcategoryMode ? "gap-2" : "gap-5"}`}>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                   {filteredList.map((item) => (
                     <CategoryCard
                       key={item.id}
@@ -587,7 +583,7 @@ const CategoryListingPage = () => {
                       isSubCategory={!isSubcategoryMode}
                       onAddToCart={handleAddToCart}
                       showStockBadge={isSubcategoryMode}
-                      borderless={isSubcategoryMode}
+                      borderless
                     />
                   ))}
                 </div>
