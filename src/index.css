@@ -67,3 +67,26 @@
     flex: 1;
   }
 }
+
+.premium-flat-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #6ea7dc #dbe9f6;
+}
+
+.premium-flat-scrollbar::-webkit-scrollbar {
+  height: 2px;
+}
+
+.premium-flat-scrollbar::-webkit-scrollbar-track {
+  background: #dbe9f6;
+  border-radius: 9999px;
+}
+
+.premium-flat-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #5f98d4 0%, #4a87c8 100%);
+  border-radius: 9999px;
+}
+
+.premium-flat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #548fcf 0%, #3f7dc1 100%);
+}

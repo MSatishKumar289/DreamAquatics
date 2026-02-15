@@ -163,7 +163,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
           </div>
 
           {/* Single-row horizontal scroll for all breakpoints */}
-          <div ref={scrollRef} className="-mx-2 overflow-x-auto px-2 pb-2">
+          <div ref={scrollRef} className="-mx-2 overflow-x-auto px-2 pb-2 premium-flat-scrollbar">
             <div className="grid w-max snap-x snap-mandatory grid-flow-col grid-rows-1 gap-4 auto-cols-[230px] sm:auto-cols-[250px] lg:auto-cols-[270px]">
               {displayProducts.map((product, index) => (
                 <div
