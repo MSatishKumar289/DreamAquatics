@@ -14,10 +14,13 @@ import HighlightTwo from '../assets/Images/prey.jpg';
 import HighlightThree from '../assets/Images/ram.jpg';
 import HighlightVideo from '../assets/Videos/video.mp4';
 import closeIcon from '../assets/Icons/close_one.png';
+import plusIcon from '../assets/Icons/plus.png';
+import incPlusIcon from '../assets/Icons/iplus.png';
+import incMinusIcon from '../assets/Icons/iminus.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
 
 const Home = ({ profile }) => {
-  const { addToCart } = useCart();
+  const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const navigate = useNavigate();
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
   const CATEGORY_SLUG_MAP = {
@@ -283,6 +286,258 @@ const Home = ({ profile }) => {
   const highlightImageOne = homeMedia.imageOneUrl || HighlightTwo;
   const highlightImageTwo = homeMedia.imageTwoUrl || HighlightThree;
   const highlightPoster = homeMedia.imageOneUrl || HighlightOne;
+  const categoryBySlug = useMemo(
+    () =>
+      Object.entries(CATEGORY_SLUG_MAP).reduce((acc, [uiKey, slug]) => {
+        acc[slug] = uiKey;
+        return acc;
+      }, {}),
+    [CATEGORY_SLUG_MAP]
+  );
+
+  const newArrivals = useMemo(() => {
+    const sorted = [...allProducts].sort(
+      (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
+    );
+
+    const picks = [];
+    const usedIds = new Set();
+
+    // Prefer one latest item per category (up to 4).
+    categories.forEach((categoryKey) => {
+      const dbSlug = CATEGORY_SLUG_MAP[categoryKey];
+      const match = sorted.find(
+        (product) =>
+          !usedIds.has(product?.id) &&
+          product?.subcategory?.category?.slug === dbSlug
+      );
+      if (match) {
+        picks.push(match);
+        usedIds.add(match.id);
+      }
+    });
+
+    // If fewer than 4, fill with next latest items from available categories.
+    if (picks.length < 4) {
+      for (const product of sorted) {
+        if (picks.length >= 4) break;
+        if (usedIds.has(product?.id)) continue;
+        picks.push(product);
+        usedIds.add(product.id);
+      }
+    }
+
+    return picks.slice(0, 4);
+  }, [allProducts, categories, CATEGORY_SLUG_MAP]);
+
+  const bestSellingFish = useMemo(() => {
+    return (
+      allProducts.find(
+        (product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.fishes
+      ) || null
+    );
+  }, [allProducts, CATEGORY_SLUG_MAP]);
+  const bestFishCurrentPrice = Number(bestSellingFish?.price) || 0;
+  const bestFishOriginalPrice =
+    Number(bestSellingFish?.original_price ?? bestSellingFish?.mrp ?? bestSellingFish?.price) || 0;
+  const bestFishSavings = Math.max(0, bestFishOriginalPrice - bestFishCurrentPrice);
+  const bestFishStockCount = Number.isFinite(Number(bestSellingFish?.stock_count))
+    ? Number(bestSellingFish?.stock_count)
+    : null;
+  const bestFishAvailabilityText = String(bestSellingFish?.availability || bestSellingFish?.status || '').toLowerCase();
+  const isBestFishSoldOut = bestFishStockCount !== null
+    ? bestFishStockCount <= 0
+    : /out|sold/.test(bestFishAvailabilityText);
+  const bestFishQty =
+    cartItems?.find((item) => item.id === bestSellingFish?.id)?.qty || 0;
+
+  const purposeCollections = useMemo(() => {
+    const picks = [
+      {
+        key: "beginner",
+        title: "Beginner Friendly",
+        matcher: (text) => /easy|beginner|starter|hardy|peaceful/i.test(text),
+      },
+      {
+        key: "low-maintenance",
+        title: "Low Maintenance",
+        matcher: (text) => /low maintenance|easy care|hardy|peaceful/i.test(text),
+      },
+      {
+        key: "colorful",
+        title: "Colorful Picks",
+        matcher: (text) => /guppy|tetra|betta|molly|koi|color/i.test(text),
+      },
+      {
+        key: "planted",
+        title: "Plant Lovers",
+        matcher: (text) => /plant|moss|aquascape|fertilizer|co2/i.test(text),
+      },
+    ];
+
+    return picks
+      .map((pick) => ({
+        ...pick,
+        items: allProducts
+          .filter((product) => {
+            const text = `${product?.name || ""} ${product?.subtitle || ""} ${product?.description || ""}`;
+            return pick.matcher(text);
+          })
+          .slice(0, 6),
+      }))
+      .filter((pick) => pick.items.length > 0);
+  }, [allProducts]);
+
+  const beginnerFriendlyFish = useMemo(() => {
+    return allProducts
+      .filter((product) => product?.subcategory?.category?.slug === 'fishes')
+      .slice(0, 4);
+  }, [allProducts]);
+
+  const medicineAndFilterPicks = useMemo(() => {
+    const accessories = allProducts.filter(
+      (product) => product?.subcategory?.category?.slug === 'accessories'
+    );
+    const filterItems = accessories.filter((product) => {
+      const text = `${product?.name || ''} ${product?.subcategory?.name || ''}`.toLowerCase();
+      return text.includes('filter');
+    });
+    return (filterItems.length ? filterItems : accessories).slice(0, 4);
+  }, [allProducts]);
+
+  const smartSections = useMemo(() => {
+    const now = Date.now();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const toNumber = (value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const textOf = (product) =>
+      `${product?.name || ''} ${product?.subtitle || ''} ${product?.subcategory?.name || ''} ${product?.description || ''}`.toLowerCase();
+    const isInStock = (product) => {
+      const count = toNumber(product?.stock_count);
+      const status = String(product?.availability || product?.status || '').toLowerCase();
+      if (count !== null) return count > 0;
+      return !/out|sold/.test(status);
+    };
+    const byNewest = (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0);
+
+    const rules = [
+      {
+        key: 'trending',
+        title: 'Trending Now',
+        subtitle: 'Popular Picks',
+        filter: (p) => isInStock(p),
+        sort: byNewest,
+      },
+      {
+        key: 'low-maintenance',
+        title: 'Low Maintenance',
+        subtitle: 'Easy Care Picks',
+        filter: (p) => /easy|peaceful|beginner|hardy|low maintenance/.test(textOf(p)),
+        sort: byNewest,
+      },
+      {
+        key: 'under-100',
+        title: 'Under \u20B9100',
+        subtitle: 'Budget Friendly',
+        filter: (p) => {
+          const price = toNumber(p?.price);
+          return price !== null && price <= 100;
+        },
+        sort: (a, b) => (toNumber(a?.price) ?? Number.MAX_SAFE_INTEGER) - (toNumber(b?.price) ?? Number.MAX_SAFE_INTEGER),
+      },
+      {
+        key: 'new-this-week',
+        title: 'New This Week',
+        subtitle: 'Fresh Arrivals',
+        filter: (p) => {
+          const time = new Date(p?.created_at || 0).getTime();
+          return Number.isFinite(time) && now - time <= sevenDaysMs;
+        },
+        sort: byNewest,
+      },
+    ];
+
+    return rules
+      .map((rule) => ({
+        ...rule,
+        items: allProducts.filter(rule.filter).sort(rule.sort).slice(0, 4),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [allProducts]);
+
+  const careCollections = useMemo(() => {
+    const detectCareLevel = (product) => {
+      const text = `${product?.name || ""} ${product?.subtitle || ""} ${product?.description || ""}`.toLowerCase();
+      if (/(advanced|expert|difficult|sensitive|delicate)/.test(text)) return "advanced";
+      if (/(moderate|intermediate|semi)/.test(text)) return "moderate";
+      if (/(easy|beginner|peaceful|hardy|low maintenance)/.test(text)) return "easy";
+      const price = Number(product?.price);
+      if (!Number.isFinite(price)) return "easy";
+      if (price <= 150) return "easy";
+      if (price <= 500) return "moderate";
+      return "advanced";
+    };
+
+    const grouped = { easy: [], moderate: [], advanced: [] };
+    allProducts.forEach((product) => {
+      grouped[detectCareLevel(product)].push(product);
+    });
+
+    return [
+      { key: "easy", title: "Easy Care", items: grouped.easy.slice(0, 6) },
+      { key: "moderate", title: "Moderate Care", items: grouped.moderate.slice(0, 6) },
+      { key: "advanced", title: "Advanced Care", items: grouped.advanced.slice(0, 6) },
+    ].filter((group) => group.items.length > 0);
+  }, [allProducts]);
+
+  const categoryShowcaseCards = useMemo(() => {
+    const tints = {
+      fishes: 'from-[#0F3A69]/70 via-[#1B5D9E]/30 to-transparent',
+      'live-plants': 'from-[#1A4A2D]/70 via-[#2F7D51]/30 to-transparent',
+      accessories: 'from-[#5B4325]/70 via-[#8D6A3D]/30 to-transparent',
+      tank: 'from-[#0D4A63]/70 via-[#157BA4]/30 to-transparent',
+    };
+    const titleMap = {
+      fishes: 'Fishes',
+      'live-plants': 'Live Plants',
+      accessories: 'Accessories',
+      tank: 'Tanks & Bowls',
+    };
+
+    return categories.map((categoryKey) => {
+      const dbSlug = CATEGORY_SLUG_MAP[categoryKey];
+      const productsForCategory = allProducts
+        .filter((product) => product?.subcategory?.category?.slug === dbSlug)
+        .sort((a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0));
+
+      const images = productsForCategory
+        .map((product) => product?.product_images?.[0]?.url || product?.image)
+        .filter(Boolean)
+        .slice(0, 3);
+      const recentProduct = productsForCategory[0] || null;
+
+      const minPrice = productsForCategory.reduce((min, product) => {
+        const value = Number(product?.price);
+        if (!Number.isFinite(value)) return min;
+        if (min === null) return value;
+        return value < min ? value : min;
+      }, null);
+
+      return {
+        id: categoryKey,
+        title: titleMap[categoryKey] || categoryKey,
+        target: `/category/${categoryKey}`,
+        images,
+        recentImage: recentProduct?.product_images?.[0]?.url || recentProduct?.image || images[0] || '',
+        recentName: recentProduct?.name || '',
+        count: subcategoryCounts?.[categoryKey] || 0,
+        startFrom: minPrice,
+        tint: tints[categoryKey] || 'from-black/50 via-black/20 to-transparent',
+      };
+    });
+  }, [allProducts, categories, subcategoryCounts, CATEGORY_SLUG_MAP]);
 
   return (
     <main className="min-h-screen bg-transparent pb-12">
@@ -665,14 +920,250 @@ const Home = ({ profile }) => {
       {!isSearching && (loading ? (
         <Spinner />
       ) : (
-        categories.map((category) => (
-          <CategorySection
-            key={category}
-            categoryName={category}
-            products={productsByCategory[category] || []}
-            subcategoryCount={subcategoryCounts[category] || 0}
-          />
-        ))
+        <>
+          <section className="container mx-auto px-4 pt-4 sm:px-6">
+            <div className="mb-3 text-center sm:mb-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-700/80 sm:text-xs">
+                Explore
+              </p>
+              <h2 className="mt-1 text-xl font-semibold text-[#102A43] sm:text-2xl">
+                Shop by Category
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {categoryShowcaseCards.map((card) => (
+                <article
+                  key={card.id}
+                  className="group relative aspect-square overflow-hidden rounded-[22px] border border-white/40 shadow-[0_14px_40px_rgba(15,23,42,0.16)] sm:rounded-[24px] md:aspect-[16/9] lg:aspect-[21/9]"
+                >
+                  <img
+                    src={card.recentImage || BgImage}
+                    alt={card.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-r ${card.tint}`} aria-hidden />
+                  <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-[#041426]/90 via-[#0A2540]/60 to-transparent" aria-hidden />
+                  <div className="relative z-10 flex h-full flex-col justify-end p-3 text-center text-white sm:p-4">
+                    <h3 className="text-[1.02rem] font-semibold leading-tight sm:text-xl">{card.title}</h3>
+                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/95 sm:text-[11px]">
+                      {card.startFrom !== null ? `Starts from \u20B9${card.startFrom.toLocaleString('en-IN')}` : 'Starts from \u20B9-'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigate(card.target)}
+                      className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-blue-700 sm:px-3.5 sm:text-xs"
+                    >
+                      Shop Now
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                        <path d="M5 12h14m-5-5 5 5-5 5" />
+                      </svg>
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="container mx-auto px-4 pt-2 sm:px-6">
+            <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
+              <div className="mb-3 text-center">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
+                <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {newArrivals.map((product) => {
+                  const categorySlug = product?.subcategory?.category?.slug;
+                  const categoryKey = categoryBySlug[categorySlug] || "fishes";
+                  return (
+                    <CategoryCard
+                      key={`new-${product.id}`}
+                      categoryName={categoryKey}
+                      product={product}
+                      showStockBadge
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {bestSellingFish && (
+            <section className="container mx-auto px-4 pt-5 sm:px-6">
+              <article className="grid min-h-[260px] grid-cols-[1.05fr_0.95fr] overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-b from-[#E8F2FF] via-[#F2F8FF] to-[#FFFFFF] shadow-[0_20px_55px_rgba(15,23,42,0.14)]">
+                <div className="flex flex-col justify-center px-5 py-5 text-center sm:px-7">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Selling Fish</p>
+                  <h2 className="mt-2 text-2xl font-semibold leading-tight text-[#102A43] sm:text-4xl">
+                    {bestSellingFish?.name || 'Top Fish Pick'}
+                  </h2>
+                  <div className="mt-3 flex justify-center">
+                    <span className="inline-block rounded-sm border border-amber-500/70 bg-amber-200/80 px-2 py-1 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-amber-600/30">
+                      Peaceful {"\u2022"} Easy Care
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-end justify-center gap-3">
+                    {bestFishOriginalPrice > bestFishCurrentPrice && (
+                      <p className="text-sm font-medium text-slate-400 line-through">
+                        {"\u20B9"}
+                        {bestFishOriginalPrice.toLocaleString('en-IN')}
+                      </p>
+                    )}
+                    <p className="text-3xl font-semibold text-[#1D3A8A]">
+                      {"\u20B9"}
+                      {bestFishCurrentPrice.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                  {bestFishSavings > 0 && (
+                    <p className="mt-1 text-sm font-semibold text-emerald-600">
+                      You Save {"\u20B9"}
+                      {bestFishSavings.toLocaleString('en-IN')}
+                    </p>
+                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
+                    <p className={`inline-flex items-center gap-2 text-sm font-semibold ${isBestFishSoldOut ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-white ${isBestFishSoldOut ? 'bg-rose-500' : 'bg-emerald-500'}`}>
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                          {isBestFishSoldOut ? <path d="m7 7 10 10M17 7 7 17" /> : <path d="m5 13 4 4L19 7" />}
+                        </svg>
+                      </span>
+                      {isBestFishSoldOut ? 'Out of Stock' : 'In Stock'}
+                    </p>
+                    <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
+                  </div>
+                  {bestFishQty > 0 ? (
+                    <div className="mt-5 flex justify-center">
+                      <div className="w-[160px] min-w-[160px]">
+                        <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (bestFishQty <= 1) {
+                                removeItem?.(bestSellingFish?.id);
+                                return;
+                              }
+                              updateQty?.(bestSellingFish?.id, bestFishQty - 1);
+                            }}
+                            className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
+                            aria-label="Decrease quantity"
+                          >
+                            <img src={incMinusIcon} alt="" className="h-7 w-7" />
+                          </button>
+                          <span className="text-sm font-semibold text-[#1D3A8A]">
+                            {bestFishQty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQty?.(bestSellingFish?.id, bestFishQty + 1)}
+                            className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
+                            aria-label="Increase quantity"
+                          >
+                            <img src={incPlusIcon} alt="" className="h-7 w-7" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isBestFishSoldOut) return;
+                        addToCart?.(bestSellingFish, 1);
+                      }}
+                      disabled={isBestFishSoldOut}
+                      className="mt-5 inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                    >
+                      <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                        <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+                <div className="relative h-full min-h-[260px] border-l border-blue-100/70 bg-gradient-to-b from-[#DDEBFF] via-[#F4F8FF] to-[#FFFFFF] p-4">
+                  <img
+                    src={bestSellingFish?.product_images?.[0]?.url || bestSellingFish?.image || BgImage}
+                    alt={bestSellingFish?.name || 'Best selling fish'}
+                    className="h-full w-full rounded-2xl object-contain bg-white"
+                  />
+                </div>
+              </article>
+            </section>
+          )}
+
+          {smartSections.map((section) => (
+            <section key={section.key} className="container mx-auto px-4 pt-5 sm:px-6">
+              <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
+                <div className="mb-3 text-center">
+                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
+                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                    {section.subtitle}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {section.items.map((product) => {
+                    const categorySlug = product?.subcategory?.category?.slug;
+                    const categoryKey = categoryBySlug[categorySlug] || "fishes";
+                    return (
+                      <CategoryCard
+                        key={`${section.key}-${product.id}`}
+                        categoryName={categoryKey}
+                        product={product}
+                        showStockBadge
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          ))}
+
+          {beginnerFriendlyFish.length > 0 && (
+            <section className="container mx-auto px-4 pt-5 sm:px-6">
+              <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
+                <div className="mb-3 text-center">
+                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Beginner Friendly Fish</h2>
+                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                    First 4 Picks
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {beginnerFriendlyFish.map((product) => (
+                    <CategoryCard
+                      key={`beginner-${product.id}`}
+                      categoryName="fishes"
+                      product={product}
+                      showStockBadge
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {medicineAndFilterPicks.length > 0 && (
+            <section className="container mx-auto px-4 pt-5 sm:px-6">
+              <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
+                <div className="mb-3 text-center">
+                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Medicine & Recovery</h2>
+                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                    Filter Essentials
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {medicineAndFilterPicks.map((product) => (
+                    <CategoryCard
+                      key={`med-filter-${product.id}`}
+                      categoryName="accessories"
+                      product={product}
+                      showStockBadge
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+        </>
       ))}
       {activeHighlight && (
         <div
@@ -711,5 +1202,6 @@ const Home = ({ profile }) => {
 };
 
 export default Home;
+
 
 
