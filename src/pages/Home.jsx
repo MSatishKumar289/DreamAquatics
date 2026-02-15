@@ -373,7 +373,7 @@ const Home = ({ profile }) => {
             <div
               className={`absolute top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSearchCollapsed
-                  ? "-right-8 -translate-y-2 scale-100 opacity-100"
+                  ? "right-2 -translate-y-2 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
               }`}
             >

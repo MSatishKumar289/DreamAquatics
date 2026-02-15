@@ -230,7 +230,7 @@ const ProductInfo = ({
       )}
       {!isSubCategory && (
         <div className="mt-1 flex justify-center">
-          <span className="inline-block rounded-sm border border-slate-200 bg-white px-1.5 text-[11px] font-semibold tracking-wide text-slate-700">
+          <span className="inline-block rounded-sm border border-amber-500/70 bg-amber-200/80 px-1.5 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-amber-600/30">
             Peaceful {"\u2022"} Easy Care
           </span>
         </div>
@@ -532,6 +532,7 @@ const CategoryCard = ({
   showStockBadge,
   isMasonry = false,
   compact = false,
+  borderless = false,
 }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -744,11 +745,11 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative overflow-visible rounded-2xl border border-slate-300 bg-white shadow-sm transition-shadow duration-300 ${
+      className={`group relative overflow-visible rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory
           ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg"
           : "flex h-full flex-col bg-gradient-to-b from-[#B9D6FF] via-[#DFECFF] to-[#F7FBFF] shadow-[0_8px_18px_rgba(37,99,235,0.1)] hover:shadow-[0_10px_22px_rgba(37,99,235,0.14)]"
-      } ${compact ? "h-full" : ""}`}
+      } ${borderless ? "border-0" : "border border-slate-300"} ${compact ? "h-full" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
       aria-label={
