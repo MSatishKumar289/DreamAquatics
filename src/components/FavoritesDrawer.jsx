@@ -111,6 +111,13 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
                 (() => {
                   const cartEntry = cartItems.find((cartItem) => cartItem.id === item.id);
                   const currentQty = cartEntry?.qty || 0;
+                  const availabilityText = String(item?.availability || item?.status || '').toLowerCase();
+                  const parsedStockCount = Number.isFinite(Number(item?.stock_count))
+                    ? Number(item?.stock_count)
+                    : null;
+                  const isSoldOut = parsedStockCount !== null
+                    ? parsedStockCount <= 0
+                    : /out|sold/.test(availabilityText);
 
                   return (
                 <article
@@ -168,8 +175,12 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => addToCart(item, 1)}
-                        className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700 hover:bg-blue-100"
+                        onClick={() => {
+                          if (isSoldOut) return;
+                          addToCart(item, 1);
+                        }}
+                        disabled={isSoldOut}
+                        className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
                         aria-label={`Add ${item.title} to cart`}
                       >
                         Add to Cart

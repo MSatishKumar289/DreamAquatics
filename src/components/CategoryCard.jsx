@@ -5,30 +5,31 @@ import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
 import closeIcon from "../assets/Icons/close_one.png";
+import inStockIcon from "../assets/Icons/in.png";
+import outStockIcon from "../assets/Icons/out.png";
+import arrowIcon from "../assets/Icons/arrow.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { renderFormattedDescription } from "../utils/formatDescription";
 
-const StockBadge = ({ isSoldOut }) => (
-  <div className="flex justify-center mb-2">
-    <div
-      className={`relative inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-md ${
-        isSoldOut ? "border-rose-200 bg-rose-500" : "border-emerald-200 bg-emerald-600"
+const StockStatusRow = ({ isSoldOut }) => (
+  <div className="mb-0.5 flex items-center gap-2">
+    <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap sm:gap-1.5 sm:px-2.5 sm:text-[11px] ${
+        isSoldOut ? "text-rose-700" : "text-emerald-700"
       }`}
     >
-      <span
-        className="absolute left-1/2 -top-1.5 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border border-transparent"
-        style={{
-          borderLeftColor: isSoldOut ? "#f43f5e" : "#059669",
-          borderBottomColor: isSoldOut ? "#f43f5e" : "#059669",
-          backgroundColor: isSoldOut ? "#f43f5e" : "#059669"
-        }}
+      <img
+        src={isSoldOut ? outStockIcon : inStockIcon}
+        alt=""
+        className="h-5 w-5"
         aria-hidden="true"
       />
-      <span className="h-1.5 w-1.5 rounded-full bg-white/90" aria-hidden="true" />
-      {isSoldOut ? "Sold Out" : "In Stock"}
-    </div>
+      {isSoldOut ? "Out of Stock" : "In Stock"}
+    </span>
+    <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
   </div>
 );
 
@@ -44,16 +45,33 @@ const ProductImageArea = ({
   onToggleFavorite,
   onImageClick,
 }) => (
-      <div className="relative w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div
+        className={`relative w-full overflow-hidden rounded-t-2xl ${
+          isSubCategory
+            ? "bg-gradient-to-br from-slate-50 via-white to-slate-100"
+            : "bg-gradient-to-b from-[#F7E7BF] via-[#FBF1D9] to-[#FFFCF3]"
+        }`}
+      >
         <div
           className={`relative w-full border-b border-slate-200/60 rounded-t-2xl overflow-hidden ${
             compact ? "aspect-[1/1]" : "aspect-[4/3] sm:aspect-[4/3]"
           }`}
         >
-      {isSubCategory && (
+      {isSubCategory ? (
         <>
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-11 border-b border-slate-200 bg-white px-3">
+            <h3
+              className="line-clamp-1 flex h-full items-center justify-center text-center text-[1.05rem] font-semibold uppercase tracking-[0.08em] text-slate-900 sm:text-[1.2rem]"
+              style={{
+                color: "#0f172a",
+                textShadow: "0 1px 1px rgba(255,255,255,0.55)",
+              }}
+            >
+              {productTitle}
+            </h3>
+          </div>
           <span
-            className="pointer-events-none absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white sm:opacity-0 sm:transition sm:group-hover:opacity-100"
+            className="pointer-events-none absolute left-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white sm:opacity-0 sm:transition sm:group-hover:opacity-100"
             aria-hidden="true"
           >
             <svg
@@ -70,26 +88,41 @@ const ProductImageArea = ({
             </svg>
           </span>
           <span
-            className={`pointer-events-none absolute left-2 top-2 z-10 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
+            className={`pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
               showViewHint ? "opacity-100" : ""
             }`}
           >
             Tap to view
           </span>
+          <div className="h-full w-full pt-11">
+            <img
+              src={imageSrc}
+              alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
+              className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
+              onClick={onImageClick}
+              onError={(e) => {
+                e.target.src =
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
+                  encodeURIComponent(productTitle) +
+                  "%3C/text%3E%3C/svg%3E";
+              }}
+            />
+          </div>
         </>
+      ) : (
+        <img
+          src={imageSrc}
+          alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
+          className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
+          onClick={onImageClick}
+          onError={(e) => {
+            e.target.src =
+              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
+              encodeURIComponent(productTitle) +
+              "%3C/text%3E%3C/svg%3E";
+          }}
+        />
       )}
-      <img
-        src={imageSrc}
-        alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-        className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
-        onClick={onImageClick}
-        onError={(e) => {
-          e.target.src =
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
-            encodeURIComponent(productTitle) +
-            "%3C/text%3E%3C/svg%3E";
-        }}
-      />
       {!isSubCategory && (
         <>
           <button
@@ -172,16 +205,16 @@ const ProductInfo = ({
   return (
     <div
       className={`text-center ${
-        isSubCategory ? "min-h-[32px]" : "min-h-[77px]"
+        isSubCategory ? "min-h-[32px]" : "min-h-[95px]"
       } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
       <div
         className={`${
-          isSubCategory ? "" : "flex min-h-[56px] items-center justify-center"
+          isSubCategory ? "" : "flex min-h-[34px] items-center justify-center"
         }`}
       >
         <h3
-          className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-slate-900 ${
+          className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-[#102A43] ${
             isSubCategory ? "line-clamp-2" : "line-clamp-none sm:line-clamp-2"
           }`}
         >
@@ -189,13 +222,13 @@ const ProductInfo = ({
         </h3>
       </div>
       {!isSubCategory && productSubtitle && (
-        <p className="mt-1 text-sm text-slate-500 line-clamp-1">
+        <p className="mt-1 text-sm text-slate-600 line-clamp-1">
           {productSubtitle}
         </p>
       )}
       {!isSubCategory && (
         <div className="mt-1 flex justify-center">
-          <span className="inline-block rounded-sm bg-gradient-to-b from-amber-200/80 from-55% to-transparent px-1 text-[11px] font-semibold tracking-wide text-slate-700">
+          <span className="inline-block rounded-sm border border-slate-200 bg-white px-1.5 text-[11px] font-semibold tracking-wide text-slate-700">
             Peaceful {"\u2022"} Easy Care
           </span>
         </div>
@@ -212,7 +245,7 @@ const ProductInfo = ({
               ) : (
                 <span />
               )}
-              <p className="text-[1.05rem] font-semibold text-blue-700">
+              <p className="text-[1.05rem] font-semibold text-[#1D3A8A]">
                 {"\u20B9"}
                 {formattedCurrentPrice}
               </p>
@@ -240,7 +273,7 @@ const CartControls = ({
   isPreviewOpen,
   productTitle,
 }) => (
-  <div className="relative mt-auto pt-1">
+  <div className="relative mt-auto pt-0.5">
     {showAddedHint && !isPreviewOpen && (
       <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
         Added 1 item
@@ -252,7 +285,7 @@ const CartControls = ({
           type="button"
           onClick={onAddToCart}
           disabled={isSoldOut}
-          className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                  className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
           <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
             <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -263,24 +296,24 @@ const CartControls = ({
     ) : (
       <div className="flex justify-center">
         <div className="w-[160px] min-w-[160px]">
-          <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+          <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
             <button
               type="button"
               onClick={onDecrease}
               disabled={isSoldOut}
-              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
               aria-label={`Decrease quantity for ${productTitle}`}
             >
               <img src={incMinusIcon} alt="" className="h-7 w-7" />
             </button>
-            <span className="text-sm font-semibold text-blue-700">
+            <span className="text-sm font-semibold text-[#1D3A8A]">
               {currentQty}
             </span>
             <button
               type="button"
               onClick={onIncrease}
               disabled={isSoldOut}
-              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
               aria-label={`Increase quantity for ${productTitle}`}
             >
               <img src={incPlusIcon} alt="" className="h-7 w-7" />
@@ -292,8 +325,7 @@ const CartControls = ({
   </div>
 );
 
-const ExploreButton = ({
-  exploreStyle,
+const SubcategoryFooter = ({
   startFromPrice,
   count,
   onClick,
@@ -306,114 +338,29 @@ const ExploreButton = ({
     },
   };
 
-  const startFromBlock = startFromPrice !== null && (
-    <div className="absolute inset-x-3 bottom-10 flex justify-center sm:bottom-11">
-      <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "20px" }}>
-        Starts from {"\u20B9"}
-        {startFromPrice.toLocaleString("en-IN")}
-      </span>
-    </div>
-  );
-
-  if (exploreStyle === "underline") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-md backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.2)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white">
-              {count}
-            </span>
-          )}
-          <span className="absolute inset-x-8 -bottom-1 h-[2px] rounded-full bg-blue-500/60" aria-hidden="true" />
-        </button>
-      </>
-    );
-  }
-
-  if (exploreStyle === "outline") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full border border-blue-300 bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.18)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-2 text-[10px] font-semibold tracking-[0.12em] text-white shadow-sm">
-              {count}
-            </span>
-          )}
-        </button>
-      </>
-    );
-  }
-
-  if (exploreStyle === "corner-badge") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-4 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 md:inset-x-4 md:px-3 md:py-2 md:text-[11px] lg:inset-x-8 lg:px-2.5 lg:py-2 lg:text-[10px]"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 shadow ring-2 ring-blue-400">
-              {count}
-            </span>
-          )}
-        </button>
-      </>
-    );
-  }
-
-  if (exploreStyle === "stacked") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-3 bottom-3 flex flex-col items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white ring-1 ring-white/30">
-              {count}
-            </span>
-          )}
-        </button>
-      </>
-    );
-  }
-
   return (
-    <>
-      {startFromBlock}
+    <div className="absolute inset-x-3 bottom-2 flex items-center">
       <button
         {...commonProps}
-        className="absolute inset-x-3 bottom-3 inline-flex items-center justify-between rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+        className="relative inline-flex w-full items-center justify-between px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
       >
-        <span className="inline-flex items-center gap-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
-              <path d="M5 12h14M12 5v14" />
-            </svg>
+        <span className="relative top-0.5 flex flex-1 items-center justify-center gap-1 pl-1 text-center text-[10px] tracking-[0.1em] whitespace-nowrap sm:text-[11px] sm:tracking-[0.16em]">
+          <span>Starts from</span>
+          <span>
+            {"\u20B9"}
+            {startFromPrice !== null ? startFromPrice.toLocaleString("en-IN") : "-"}
           </span>
-          <span>Explore</span>
         </span>
-        {count !== null && (
-          <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 ring-2 ring-blue-400">
-            {count}
-          </span>
-        )}
+        <span className="relative ml-3 inline-flex h-10 w-10 flex-none items-center justify-center pr-1">
+          <img src={arrowIcon} alt="" className="h-8 w-8" aria-hidden="true" />
+          {count !== null && (
+            <span className="absolute -right-1 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-white px-1 py-0.5 text-[10px] font-semibold tracking-normal text-blue-700 shadow ring-2 ring-blue-400">
+              {count}
+            </span>
+          )}
+        </span>
       </button>
-    </>
+    </div>
   );
 };
 
@@ -584,7 +531,6 @@ const CategoryCard = ({
   isMasonry = false,
   compact = false,
 }) => {
-  const EXPLORE_STYLE = "corner-badge";
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const { toggleFavorite, isFavorite: isProductFavorite } = useFavorites();
@@ -782,7 +728,9 @@ const CategoryCard = ({
   return (
     <article
       className={`group relative overflow-visible rounded-2xl border border-slate-300 bg-white shadow-sm transition-shadow duration-300 ${
-        isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
+        isSubCategory
+          ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg"
+          : "flex h-full flex-col bg-gradient-to-b from-[#F3DEAA] via-[#F9EDCF] to-[#FFFAF0] shadow-[0_8px_18px_rgba(180,134,37,0.1)] hover:shadow-[0_10px_22px_rgba(180,134,37,0.14)]"
       } ${compact ? "h-full" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
@@ -809,26 +757,29 @@ const CategoryCard = ({
       />
 
       <div
-        className={`${compact ? "p-2" : "p-2 sm:p-3"} ${
+        className={`${compact ? "px-2 pb-2 pt-1.5" : "px-2 pb-2 pt-1.5 sm:px-3 sm:pb-3 sm:pt-2"} ${
           isSubCategory
-            ? "flex flex-col gap-2 pb-12 sm:gap-3 sm:pb-14"
+            ? "flex flex-col gap-2 pb-8 sm:gap-3 sm:pb-9"
             : isMasonry
-              ? "flex flex-col gap-1 sm:gap-1.5"
+              ? "flex flex-1 flex-col gap-1 sm:gap-1.5"
               : compact
-                ? "flex min-h-[111px] flex-col gap-1 sm:gap-1.5"
-                : "flex min-h-[137px] flex-col gap-1 sm:min-h-[159px] sm:gap-1.5"
+                ? "flex min-h-[111px] flex-1 flex-col gap-1 sm:gap-1.5"
+                : "flex min-h-[137px] flex-1 flex-col gap-1 sm:min-h-[159px] sm:gap-1.5"
         }`}
       >
-        {!isSubCategory && shouldShowStockBadge && (
-          <StockBadge isSoldOut={isSoldOut} />
+        {!isSubCategory && (
+          <ProductInfo
+            isSubCategory={isSubCategory}
+            isMasonry={isMasonry}
+            productTitle={productTitle}
+            productSubtitle={productSubtitle}
+            price={product?.price}
+          />
         )}
-        <ProductInfo
-          isSubCategory={isSubCategory}
-          isMasonry={isMasonry}
-          productTitle={productTitle}
-          productSubtitle={productSubtitle}
-          price={product?.price}
-        />
+
+        {!isSubCategory && (
+          <StockStatusRow isSoldOut={isSoldOut} />
+        )}
 
         {!isSubCategory && (
           <CartControls
@@ -855,8 +806,7 @@ const CategoryCard = ({
       </div>
 
       {isSubCategory && (
-        <ExploreButton
-          exploreStyle={EXPLORE_STYLE}
+        <SubcategoryFooter
           startFromPrice={startFromPrice}
           count={Number.isFinite(product?.itemCount) ? product.itemCount : null}
           onClick={handleClick}

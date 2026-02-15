@@ -18,6 +18,8 @@ const normalizeFavoriteItem = (item) => {
     price: Number(item?.price ?? 0),
     image,
     meta: item?.meta || item?.subtitle || '',
+    availability: item?.availability || item?.status || '',
+    stock_count: item?.stock_count,
   };
 };
 
