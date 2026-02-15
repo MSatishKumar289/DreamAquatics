@@ -533,6 +533,7 @@ const CategoryCard = ({
   isMasonry = false,
   compact = false,
   borderless = false,
+  itemDetailGoldenBorder = false,
 }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -749,7 +750,13 @@ const CategoryCard = ({
         isSubCategory
           ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg"
           : "flex h-full flex-col bg-gradient-to-b from-[#B9D6FF] via-[#DFECFF] to-[#F7FBFF] shadow-[0_8px_18px_rgba(37,99,235,0.1)] hover:shadow-[0_10px_22px_rgba(37,99,235,0.14)]"
-      } ${borderless ? "border-0" : "border border-slate-300"} ${compact ? "h-full" : ""}`}
+      } ${
+        itemDetailGoldenBorder && !isSubCategory
+          ? "border-[0.5px] border-amber-300/90"
+          : borderless
+            ? "border-0"
+            : "border border-slate-300"
+      } ${compact ? "h-full" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
       aria-label={

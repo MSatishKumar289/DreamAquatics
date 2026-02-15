@@ -569,6 +569,7 @@ const CategoryListingPage = () => {
                         onAddToCart={handleAddToCart}
                         showStockBadge={isSubcategoryMode}
                         borderless
+                        itemDetailGoldenBorder={isSubcategoryMode}
                       />
                     </div>
                   ))}
@@ -584,6 +585,7 @@ const CategoryListingPage = () => {
                       onAddToCart={handleAddToCart}
                       showStockBadge={isSubcategoryMode}
                       borderless
+                      itemDetailGoldenBorder={isSubcategoryMode}
                     />
                   ))}
                 </div>
