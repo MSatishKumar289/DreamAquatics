@@ -48,8 +48,8 @@ const ProductImageArea = ({
       <div
         className={`relative w-full overflow-hidden rounded-t-2xl ${
           isSubCategory
-            ? "bg-gradient-to-br from-slate-50 via-white to-slate-100"
-            : "bg-gradient-to-b from-[#C3DBFF] via-[#E5F0FF] to-[#F8FBFF]"
+            ? "bg-gradient-to-br from-[#FFF9E6] via-[#FFF4CC] to-[#FFFDF3]"
+            : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
         }`}
       >
         <div
@@ -748,8 +748,8 @@ const CategoryCard = ({
     <article
       className={`group relative overflow-visible rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory
-          ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg"
-          : "flex h-full flex-col bg-gradient-to-b from-[#B9D6FF] via-[#DFECFF] to-[#F7FBFF] shadow-[0_8px_18px_rgba(37,99,235,0.1)] hover:shadow-[0_10px_22px_rgba(37,99,235,0.14)]"
+          ? "cursor-pointer pb-6 sm:pb-8 bg-gradient-to-b from-[#FFF9E6] via-[#FFF4CD] to-[#FFFDF3] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
+          : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
       } ${
         itemDetailGoldenBorder && !isSubCategory
           ? "border-[0.5px] border-amber-300/90"
