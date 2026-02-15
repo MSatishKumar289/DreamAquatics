@@ -9,6 +9,10 @@ const UnderHundredPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
     let active = true;
     (async () => {
       setLoading(true);
@@ -78,7 +82,7 @@ const UnderHundredPage = () => {
               No products found under \u20B9100.
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {items.map((product) => (
                 <CategoryCard
                   key={product.id}

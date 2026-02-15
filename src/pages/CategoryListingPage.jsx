@@ -340,20 +340,6 @@ const CategoryListingPage = () => {
             <span className="pointer-events-none text-slate-600">
               {renderCategoryIcon(categoryIconKey)}
             </span>
-            <span className="pointer-events-none text-slate-500">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-3 w-3"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </span>
           </div>
           <div className="relative flex h-9 flex-1 min-w-0 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 sm:h-auto sm:rounded-xl sm:py-2">
               <input

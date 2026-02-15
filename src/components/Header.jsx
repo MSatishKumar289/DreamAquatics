@@ -360,8 +360,8 @@ const Header = ({
                     </span>
                   </button>
                   {showProfileHint && (
-                    <div className="absolute right-0 top-10 z-50 w-56 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
-                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                    <div className="absolute left-1/2 top-10 z-50 w-56 -translate-x-1/2 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
+                      <span className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
                       Access your profile here.
                     </div>
                   )}
@@ -398,7 +398,7 @@ const Header = ({
               {user && isProfileOpen && (
                 <div
                   data-profile-menu
-                  className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                  className="absolute left-1/2 top-11 z-40 w-60 max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
                 >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>

@@ -43,6 +43,8 @@ const Home = ({ profile }) => {
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(true);
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
+  const [showBestFishAddedHint, setShowBestFishAddedHint] = useState(false);
+  const [showBestFishRemoveConfirm, setShowBestFishRemoveConfirm] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
     imageOneUrl: '',
@@ -282,6 +284,12 @@ const Home = ({ profile }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchQuery]);
 
+  useEffect(() => {
+    if (!showBestFishAddedHint) return;
+    const timer = setTimeout(() => setShowBestFishAddedHint(false), 1600);
+    return () => clearTimeout(timer);
+  }, [showBestFishAddedHint]);
+
   const highlightVideoSrc = homeMedia.videoUrl || HighlightVideo;
   const highlightImageOne = homeMedia.imageOneUrl || HighlightTwo;
   const highlightImageTwo = homeMedia.imageTwoUrl || HighlightThree;
@@ -446,16 +454,6 @@ const Home = ({ profile }) => {
           return price !== null && price <= 100;
         },
         sort: (a, b) => (toNumber(a?.price) ?? Number.MAX_SAFE_INTEGER) - (toNumber(b?.price) ?? Number.MAX_SAFE_INTEGER),
-      },
-      {
-        key: 'new-this-week',
-        title: 'New This Week',
-        subtitle: 'Fresh Arrivals',
-        filter: (p) => {
-          const time = new Date(p?.created_at || 0).getTime();
-          return Number.isFinite(time) && now - time <= sevenDaysMs;
-        },
-        sort: byNewest,
       },
     ];
 
@@ -628,7 +626,7 @@ const Home = ({ profile }) => {
             <div
               className={`absolute top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSearchCollapsed
-                  ? "right-2 md:-right-4 -translate-y-2 scale-100 opacity-100"
+                  ? "right-2 md:right-0 lg:-right-4 -translate-y-2 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
               }`}
             >
@@ -966,7 +964,7 @@ const Home = ({ profile }) => {
 
           <section className="container mx-auto px-4 pt-2 sm:px-6">
             <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-              <div className="mb-3 text-center">
+              <div className="mb-3 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
                 <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
               </div>
@@ -1038,7 +1036,7 @@ const Home = ({ profile }) => {
                             type="button"
                             onClick={() => {
                               if (bestFishQty <= 1) {
-                                removeItem?.(bestSellingFish?.id);
+                                setShowBestFishRemoveConfirm(true);
                                 return;
                               }
                               updateQty?.(bestSellingFish?.id, bestFishQty - 1);
@@ -1063,20 +1061,28 @@ const Home = ({ profile }) => {
                       </div>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isBestFishSoldOut) return;
-                        addToCart?.(bestSellingFish, 1);
-                      }}
-                      disabled={isBestFishSoldOut}
-                      className="mt-5 inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
-                    >
-                      <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
-                        <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                      Add to Cart
-                    </button>
+                    <div className="relative mt-5 flex justify-center">
+                      {showBestFishAddedHint && (
+                        <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                          1 item added
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isBestFishSoldOut) return;
+                          addToCart?.(bestSellingFish, 1);
+                          setShowBestFishAddedHint(true);
+                        }}
+                        disabled={isBestFishSoldOut}
+                        className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                      >
+                        <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                          <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        Add to Cart
+                      </button>
+                    </div>
                   )}
                 </div>
                 <div className="relative h-full min-h-[260px] border-l border-blue-100/70 bg-gradient-to-b from-[#DDEBFF] via-[#F4F8FF] to-[#FFFFFF] p-4">
@@ -1093,8 +1099,8 @@ const Home = ({ profile }) => {
           {smartSections.map((section) => (
             <section key={section.key} className="container mx-auto px-4 pt-5 sm:px-6">
               <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="mb-3 flex items-end justify-between gap-3">
-                  <div className="text-center sm:text-left">
+                <div className="relative mb-3">
+                  <div className="text-left">
                     <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
                     <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                       {section.subtitle}
@@ -1104,7 +1110,7 @@ const Home = ({ profile }) => {
                     <button
                       type="button"
                       onClick={() => navigate("/under-100")}
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-700 transition hover:bg-blue-100"
+                      className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-md shadow-blue-900/20 transition hover:bg-blue-700"
                     >
                       View All
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
@@ -1114,7 +1120,7 @@ const Home = ({ profile }) => {
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {(section.key === "under-100" ? section.items.slice(0, 2) : section.items).map((product) => {
+                  {section.items.map((product) => {
                     const categorySlug = product?.subcategory?.category?.slug;
                     const categoryKey = categoryBySlug[categorySlug] || "fishes";
                     return (
@@ -1134,7 +1140,7 @@ const Home = ({ profile }) => {
           {beginnerFriendlyFish.length > 0 && (
             <section className="container mx-auto px-4 pt-5 sm:px-6">
               <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="mb-3 text-center">
+                <div className="mb-3 text-left">
                   <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Beginner Friendly</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -1154,7 +1160,7 @@ const Home = ({ profile }) => {
           {medicineAndFilterPicks.length > 0 && (
             <section className="container mx-auto px-4 pt-5 sm:px-6">
               <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="mb-3 text-center">
+                <div className="mb-3 text-left">
                   <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -1173,6 +1179,42 @@ const Home = ({ profile }) => {
 
         </>
       ))}
+      {showBestFishRemoveConfirm && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setShowBestFishRemoveConfirm(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-900">Remove item?</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Remove {bestSellingFish?.name || "this item"} from your cart?
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowBestFishRemoveConfirm(false)}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeItem?.(bestSellingFish?.id);
+                  setShowBestFishRemoveConfirm(false);
+                }}
+                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {activeHighlight && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
