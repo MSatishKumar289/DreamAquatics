@@ -6,6 +6,7 @@ import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
 import FavoritesDrawer from './components/FavoritesDrawer';
 import AdminOrdersDrawer from './components/AdminOrdersDrawer';
+import UserOrdersDrawer from './components/UserOrdersDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
@@ -18,10 +19,11 @@ import Terms from './pages/Terms';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
 import TrackOrder from './pages/TrackOrder';
+import UnderHundredPage from './pages/UnderHundredPage';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
-import { fetchAllOrdersAdmin, normalizeAdminOrders } from './lib/ordersApi';
+import { fetchAllOrdersAdmin, fetchMyOrders, normalizeAdminOrders } from './lib/ordersApi';
 import { clearCartStorage, clearFavoritesStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -35,11 +37,18 @@ function AppContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
+  const [isUserOrdersOpen, setIsUserOrdersOpen] = useState(false);
   const [adminOrders, setAdminOrders] = useState([]);
   const [adminOrdersLastRefreshedAt, setAdminOrdersLastRefreshedAt] = useState(null);
-  const [userOrders] = useState([]);
+  const [userOrders, setUserOrders] = useState([]);
+  const [userOrdersLastRefreshedAt, setUserOrdersLastRefreshedAt] = useState(null);
+  const [userOrderNotifications, setUserOrderNotifications] = useState([]);
   const adminPollTimerRef = useRef(null);
   const adminPollInFlightRef = useRef(false);
+  const userPollTimerRef = useRef(null);
+  const userPollInFlightRef = useRef(false);
+  const userOrderStatusMapRef = useRef({});
+  const userOrdersSeededRef = useRef(false);
   const location = useLocation();
 
   const { clearCart, lastAddedAt, lastAddedItem } = useCart();
@@ -73,6 +82,13 @@ function AppContent() {
           setProfile(null);
           setAuthLoading(false);
           localStorage.removeItem('da_profile_hint_seen');
+          setUserOrders([]);
+          setUserOrdersLastRefreshedAt(null);
+          setUserOrderNotifications([]);
+          setIsUserOrdersOpen(false);
+          userOrderStatusMapRef.current = {};
+          userOrdersSeededRef.current = false;
+          clearUserPollTimer();
 
           // 🔒 Cart cleanup happens ONLY here
           clearCart();
@@ -171,6 +187,21 @@ function AppContent() {
     [adminOrders]
   );
 
+  const userNotificationsCount = useMemo(
+    () => userOrderNotifications.filter((item) => !item.read).length,
+    [userOrderNotifications]
+  );
+
+  const userNotificationsStorageKey = useMemo(
+    () => (sessionUser?.id ? `da_user_order_notifications_${sessionUser.id}` : null),
+    [sessionUser?.id]
+  );
+
+  const userStatusMapStorageKey = useMemo(
+    () => (sessionUser?.id ? `da_user_order_status_map_${sessionUser.id}` : null),
+    [sessionUser?.id]
+  );
+
   const fetchAdminOrders = useCallback(async () => {
     if (adminPollInFlightRef.current) return;
     adminPollInFlightRef.current = true;
@@ -204,6 +235,109 @@ function AppContent() {
       scheduleAdminPoll();
     }, 3 * 60 * 1000);
   }, [fetchAdminOrders]);
+
+  useEffect(() => {
+    if (!userNotificationsStorageKey || !userStatusMapStorageKey) return;
+    try {
+      const storedNotificationsRaw = localStorage.getItem(userNotificationsStorageKey);
+      const storedStatusMapRaw = localStorage.getItem(userStatusMapStorageKey);
+      const storedNotifications = storedNotificationsRaw ? JSON.parse(storedNotificationsRaw) : [];
+      const storedStatusMap = storedStatusMapRaw ? JSON.parse(storedStatusMapRaw) : {};
+
+      setUserOrderNotifications(Array.isArray(storedNotifications) ? storedNotifications : []);
+      userOrderStatusMapRef.current =
+        storedStatusMap && typeof storedStatusMap === "object" ? storedStatusMap : {};
+      userOrdersSeededRef.current = Object.keys(userOrderStatusMapRef.current).length > 0;
+    } catch {
+      setUserOrderNotifications([]);
+      userOrderStatusMapRef.current = {};
+      userOrdersSeededRef.current = false;
+    }
+  }, [userNotificationsStorageKey, userStatusMapStorageKey]);
+
+  const fetchUserOrderNotifications = useCallback(async () => {
+    if (userPollInFlightRef.current) return;
+    userPollInFlightRef.current = true;
+
+    try {
+      const { data, error } = await fetchMyOrders();
+      if (error) return;
+
+      const orders = data || [];
+      setUserOrders(orders);
+      setUserOrdersLastRefreshedAt(Date.now());
+
+      const nextStatusMap = orders.reduce((acc, order) => {
+        acc[order.id] = order.status || "awaiting_approval";
+        return acc;
+      }, {});
+
+      const prevStatusMap = userOrderStatusMapRef.current || {};
+      const shouldCreateNotifications = userOrdersSeededRef.current;
+
+      setUserOrderNotifications((prev) => {
+        if (!shouldCreateNotifications) return prev;
+
+        const existingIds = new Set(prev.map((item) => item.id));
+        const newlyDetected = [];
+
+        orders.forEach((order) => {
+          const previous = prevStatusMap[order.id];
+          const current = nextStatusMap[order.id];
+          if (!previous || previous === current) return;
+
+          const notificationId = `${order.id}:${current}`;
+          if (existingIds.has(notificationId)) return;
+
+          newlyDetected.push({
+            id: notificationId,
+            orderId: order.id,
+            orderNumber: order.order_number || order.id,
+            status: current,
+            previousStatus: previous,
+            total: Number(order.total || 0),
+            changedAt: Date.now(),
+            read: false,
+          });
+        });
+
+        if (!newlyDetected.length) return prev;
+
+        const merged = [...newlyDetected, ...prev].slice(0, 50);
+        if (userNotificationsStorageKey) {
+          localStorage.setItem(userNotificationsStorageKey, JSON.stringify(merged));
+        }
+        return merged;
+      });
+
+      userOrderStatusMapRef.current = nextStatusMap;
+      userOrdersSeededRef.current = true;
+      if (userStatusMapStorageKey) {
+        localStorage.setItem(userStatusMapStorageKey, JSON.stringify(nextStatusMap));
+      }
+    } finally {
+      userPollInFlightRef.current = false;
+    }
+  }, [userNotificationsStorageKey, userStatusMapStorageKey]);
+
+  const clearUserPollTimer = () => {
+    if (userPollTimerRef.current) {
+      clearTimeout(userPollTimerRef.current);
+      userPollTimerRef.current = null;
+    }
+  };
+
+  const scheduleUserPoll = useCallback(() => {
+    clearUserPollTimer();
+    userPollTimerRef.current = setTimeout(async () => {
+      if (document.hidden) {
+        scheduleUserPoll();
+        return;
+      }
+      await fetchUserOrderNotifications();
+      scheduleUserPoll();
+    }, 2 * 60 * 1000);
+  }, [fetchUserOrderNotifications]);
 
   useEffect(() => {
     if (!authUser?.role || authUser.role !== "admin") return;
@@ -243,6 +377,44 @@ function AppContent() {
     };
   }, [authUser?.role, fetchAdminOrders, scheduleAdminPoll]);
 
+  useEffect(() => {
+    if (!authUser || authUser.role === "admin") return;
+
+    const handleFocus = () => {
+      if (document.hidden) return;
+      fetchUserOrderNotifications();
+      scheduleUserPoll();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearUserPollTimer();
+        return;
+      }
+      fetchUserOrderNotifications();
+      scheduleUserPoll();
+    };
+
+    const handleAdminOrdersUpdated = () => {
+      if (document.hidden) return;
+      fetchUserOrderNotifications();
+      scheduleUserPoll();
+    };
+
+    fetchUserOrderNotifications();
+    scheduleUserPoll();
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("adminOrdersUpdated", handleAdminOrdersUpdated);
+
+    return () => {
+      clearUserPollTimer();
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("adminOrdersUpdated", handleAdminOrdersUpdated);
+    };
+  }, [authUser, fetchUserOrderNotifications, scheduleUserPoll]);
+
   /* ================= LOGOUT ================= */
 
   const handleLogout = useCallback(async () => {
@@ -253,6 +425,17 @@ function AppContent() {
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
+  const handleUserOrdersOpen = useCallback(() => {
+    setIsUserOrdersOpen(true);
+    setUserOrderNotifications((prev) => {
+      if (!prev.some((item) => !item.read)) return prev;
+      const next = prev.map((item) => ({ ...item, read: true }));
+      if (userNotificationsStorageKey) {
+        localStorage.setItem(userNotificationsStorageKey, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [userNotificationsStorageKey]);
   const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
@@ -273,8 +456,10 @@ function AppContent() {
           onCartOpen={() => setIsCartOpen(true)}
           onFavoritesOpen={() => setIsFavoritesOpen(true)}
           onAdminOrdersOpen={() => setIsAdminOrdersOpen(true)}
+          onUserOrdersOpen={handleUserOrdersOpen}
           isRoleResolved={isRoleResolved}
           newOrdersCount={newOrdersCount}
+          userNotificationsCount={userNotificationsCount}
           showAddedBanner={showAddedBanner}
         />
 
@@ -319,6 +504,15 @@ function AppContent() {
             lastRefreshedAt={adminOrdersLastRefreshedAt}
           />
         )}
+        {authUser && authUser.role !== 'admin' && (
+          <UserOrdersDrawer
+            isOpen={isUserOrdersOpen}
+            onClose={() => setIsUserOrdersOpen(false)}
+            notifications={userOrderNotifications}
+            orders={userOrders}
+            lastRefreshedAt={userOrdersLastRefreshedAt}
+          />
+        )}
 
         <main className="flex-1">
           <Routes>
@@ -339,6 +533,7 @@ function AppContent() {
             />
             <Route path="/terms" element={<Terms />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/under-100" element={<UnderHundredPage />} />
             <Route path="/track-order" element={<TrackOrder />} />
             <Route
               path="/admin/add-product"
@@ -404,6 +599,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

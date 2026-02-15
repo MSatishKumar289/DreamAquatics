@@ -15,8 +15,10 @@ const Header = ({
   onCartOpen,
   onFavoritesOpen,
   onAdminOrdersOpen,
+  onUserOrdersOpen,
   isRoleResolved,
   newOrdersCount = 0,
+  userNotificationsCount = 0,
   showAddedBanner = false
 }) => {
   const { itemCount } = useCart();
@@ -250,7 +252,37 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
+                {!!user && !isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onUserOrdersOpen?.()}
+                    className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${userNotificationsCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                    aria-label={`Order notifications with ${userNotificationsCount} updates`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                      <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                    </svg>
+                    {userNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                        aria-label={`${userNotificationsCount} order updates`}
+                      >
+                        {userNotificationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => onFavoritesOpen?.()}
@@ -440,7 +472,37 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-0">
+                {!!user && !isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onUserOrdersOpen?.()}
+                    className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${userNotificationsCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                    aria-label={`Order notifications with ${userNotificationsCount} updates`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                      <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                    </svg>
+                    {userNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                        aria-label={`${userNotificationsCount} order updates`}
+                      >
+                        {userNotificationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => onFavoritesOpen?.()}

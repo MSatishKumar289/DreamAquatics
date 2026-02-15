@@ -628,7 +628,7 @@ const Home = ({ profile }) => {
             <div
               className={`absolute top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSearchCollapsed
-                  ? "right-2 -translate-y-2 scale-100 opacity-100"
+                  ? "right-2 md:-right-4 -translate-y-2 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
               }`}
             >
@@ -1093,14 +1093,28 @@ const Home = ({ profile }) => {
           {smartSections.map((section) => (
             <section key={section.key} className="container mx-auto px-4 pt-5 sm:px-6">
               <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="mb-3 text-center">
-                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                    {section.subtitle}
-                  </span>
+                <div className="mb-3 flex items-end justify-between gap-3">
+                  <div className="text-center sm:text-left">
+                    <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
+                    <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                      {section.subtitle}
+                    </span>
+                  </div>
+                  {section.key === "under-100" && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/under-100")}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-700 transition hover:bg-blue-100"
+                    >
+                      View All
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                        <path d="M5 12h14m-5-5 5 5-5 5" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {section.items.map((product) => {
+                  {(section.key === "under-100" ? section.items.slice(0, 2) : section.items).map((product) => {
                     const categorySlug = product?.subcategory?.category?.slug;
                     const categoryKey = categoryBySlug[categorySlug] || "fishes";
                     return (
@@ -1121,10 +1135,7 @@ const Home = ({ profile }) => {
             <section className="container mx-auto px-4 pt-5 sm:px-6">
               <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
                 <div className="mb-3 text-center">
-                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Beginner Friendly Fish</h2>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                    First 4 Picks
-                  </span>
+                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Beginner Friendly</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {beginnerFriendlyFish.map((product) => (
@@ -1144,10 +1155,7 @@ const Home = ({ profile }) => {
             <section className="container mx-auto px-4 pt-5 sm:px-6">
               <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
                 <div className="mb-3 text-center">
-                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Medicine & Recovery</h2>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                    Filter Essentials
-                  </span>
+                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {medicineAndFilterPicks.map((product) => (
