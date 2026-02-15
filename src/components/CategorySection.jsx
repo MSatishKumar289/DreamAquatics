@@ -88,9 +88,9 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
   };
 
   return (
-    <section className="px-4 pt-6 sm:px-6 container mx-auto" aria-labelledby={`category-${categoryName}`}>
+    <section className="px-4 pt-3 sm:px-6 container mx-auto" aria-labelledby={`category-${categoryName}`}>
       <div className="w-full px-0">
-        <div className="rounded-none bg-white/75 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="rounded-[28px] bg-white/75 px-2 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:rounded-[32px] sm:px-6 lg:px-10">
           {/* Section Header */}
           <div className="mb-4 flex flex-nowrap items-center justify-between gap-3">
             <div className="min-w-0">
@@ -129,7 +129,30 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
             </button>
           </div>
 
-          <div className="mb-2 flex items-center justify-center">
+          {/* Single-row horizontal scroll for all breakpoints */}
+          <div ref={scrollRef} className="-mx-2 overflow-x-auto px-2 pb-2 premium-flat-scrollbar">
+            <div className="grid w-max snap-x snap-mandatory grid-flow-col grid-rows-1 gap-2 auto-cols-[230px] sm:auto-cols-[250px] lg:auto-cols-[270px]">
+              {displayProducts.map((product, index) => (
+                <div
+                  key={product.subcategoryId || product.id}
+                  className="snap-start"
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                  tabIndex={-1}
+                >
+                  <CategoryCard
+                    categoryName={categoryName}
+                    product={product}
+                    isSubCategory
+                    showStockBadge={false}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-2 flex items-center justify-center">
             <div className="flex items-start gap-5">
               <div className="flex flex-col items-center gap-1">
                 <button
@@ -159,29 +182,6 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
                 </button>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">Next</span>
               </div>
-            </div>
-          </div>
-
-          {/* Single-row horizontal scroll for all breakpoints */}
-          <div ref={scrollRef} className="-mx-2 overflow-x-auto px-2 pb-2 premium-flat-scrollbar">
-            <div className="grid w-max snap-x snap-mandatory grid-flow-col grid-rows-1 gap-4 auto-cols-[230px] sm:auto-cols-[250px] lg:auto-cols-[270px]">
-              {displayProducts.map((product, index) => (
-                <div
-                  key={product.subcategoryId || product.id}
-                  className="snap-start"
-                  ref={(el) => {
-                    cardRefs.current[index] = el;
-                  }}
-                  tabIndex={-1}
-                >
-                  <CategoryCard
-                    categoryName={categoryName}
-                    product={product}
-                    isSubCategory
-                    showStockBadge={false}
-                  />
-                </div>
-              ))}
             </div>
           </div>
         </div>
