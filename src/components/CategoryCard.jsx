@@ -49,7 +49,7 @@ const ProductImageArea = ({
         className={`relative w-full overflow-hidden rounded-t-2xl ${
           isSubCategory
             ? "bg-gradient-to-br from-slate-50 via-white to-slate-100"
-            : "bg-gradient-to-b from-[#F7E7BF] via-[#FBF1D9] to-[#FFFCF3]"
+            : "bg-gradient-to-b from-[#C3DBFF] via-[#E5F0FF] to-[#F8FBFF]"
         }`}
       >
         <div
@@ -61,7 +61,7 @@ const ProductImageArea = ({
         <>
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-11 border-b border-slate-200 bg-white px-3">
             <h3
-              className="line-clamp-1 flex h-full items-center justify-center text-center text-[1.05rem] font-semibold uppercase tracking-[0.08em] text-slate-900 sm:text-[1.2rem]"
+              className="line-clamp-1 flex h-full items-center justify-center text-center text-[0.76rem] font-semibold uppercase tracking-[0.06em] text-slate-900 sm:text-[0.88rem]"
               style={{
                 color: "#0f172a",
                 textShadow: "0 1px 1px rgba(255,255,255,0.55)",
@@ -214,8 +214,10 @@ const ProductInfo = ({
         }`}
       >
         <h3
-          className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-[#102A43] ${
-            isSubCategory ? "line-clamp-2" : "line-clamp-none sm:line-clamp-2"
+          className={`px-1 font-semibold text-[#102A43] ${
+            isSubCategory
+              ? "text-[0.72rem] sm:text-[0.82rem] line-clamp-2"
+              : "text-[0.850rem] sm:text-[1rem] line-clamp-none sm:line-clamp-2"
           }`}
         >
           {productTitle}
@@ -538,6 +540,7 @@ const CategoryCard = ({
   const [showViewHint, setShowViewHint] = useState(false);
   const [showExpandHint, setShowExpandHint] = useState(false);
   const [showAddedHint, setShowAddedHint] = useState(false);
+  const [favoriteToastMessage, setFavoriteToastMessage] = useState("");
   const [pendingRemove, setPendingRemove] = useState(false);
 
   const productTitle = isSubCategory
@@ -624,9 +627,23 @@ const CategoryCard = ({
     return () => clearTimeout(timer);
   }, [showAddedHint]);
 
+  useEffect(() => {
+    if (!favoriteToastMessage) return;
+    const timer = setTimeout(() => setFavoriteToastMessage(""), 1600);
+    return () => clearTimeout(timer);
+  }, [favoriteToastMessage]);
+
   const currentQty =
     cartItems?.find((item) => item.id === product?.id)?.qty || 0;
   const favoriteSelected = !isSubCategory && isProductFavorite(product?.id);
+  const handleFavoriteToggle = () => {
+    if (isSubCategory) return;
+    const isAdding = !favoriteSelected;
+    toggleFavorite(product);
+    setFavoriteToastMessage(
+      isAdding ? "Added to favourite" : "Removed from favourite"
+    );
+  };
 
   const handleAddToCart = (event) => {
     event?.stopPropagation();
@@ -730,7 +747,7 @@ const CategoryCard = ({
       className={`group relative overflow-visible rounded-2xl border border-slate-300 bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory
           ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg"
-          : "flex h-full flex-col bg-gradient-to-b from-[#F3DEAA] via-[#F9EDCF] to-[#FFFAF0] shadow-[0_8px_18px_rgba(180,134,37,0.1)] hover:shadow-[0_10px_22px_rgba(180,134,37,0.14)]"
+          : "flex h-full flex-col bg-gradient-to-b from-[#B9D6FF] via-[#DFECFF] to-[#F7FBFF] shadow-[0_8px_18px_rgba(37,99,235,0.1)] hover:shadow-[0_10px_22px_rgba(37,99,235,0.14)]"
       } ${compact ? "h-full" : ""}`}
       tabIndex={isSubCategory ? "0" : undefined}
       role={isSubCategory ? "button" : "group"}
@@ -748,7 +765,7 @@ const CategoryCard = ({
         showViewHint={showViewHint}
         showExpandHint={showExpandHint}
         isFavorite={favoriteSelected}
-        onToggleFavorite={() => toggleFavorite(product)}
+        onToggleFavorite={handleFavoriteToggle}
         onImageClick={(event) => {
           if (isSubCategory) return;
           event.stopPropagation();
@@ -847,6 +864,14 @@ const CategoryCard = ({
           setPendingRemove(false);
         }}
       />
+
+      {favoriteToastMessage && !isSubCategory && (
+        <div className="pointer-events-none absolute inset-x-3 bottom-12 z-30 flex justify-center">
+          <span className="whitespace-nowrap rounded-md bg-rose-400 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.04em] text-white shadow-md shadow-rose-100 sm:px-2.5 sm:text-[10px] sm:tracking-wide">
+            {favoriteToastMessage}
+          </span>
+        </div>
+      )}
     </article>
   );
 };

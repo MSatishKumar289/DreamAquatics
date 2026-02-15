@@ -26,6 +26,7 @@ const Home = ({ profile }) => {
     accessories: 'accessories',
     tank: 'tanks',
   };
+  const storeMapUrl = 'https://maps.app.goo.gl/FufcQNMgRY59zTPd6';
   const instagramUrl = 'https://www.instagram.com/dreamaquatics23/?hl=en';
   const [productsByCategory, setProductsByCategory] = useState({});
   const [subcategoryCounts, setSubcategoryCounts] = useState({});
@@ -372,7 +373,7 @@ const Home = ({ profile }) => {
             <div
               className={`absolute top-1/2 flex -translate-y-1/2 items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSearchCollapsed
-                  ? "right-3 -translate-y-3 scale-100 opacity-100"
+                  ? "-right-8 -translate-y-2 scale-100 opacity-100"
                   : "pointer-events-none translate-y-3 scale-[0.98] opacity-0"
               }`}
             >
@@ -432,7 +433,7 @@ const Home = ({ profile }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
         </div>
 
-        <div className="relative mx-auto grid max-w-6xl gap-6 px-3 text-white sm:px-4 md:px-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="relative grid w-full gap-2 px-0 text-white lg:grid-cols-[1.15fr_0.85fr_0.65fr]">
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
             <div className="space-y-3 text-center">
               <h1 className="text-[1.5rem] font-semibold leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem] text-blue-600">
@@ -572,6 +573,34 @@ const Home = ({ profile }) => {
                   Join community
                 </a>
               </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
+                Location
+              </p>
+              <p className="text-xl font-semibold text-white">Visit DreamAquatics</p>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              <iframe
+                title="Dream Aquatics store location"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(storeMapUrl)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                className="h-16 w-full sm:h-36 md:h-[320px]"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <div className="mt-2 flex justify-center">
+              <a
+                href={storeMapUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl border border-blue-400/70 bg-blue-600 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-700"
+              >
+                Open in Google Maps
+              </a>
             </div>
           </div>
         </div>
