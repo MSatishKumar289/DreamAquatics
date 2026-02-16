@@ -71,23 +71,6 @@ const ProductImageArea = ({
             </h3>
           </div>
           <span
-            className="pointer-events-none absolute left-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white sm:opacity-0 sm:transition sm:group-hover:opacity-100"
-            aria-hidden="true"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </span>
-          <span
             className={`pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
               showViewHint ? "opacity-100" : ""
             }`}

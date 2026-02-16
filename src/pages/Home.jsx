@@ -17,6 +17,7 @@ import closeIcon from '../assets/Icons/close_one.png';
 import plusIcon from '../assets/Icons/plus.png';
 import incPlusIcon from '../assets/Icons/iplus.png';
 import incMinusIcon from '../assets/Icons/iminus.png';
+import mapIcon from '../assets/Icons/map.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
 
 const Home = ({ profile }) => {
@@ -686,7 +687,7 @@ const Home = ({ profile }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
         </div>
 
-        <div className="relative grid w-full gap-2 px-0 text-white lg:grid-cols-[1.15fr_0.85fr_0.65fr]">
+        <div className="relative mx-auto grid w-full max-w-[1600px] gap-3 px-2 text-white sm:px-3 lg:grid-cols-[1.15fr_0.85fr] lg:px-6">
           <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
             <div className="space-y-3 text-center">
               <h1 className="text-[1.5rem] font-semibold leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem] text-blue-600">
@@ -732,9 +733,21 @@ const Home = ({ profile }) => {
                 WhatsApp
               </a>
             </div>
+            <div className="mt-1 flex justify-center">
+              <a
+                href={storeMapUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
+                aria-label="Locate us on Google Maps"
+              >
+                <img src={mapIcon} alt="" className="h-5 w-5 object-contain" aria-hidden="true" />
+                Locate Us
+              </a>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
+          <div className="relative flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
             <div className="space-y-1">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
                 Store highlights
@@ -826,34 +839,6 @@ const Home = ({ profile }) => {
                   Join community
                 </a>
               </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
-                Location
-              </p>
-              <p className="text-xl font-semibold text-white">Visit DreamAquatics</p>
-            </div>
-            <div className="overflow-hidden rounded-2xl border border-white/10">
-              <iframe
-                title="Dream Aquatics store location"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(storeMapUrl)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                className="h-16 w-full sm:h-36 md:h-[320px]"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-            <div className="mt-2 flex justify-center">
-              <a
-                href={storeMapUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-xl border border-blue-400/70 bg-blue-600 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-700"
-              >
-                Open in Google Maps
-              </a>
             </div>
           </div>
         </div>
@@ -987,7 +972,7 @@ const Home = ({ profile }) => {
 
           {bestSellingFish && (
             <section className="container mx-auto px-4 pt-5 sm:px-6">
-              <article className="grid min-h-[260px] grid-cols-[1.05fr_0.95fr] overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-b from-[#E8F2FF] via-[#F2F8FF] to-[#FFFFFF] shadow-[0_20px_55px_rgba(15,23,42,0.14)]">
+              <article className="grid min-h-[260px] grid-cols-[1.05fr_0.95fr] overflow-hidden rounded-[28px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_20px_55px_rgba(146,117,34,0.14)]">
                 <div className="flex flex-col justify-center px-5 py-5 text-center sm:px-7">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Selling Fish</p>
                   <h2 className="mt-2 text-2xl font-semibold leading-tight text-[#102A43] sm:text-4xl">
@@ -1085,7 +1070,7 @@ const Home = ({ profile }) => {
                     </div>
                   )}
                 </div>
-                <div className="relative h-full min-h-[260px] border-l border-blue-100/70 bg-gradient-to-b from-[#DDEBFF] via-[#F4F8FF] to-[#FFFFFF] p-4">
+                <div className="relative h-full min-h-[260px] border-l border-amber-200/70 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-4">
                   <img
                     src={bestSellingFish?.product_images?.[0]?.url || bestSellingFish?.image || BgImage}
                     alt={bestSellingFish?.name || 'Best selling fish'}
