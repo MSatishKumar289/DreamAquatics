@@ -397,12 +397,6 @@ const Home = ({ profile }) => {
       .filter((pick) => pick.items.length > 0);
   }, [allProducts]);
 
-  const beginnerFriendlyFish = useMemo(() => {
-    return allProducts
-      .filter((product) => product?.subcategory?.category?.slug === 'fishes')
-      .slice(0, 4);
-  }, [allProducts]);
-
   const medicineAndFilterPicks = useMemo(() => {
     const accessories = allProducts.filter(
       (product) => product?.subcategory?.category?.slug === 'accessories'
@@ -437,13 +431,6 @@ const Home = ({ profile }) => {
         title: 'Trending Now',
         subtitle: 'Popular Picks',
         filter: (p) => isInStock(p),
-        sort: byNewest,
-      },
-      {
-        key: 'low-maintenance',
-        title: 'Low Maintenance',
-        subtitle: 'Easy Care Picks',
-        filter: (p) => /easy|peaceful|beginner|hardy|low maintenance/.test(textOf(p)),
         sort: byNewest,
       },
       {
@@ -947,31 +934,9 @@ const Home = ({ profile }) => {
             </div>
           </section>
 
-          <section className="container mx-auto px-4 pt-2 sm:px-6">
-            <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-              <div className="mb-3 text-left">
-                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
-                <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {newArrivals.map((product) => {
-                  const categorySlug = product?.subcategory?.category?.slug;
-                  const categoryKey = categoryBySlug[categorySlug] || "fishes";
-                  return (
-                    <CategoryCard
-                      key={`new-${product.id}`}
-                      categoryName={categoryKey}
-                      product={product}
-                      showStockBadge
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
           {bestSellingFish && (
-            <section className="container mx-auto px-4 pt-5 sm:px-6">
+            <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+              <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
               <article className="grid min-h-[260px] grid-cols-[1.05fr_0.95fr] overflow-hidden rounded-[28px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_20px_55px_rgba(146,117,34,0.14)]">
                 <div className="flex flex-col justify-center px-5 py-5 text-center sm:px-7">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Selling Fish</p>
@@ -1081,83 +1046,83 @@ const Home = ({ profile }) => {
             </section>
           )}
 
+          <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+            <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+            <div className="mb-3 text-left">
+              <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
+              <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {newArrivals.map((product) => {
+                const categorySlug = product?.subcategory?.category?.slug;
+                const categoryKey = categoryBySlug[categorySlug] || "fishes";
+                return (
+                  <CategoryCard
+                    key={`new-${product.id}`}
+                    categoryName={categoryKey}
+                    product={product}
+                    showStockBadge
+                  />
+                );
+              })}
+            </div>
+          </section>
+
           {smartSections.map((section) => (
-            <section key={section.key} className="container mx-auto px-4 pt-5 sm:px-6">
-              <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="relative mb-3">
-                  <div className="text-left">
-                    <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
-                    <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                      {section.subtitle}
-                    </span>
-                  </div>
-                  {section.key === "under-100" && (
-                    <button
-                      type="button"
-                      onClick={() => navigate("/under-100")}
-                      className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-md shadow-blue-900/20 transition hover:bg-blue-700"
-                    >
-                      View All
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                        <path d="M5 12h14m-5-5 5 5-5 5" />
-                      </svg>
-                    </button>
-                  )}
+            <section key={section.key} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+              <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="relative mb-3">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
+                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                    {section.subtitle}
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {section.items.map((product) => {
-                    const categorySlug = product?.subcategory?.category?.slug;
-                    const categoryKey = categoryBySlug[categorySlug] || "fishes";
-                    return (
-                      <CategoryCard
-                        key={`${section.key}-${product.id}`}
-                        categoryName={categoryKey}
-                        product={product}
-                        showStockBadge
-                      />
-                    );
-                  })}
-                </div>
+                {section.key === "under-100" && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/under-100")}
+                    className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-md shadow-blue-900/20 transition hover:bg-blue-700"
+                  >
+                    View All
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                      <path d="M5 12h14m-5-5 5 5-5 5" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {section.items.map((product) => {
+                  const categorySlug = product?.subcategory?.category?.slug;
+                  const categoryKey = categoryBySlug[categorySlug] || "fishes";
+                  return (
+                    <CategoryCard
+                      key={`${section.key}-${product.id}`}
+                      categoryName={categoryKey}
+                      product={product}
+                      showStockBadge
+                    />
+                  );
+                })}
               </div>
             </section>
           ))}
 
-          {beginnerFriendlyFish.length > 0 && (
-            <section className="container mx-auto px-4 pt-5 sm:px-6">
-              <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="mb-3 text-left">
-                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Beginner Friendly</h2>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {beginnerFriendlyFish.map((product) => (
-                    <CategoryCard
-                      key={`beginner-${product.id}`}
-                      categoryName="fishes"
-                      product={product}
-                      showStockBadge
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
           {medicineAndFilterPicks.length > 0 && (
-            <section className="container mx-auto px-4 pt-5 sm:px-6">
-              <div className="rounded-3xl bg-white/78 p-4 shadow-inner ring-1 ring-sky-100/60 sm:p-5">
-                <div className="mb-3 text-left">
-                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {medicineAndFilterPicks.map((product) => (
-                    <CategoryCard
-                      key={`med-filter-${product.id}`}
-                      categoryName="accessories"
-                      product={product}
-                      showStockBadge
-                    />
-                  ))}
-                </div>
+            <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+              <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="mb-3 text-left">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {medicineAndFilterPicks.map((product) => (
+                  <CategoryCard
+                    key={`med-filter-${product.id}`}
+                    categoryName="accessories"
+                    product={product}
+                    showStockBadge
+                  />
+                ))}
               </div>
             </section>
           )}

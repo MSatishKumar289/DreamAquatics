@@ -522,7 +522,7 @@ const CategoryListingPage = () => {
                 isSearching
                   ? "bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10"
                   : ""
-              }`}
+              } ${!isSearching ? "px-2 sm:px-0" : ""}`}
             >
               {isSearching && (
                 <div className="mb-5 flex flex-wrap items-center justify-between gap-3">

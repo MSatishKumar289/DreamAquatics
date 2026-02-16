@@ -312,7 +312,6 @@ const CartControls = ({
 
 const SubcategoryFooter = ({
   startFromPrice,
-  count,
   onClick,
 }) => {
   const commonProps = {
@@ -338,11 +337,6 @@ const SubcategoryFooter = ({
         </span>
         <span className="relative ml-3 inline-flex h-10 w-10 flex-none items-center justify-center pr-1">
           <img src={arrowIcon} alt="" className="h-8 w-8" aria-hidden="true" />
-          {count !== null && (
-            <span className="absolute -right-1 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-white px-1 py-0.5 text-[10px] font-semibold tracking-normal text-blue-700 shadow ring-2 ring-blue-400">
-              {count}
-            </span>
-          )}
         </span>
       </button>
     </div>
@@ -816,7 +810,6 @@ const CategoryCard = ({
       {isSubCategory && (
         <SubcategoryFooter
           startFromPrice={startFromPrice}
-          count={Number.isFinite(product?.itemCount) ? product.itemCount : null}
           onClick={handleClick}
         />
       )}
