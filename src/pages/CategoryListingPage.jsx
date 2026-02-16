@@ -20,7 +20,9 @@ const CategoryListingPage = () => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
+  const [hasLongDescription, setHasLongDescription] = useState(false);
   const searchInputRef = useRef(null);
+  const descriptionRef = useRef(null);
   const openingSearchRef = useRef(false);
 
   useEffect(() => {
@@ -299,11 +301,26 @@ const CategoryListingPage = () => {
   const descriptionText = subcategoryDescription
     ? subcategoryDescription
     : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
-  const descriptionLength = descriptionText.trim().length;
-  const hasLongDescription = isMobileView
-    ? descriptionLength > 80
-    : descriptionLength > 160;
   const isSearching = searchQuery.trim().length > 0;
+
+  useEffect(() => {
+    const measureDescriptionOverflow = () => {
+      const descriptionNode = descriptionRef.current;
+      if (!descriptionNode) {
+        setHasLongDescription(false);
+        return;
+      }
+      setHasLongDescription(descriptionNode.scrollHeight > descriptionNode.clientHeight + 1);
+    };
+
+    const rafId = window.requestAnimationFrame(measureDescriptionOverflow);
+    window.addEventListener("resize", measureDescriptionOverflow);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", measureDescriptionOverflow);
+    };
+  }, [descriptionText, isMobileView, isSearching]);
 
   const handleAddToCart = (product, qty = 1) => {
     addToCart(product, qty);
@@ -487,7 +504,10 @@ const CategoryListingPage = () => {
             </div>
 
             <div>
-              <p className="max-w-none text-base text-slate-600 line-clamp-3">
+              <p
+                ref={descriptionRef}
+                className="max-w-none text-base text-slate-600 line-clamp-4 sm:line-clamp-3"
+              >
                 {descriptionText}
               </p>
               {hasLongDescription && (

@@ -48,8 +48,10 @@ const Home = ({ profile }) => {
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
   const [bestFishAddedHintIndex, setBestFishAddedHintIndex] = useState(null);
+  const [bestSellerArrowHintSide, setBestSellerArrowHintSide] = useState(null);
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
+  const [quickPickIndex, setQuickPickIndex] = useState(0);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
     imageOneUrl: '',
@@ -60,6 +62,13 @@ const Home = ({ profile }) => {
   const bestSellerTrackRef = useRef(null);
   const bestSellerScrollRafRef = useRef(null);
   const bestSellerProgrammaticUntilRef = useRef(0);
+  const quickPickTrackRef = useRef(null);
+  const quickPickItemRefs = useRef([]);
+  const quickPickScrollRafRef = useRef(null);
+  const newArrivalsSectionRef = useRef(null);
+  const trendingSectionRef = useRef(null);
+  const underHundredSectionRef = useRef(null);
+  const essentialsSectionRef = useRef(null);
 
   const categoryOptions = [
     { value: 'all', label: 'All categories' },
@@ -392,19 +401,33 @@ const Home = ({ profile }) => {
     cartItems?.find((item) => item.id === activeBestSeller?.id)?.qty || 0;
 
   useEffect(() => {
-    const target = bestSellerSlideRefs.current?.[bestSellerIndex];
-    if (!target) return;
-    target.scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-      block: "nearest",
-    });
-  }, [bestSellerIndex]);
+    if (!activeBestSeller || typeof window === "undefined") return undefined;
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+    if (!isDesktop || bestSellerPicks.length <= 1) {
+      setBestSellerArrowHintSide(null);
+      return undefined;
+    }
+
+    if (bestSellerIndex === 0) {
+      setBestSellerArrowHintSide("right");
+    } else if (bestSellerIndex === bestSellerPicks.length - 1) {
+      setBestSellerArrowHintSide("left");
+    } else {
+      setBestSellerArrowHintSide(null);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setBestSellerArrowHintSide(null), 2000);
+    return () => window.clearTimeout(timer);
+  }, [activeBestSeller, bestSellerIndex, bestSellerPicks.length]);
 
   useEffect(() => {
     return () => {
       if (bestSellerScrollRafRef.current) {
         window.cancelAnimationFrame(bestSellerScrollRafRef.current);
+      }
+      if (quickPickScrollRafRef.current) {
+        window.cancelAnimationFrame(quickPickScrollRafRef.current);
       }
     };
   }, []);
@@ -416,16 +439,28 @@ const Home = ({ profile }) => {
       bestSellerScrollRafRef.current = null;
       const track = bestSellerTrackRef.current;
       if (!track) return;
-      const trackRect = track.getBoundingClientRect();
-      const trackCenter = trackRect.left + trackRect.width / 2;
+      const maxScrollLeft = Math.max(0, track.scrollWidth - track.clientWidth);
+      const currentScrollLeft = track.scrollLeft;
+      const edgeTolerance = 2;
 
+      if (currentScrollLeft <= edgeTolerance) {
+        setBestSellerIndex((prev) => (prev === 0 ? prev : 0));
+        return;
+      }
+
+      if (currentScrollLeft >= maxScrollLeft - edgeTolerance) {
+        const lastIndex = Math.max(0, bestSellerPicks.length - 1);
+        setBestSellerIndex((prev) => (prev === lastIndex ? prev : lastIndex));
+        return;
+      }
+
+      const trackCenter = currentScrollLeft + track.clientWidth / 2;
       let closestIndex = 0;
       let closestDistance = Number.POSITIVE_INFINITY;
 
       bestSellerSlideRefs.current.forEach((card, index) => {
         if (!card) return;
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.left + rect.width / 2;
+        const cardCenter = card.offsetLeft + card.clientWidth / 2;
         const distance = Math.abs(cardCenter - trackCenter);
         if (distance < closestDistance) {
           closestDistance = distance;
@@ -439,8 +474,46 @@ const Home = ({ profile }) => {
 
   const goToBestSeller = (nextIndex) => {
     if (!bestSellerPicks.length) return;
+    const clampedIndex = Math.max(0, Math.min(nextIndex, bestSellerPicks.length - 1));
+    if (clampedIndex === bestSellerIndex) return;
     bestSellerProgrammaticUntilRef.current = Date.now() + 420;
-    setBestSellerIndex((nextIndex + bestSellerPicks.length) % bestSellerPicks.length);
+    const track = bestSellerTrackRef.current;
+    const target = bestSellerSlideRefs.current?.[clampedIndex];
+    if (track && target) {
+      target.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+    setBestSellerIndex(clampedIndex);
+  };
+
+  const handleQuickPickTrackScroll = () => {
+    if (quickPickScrollRafRef.current) return;
+    quickPickScrollRafRef.current = window.requestAnimationFrame(() => {
+      quickPickScrollRafRef.current = null;
+      const track = quickPickTrackRef.current;
+      if (!track) return;
+      const trackRect = track.getBoundingClientRect();
+      const trackCenter = trackRect.left + trackRect.width / 2;
+
+      let closestIndex = 0;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      quickPickItemRefs.current.forEach((card, index) => {
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(cardCenter - trackCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setQuickPickIndex((prev) => (prev === closestIndex ? prev : closestIndex));
+    });
   };
 
   const purposeCollections = useMemo(() => {
@@ -607,6 +680,59 @@ const Home = ({ profile }) => {
       };
     });
   }, [allProducts, categories, subcategoryCounts, CATEGORY_SLUG_MAP]);
+
+  const homeShortcutCircles = useMemo(() => {
+    const trendingSection = smartSections.find((section) => section.key === "trending");
+    const underHundredSection = smartSections.find((section) => section.key === "under-100");
+    return [
+      {
+        key: "new-arrivals",
+        title: "New Arrivals",
+        image: newArrivals?.[0]?.product_images?.[0]?.url || newArrivals?.[0]?.image || BgImage,
+      },
+      {
+        key: "under-100",
+        title: "Under \u20B9100",
+        image: underHundredSection?.items?.[0]?.product_images?.[0]?.url || underHundredSection?.items?.[0]?.image || BgImage,
+      },
+      {
+        key: "trending",
+        title: "Trending",
+        image: trendingSection?.items?.[0]?.product_images?.[0]?.url || trendingSection?.items?.[0]?.image || BgImage,
+      },
+      {
+        key: "essentials",
+        title: "Essentials",
+        image: medicineAndFilterPicks?.[0]?.product_images?.[0]?.url || medicineAndFilterPicks?.[0]?.image || BgImage,
+      },
+    ].filter((item) => Boolean(item.image));
+  }, [newArrivals, smartSections, medicineAndFilterPicks]);
+
+  useEffect(() => {
+    if (!homeShortcutCircles.length) {
+      setQuickPickIndex(0);
+      return;
+    }
+    if (quickPickIndex >= homeShortcutCircles.length) {
+      setQuickPickIndex(0);
+    }
+  }, [homeShortcutCircles, quickPickIndex]);
+
+  const goToHomeShortcut = (key) => {
+    const scrollWithOffset = (element) => {
+      if (!element) return;
+      const stickyOffset = window.innerWidth >= 768 ? 150 : 120;
+      const top = element.getBoundingClientRect().top + window.scrollY - stickyOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    };
+    const targets = {
+      "new-arrivals": newArrivalsSectionRef.current,
+      "under-100": underHundredSectionRef.current,
+      trending: trendingSectionRef.current,
+      essentials: essentialsSectionRef.current,
+    };
+    scrollWithOffset(targets[key]);
+  };
 
   return (
     <main className="min-h-screen bg-transparent pb-12">
@@ -1023,6 +1149,61 @@ const Home = ({ profile }) => {
             </div>
           </section>
 
+          {homeShortcutCircles.length > 0 && (
+            <section className="container mx-auto mt-4 px-4 pt-1 sm:px-6">
+              <div className="mx-0 mb-4 h-px bg-amber-300/90" />
+              <div className="mb-2 text-center">
+                <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Quick Picks</h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Jump To Sections</p>
+              </div>
+              <div
+                ref={quickPickTrackRef}
+                onScroll={handleQuickPickTrackScroll}
+                className="no-scrollbar flex snap-x snap-mandatory items-start gap-2 overflow-x-auto pb-1 pt-1 lg:justify-center lg:gap-5 lg:overflow-visible lg:pb-0"
+              >
+                {homeShortcutCircles.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => goToHomeShortcut(item.key)}
+                    className="group snap-start shrink-0 w-[166px] sm:w-auto sm:basis-[34%] lg:w-[208px] lg:basis-[208px]"
+                    aria-label={`Open ${item.title}`}
+                    ref={(node) => {
+                      quickPickItemRefs.current[homeShortcutCircles.findIndex((it) => it.key === item.key)] = node;
+                    }}
+                  >
+                    <span className="mx-auto inline-flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 shadow-sm transition group-hover:shadow-md sm:h-[108px] sm:w-[108px] lg:h-[208px] lg:w-[208px]">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    </span>
+                    <span className="mt-2 block max-w-full text-center text-[1.05rem] font-semibold leading-tight text-[#1D4ED8] sm:max-w-[122px] sm:text-base lg:max-w-full">
+                      {item.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {homeShortcutCircles.length > 1 && (
+                <div className="mt-2 flex items-center justify-center gap-1.5 lg:hidden">
+                  {(homeShortcutCircles.length >= 4 ? [1, 2] : homeShortcutCircles.map((_, index) => index)).map((index) => {
+                    const item = homeShortcutCircles[index];
+                    return (
+                      <span
+                        key={`quick-pick-dot-${item?.key || index}`}
+                        className={`rounded-full transition-all ${
+                          index === quickPickIndex ? "h-1.5 w-6 bg-slate-900" : "h-1.5 w-3 bg-slate-300"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
           {activeBestSeller && (
             <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
@@ -1036,12 +1217,8 @@ const Home = ({ profile }) => {
                 <div
                   ref={bestSellerTrackRef}
                   onScroll={handleBestSellerTrackScroll}
-                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto"
+                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto scroll-px-[19.5%] sm:scroll-px-[28%] md:scroll-px-[34.5%] lg:overflow-x-hidden lg:scroll-px-[40%]"
                 >
-                  <div
-                    aria-hidden="true"
-                    className="shrink-0 basis-[19.5%] sm:basis-[28%] md:basis-[34.5%] lg:basis-[40%]"
-                  />
                   {bestSellerPicks.map((product, index) => {
                     const isActive = index === bestSellerIndex;
                     const favoriteSelected = isFavorite(product?.id);
@@ -1129,7 +1306,7 @@ const Home = ({ profile }) => {
                           </div>
                           <div className="flex flex-1 flex-col px-3 py-3 text-center sm:px-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
-                            <h2 className="mt-1 text-[13px] font-semibold leading-tight text-[#102A43] sm:text-[17px]">
+                            <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
                             </h2>
                             <div className="mt-3 flex justify-center">
@@ -1154,7 +1331,7 @@ const Home = ({ profile }) => {
                                 src={bestSellerIcon}
                                 alt="Best seller"
                                 title="Best Seller"
-                                className="pointer-events-none absolute right-0 top-1/2 h-12 w-12 -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-14 sm:w-14"
+                                className="pointer-events-none absolute -right-[10px] top-1/2 h-[74px] w-[74px] -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-[86px] sm:w-[86px]"
                               />
                             </div>
                             {savings > 0 && (
@@ -1237,44 +1414,89 @@ const Home = ({ profile }) => {
                       </article>
                     );
                   })}
-                  <div
-                    aria-hidden="true"
-                    className="shrink-0 basis-[19.5%] sm:basis-[28%] md:basis-[34.5%] lg:basis-[40%]"
-                  />
                 </div>
                 {bestSellerPicks.length > 1 && (
                   <>
                     <button
                       type="button"
-                      onClick={() =>
-                        goToBestSeller(bestSellerIndex - 1)
-                      }
-                      className="absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow sm:h-9 sm:w-9 md:left-[5%]"
+                      onClick={() => {
+                        setBestSellerArrowHintSide(null);
+                        goToBestSeller(bestSellerIndex - 1);
+                      }}
+                      disabled={bestSellerIndex === 0}
+                      className={`absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full shadow sm:h-9 sm:w-9 md:left-[5%] lg:-left-12 lg:h-11 lg:w-11 xl:-left-14 ${
+                        bestSellerIndex === 0
+                          ? "cursor-not-allowed bg-amber-100/75 text-amber-400"
+                          : "bg-amber-400 text-amber-950"
+                      }`}
                       aria-label="Previous best seller"
                     >
                       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M15 18l-6-6 6-6" />
                       </svg>
                     </button>
+                    {bestSellerArrowHintSide === "left" && (
+                      <div className="pointer-events-none absolute left-[-118px] top-[calc(50%+42px)] z-30 hidden lg:block">
+                        <div className="relative rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shadow">
+                          Tap here
+                          <span className="absolute -top-1 left-12 h-2 w-2 rotate-45 border-l border-t border-amber-300 bg-amber-50" aria-hidden="true" />
+                        </div>
+                      </div>
+                    )}
                     <button
                       type="button"
-                      onClick={() =>
-                        goToBestSeller(bestSellerIndex + 1)
-                      }
-                      className="absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow sm:h-9 sm:w-9 md:right-[5%]"
+                      onClick={() => {
+                        setBestSellerArrowHintSide(null);
+                        goToBestSeller(bestSellerIndex + 1);
+                      }}
+                      disabled={bestSellerIndex === bestSellerPicks.length - 1}
+                      className={`absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full shadow sm:h-9 sm:w-9 md:right-[5%] lg:-right-12 lg:h-11 lg:w-11 xl:-right-14 ${
+                        bestSellerIndex === bestSellerPicks.length - 1
+                          ? "cursor-not-allowed bg-amber-100/75 text-amber-400"
+                          : "bg-amber-400 text-amber-950"
+                      }`}
                       aria-label="Next best seller"
                     >
                       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M9 6l6 6-6 6" />
                       </svg>
                     </button>
+                    {bestSellerArrowHintSide === "right" && (
+                      <div className="pointer-events-none absolute right-[-118px] top-[calc(50%+42px)] z-30 hidden lg:block">
+                        <div className="relative rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shadow">
+                          Tap here
+                          <span className="absolute -top-1 right-12 h-2 w-2 rotate-45 border-l border-t border-amber-300 bg-amber-50" aria-hidden="true" />
+                        </div>
+                      </div>
+                    )}
                   </>
+                )}
+                {bestSellerPicks.length > 1 && (
+                  <div className="mt-4 flex items-center justify-center gap-2.5">
+                    {bestSellerPicks.map((_, index) => {
+                      const active = index === bestSellerIndex;
+                      return (
+                        <button
+                          key={`best-seller-dot-${index}`}
+                          type="button"
+                          onClick={() => goToBestSeller(index)}
+                          className={`inline-flex items-center justify-center rounded-full transition ${
+                            active
+                              ? "h-4 w-4 bg-amber-500 ring-2 ring-amber-200"
+                              : "h-3 w-3 bg-slate-300 hover:bg-slate-400"
+                          }`}
+                          aria-label={`Go to best seller ${index + 1}`}
+                          aria-current={active ? "true" : "false"}
+                        />
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </section>
           )}
 
-          <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+          <section ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
             <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
             <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
               <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
@@ -1297,7 +1519,11 @@ const Home = ({ profile }) => {
           </section>
 
           {smartSections.map((section) => (
-            <section key={section.key} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+            <section
+              key={section.key}
+              ref={section.key === "trending" ? trendingSectionRef : section.key === "under-100" ? underHundredSectionRef : null}
+              className="container mx-auto mt-5 px-4 pt-5 sm:px-6"
+            >
               <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
               <div className="relative mb-3">
                 <div className="border-l-4 border-amber-400 pl-3 text-left">
@@ -1337,10 +1563,13 @@ const Home = ({ profile }) => {
           ))}
 
           {medicineAndFilterPicks.length > 0 && (
-            <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+            <section ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
               <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
+                <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                  Everyday Must-Haves
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {medicineAndFilterPicks.map((product) => (
