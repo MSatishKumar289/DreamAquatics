@@ -8,8 +8,8 @@ import ProductModal from '../components/ProductModal';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
 import BgImage from '../assets/Images/homebgnew.png';
-import CallIcon from '../assets/Images/call.png';
-import WhatsIcon from '../assets/Images/whatsapp.jpeg';
+import CallIcon from '../assets/Icons/phone.png';
+import WhatsIcon from '../assets/Icons/whatsapp.png';
 import HighlightOne from '../assets/Images/go.jpg';
 import HighlightTwo from '../assets/Images/prey.jpg';
 import HighlightThree from '../assets/Images/ram.jpg';
@@ -47,7 +47,7 @@ const Home = ({ profile }) => {
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(true);
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
-  const [showBestFishAddedHint, setShowBestFishAddedHint] = useState(false);
+  const [bestFishAddedHintIndex, setBestFishAddedHintIndex] = useState(null);
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
   const [homeMedia, setHomeMedia] = useState({
@@ -294,10 +294,10 @@ const Home = ({ profile }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!showBestFishAddedHint) return;
-    const timer = setTimeout(() => setShowBestFishAddedHint(false), 1600);
+    if (bestFishAddedHintIndex === null) return;
+    const timer = setTimeout(() => setBestFishAddedHintIndex(null), 1600);
     return () => clearTimeout(timer);
-  }, [showBestFishAddedHint]);
+  }, [bestFishAddedHintIndex]);
 
   const highlightVideoSrc = homeMedia.videoUrl || HighlightVideo;
   const highlightImageOne = homeMedia.imageOneUrl || HighlightTwo;
@@ -1032,12 +1032,16 @@ const Home = ({ profile }) => {
                   Most Loved This Week
                 </span>
               </div>
-              <div className="relative mx-auto max-w-[980px]">
+              <div className="relative mx-auto w-full">
                 <div
                   ref={bestSellerTrackRef}
                   onScroll={handleBestSellerTrackScroll}
-                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto px-[12%] sm:px-[15%] md:px-[22%] lg:px-[27%]"
+                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto"
                 >
+                  <div
+                    aria-hidden="true"
+                    className="shrink-0 basis-[19.5%] sm:basis-[28%] md:basis-[34.5%] lg:basis-[40%]"
+                  />
                   {bestSellerPicks.map((product, index) => {
                     const isActive = index === bestSellerIndex;
                     const favoriteSelected = isFavorite(product?.id);
@@ -1059,11 +1063,11 @@ const Home = ({ profile }) => {
                           bestSellerSlideRefs.current[index] = node;
                         }}
                         onClick={() => goToBestSeller(index)}
-                        className={`relative snap-center shrink-0 basis-[76%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[70%] md:basis-[56%] lg:basis-[46%] ${
-                          isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-65"
+                        className={`relative h-[430px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                          isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
-                        <div className="flex min-h-[248px] flex-col md:min-h-[220px]">
+                        <div className="flex h-full flex-col">
                           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
                             <button
                               type="button"
@@ -1091,11 +1095,6 @@ const Home = ({ profile }) => {
                                 <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
                               </svg>
                             </button>
-                            <img
-                              src={bestSellerIcon}
-                              alt="Best seller"
-                              className="pointer-events-none absolute right-10 top-2 z-20 h-12 w-12 rotate-[-10deg] drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] sm:h-14 sm:w-14"
-                            />
                             <img
                               src={product?.product_images?.[0]?.url || product?.image || BgImage}
                               alt={product?.name || "Best seller"}
@@ -1128,9 +1127,9 @@ const Home = ({ profile }) => {
                               </svg>
                             </button>
                           </div>
-                          <div className="flex flex-1 flex-col justify-center px-3 py-3 text-center sm:px-4">
+                          <div className="flex flex-1 flex-col px-3 py-3 text-center sm:px-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
-                            <h2 className="mt-1 text-lg font-semibold leading-tight text-[#102A43] sm:text-2xl">
+                            <h2 className="mt-1 text-[13px] font-semibold leading-tight text-[#102A43] sm:text-[17px]">
                               {product?.name || "Top Pick"}
                             </h2>
                             <div className="mt-3 flex justify-center">
@@ -1138,17 +1137,25 @@ const Home = ({ profile }) => {
                                 Peaceful {"\u2022"} Easy Care
                               </span>
                             </div>
-                            <div className="mt-4 flex items-end justify-center gap-3">
-                              {originalPrice > currentPrice && (
-                                <p className="text-sm font-medium text-slate-400 line-through">
+                            <div className="relative mt-4">
+                              <div className="flex items-end justify-center gap-3 text-center">
+                                {originalPrice > currentPrice && (
+                                  <p className="text-sm font-medium text-slate-400 line-through">
+                                    {"\u20B9"}
+                                    {originalPrice.toLocaleString("en-IN")}
+                                  </p>
+                                )}
+                                <p className="text-2xl font-semibold text-[#1D3A8A]">
                                   {"\u20B9"}
-                                  {originalPrice.toLocaleString("en-IN")}
+                                  {currentPrice.toLocaleString("en-IN")}
                                 </p>
-                              )}
-                              <p className="text-2xl font-semibold text-[#1D3A8A]">
-                                {"\u20B9"}
-                                {currentPrice.toLocaleString("en-IN")}
-                              </p>
+                              </div>
+                              <img
+                                src={bestSellerIcon}
+                                alt="Best seller"
+                                title="Best Seller"
+                                className="pointer-events-none absolute right-0 top-1/2 h-12 w-12 -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-14 sm:w-14"
+                              />
                             </div>
                             {savings > 0 && (
                               <p className="mt-1 text-sm font-semibold text-emerald-600">
@@ -1168,8 +1175,8 @@ const Home = ({ profile }) => {
                               </p>
                               <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
                             </div>
-                            <div className="relative mt-5 flex justify-center">
-                              {showBestFishAddedHint && isActive && (
+                            <div className="relative mt-auto flex justify-center pt-5">
+                              {bestFishAddedHintIndex === index && (
                                 <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                                   1 item added
                                 </span>
@@ -1212,9 +1219,8 @@ const Home = ({ profile }) => {
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     if (soldOut) return;
-                                    setBestSellerIndex(index);
                                     addToCart?.(product, 1);
-                                    setShowBestFishAddedHint(true);
+                                    setBestFishAddedHintIndex(index);
                                   }}
                                   disabled={soldOut}
                                   className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
@@ -1231,6 +1237,10 @@ const Home = ({ profile }) => {
                       </article>
                     );
                   })}
+                  <div
+                    aria-hidden="true"
+                    className="shrink-0 basis-[19.5%] sm:basis-[28%] md:basis-[34.5%] lg:basis-[40%]"
+                  />
                 </div>
                 {bestSellerPicks.length > 1 && (
                   <>

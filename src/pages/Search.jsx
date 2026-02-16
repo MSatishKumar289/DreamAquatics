@@ -3,7 +3,7 @@ import closeIcon from "../assets/Icons/close_one.png";
 import { useNavigate } from "react-router-dom";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
 import CategoryCard from "../components/CategoryCard";
-import WhatsIcon from "../assets/Images/whatsapp.jpeg";
+import WhatsIcon from "../assets/Icons/whatsapp.png";
 
 const Search = () => {
   const CATEGORY_SLUG_MAP = {

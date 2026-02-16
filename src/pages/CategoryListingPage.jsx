@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
-import WhatsIcon from "../assets/Images/whatsapp.jpeg";
+import WhatsIcon from "../assets/Icons/whatsapp.png";
 import closeIcon from "../assets/Icons/close_one.png";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useCart } from "../context/CartContext";

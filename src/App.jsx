@@ -567,11 +567,11 @@ function AppContent() {
 
         {showAddedBanner && (
           <div className="fixed bottom-6 left-0 right-0 z-[120] flex justify-center px-4">
-            <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-xl">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-                ✓
+            <div className="inline-flex items-center gap-3 rounded-2xl border border-emerald-700 bg-emerald-600 px-4 py-2.5 shadow-xl">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white">
+                &#10003;
               </div>
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600">
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white">
                 Item added to cart
               </div>
             </div>
@@ -599,6 +599,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
