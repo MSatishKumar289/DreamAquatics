@@ -90,3 +90,12 @@
 .premium-flat-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(90deg, #548fcf 0%, #3f7dc1 100%);
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

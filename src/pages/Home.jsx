@@ -6,6 +6,7 @@ import CategoryCard from '../components/CategoryCard';
 import Spinner from '../components/Spinner';
 import ProductModal from '../components/ProductModal';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
 import BgImage from '../assets/Images/homebgnew.png';
 import CallIcon from '../assets/Images/call.png';
 import WhatsIcon from '../assets/Images/whatsapp.jpeg';
@@ -18,10 +19,12 @@ import plusIcon from '../assets/Icons/plus.png';
 import incPlusIcon from '../assets/Icons/iplus.png';
 import incMinusIcon from '../assets/Icons/iminus.png';
 import mapIcon from '../assets/Icons/map.png';
+import bestSellerIcon from '../assets/Icons/BestSeller.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
 
 const Home = ({ profile }) => {
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
   const categories = ['fishes', 'live-plants', 'accessories', 'tank'];
   const CATEGORY_SLUG_MAP = {
@@ -45,13 +48,18 @@ const Home = ({ profile }) => {
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
   const [showBestFishAddedHint, setShowBestFishAddedHint] = useState(false);
-  const [showBestFishRemoveConfirm, setShowBestFishRemoveConfirm] = useState(false);
+  const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
+  const [bestSellerIndex, setBestSellerIndex] = useState(0);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
     imageOneUrl: '',
     imageTwoUrl: ''
   });
   const searchInputRef = useRef(null);
+  const bestSellerSlideRefs = useRef([]);
+  const bestSellerTrackRef = useRef(null);
+  const bestSellerScrollRafRef = useRef(null);
+  const bestSellerProgrammaticUntilRef = useRef(0);
 
   const categoryOptions = [
     { value: 'all', label: 'All categories' },
@@ -339,26 +347,101 @@ const Home = ({ profile }) => {
     return picks.slice(0, 4);
   }, [allProducts, categories, CATEGORY_SLUG_MAP]);
 
-  const bestSellingFish = useMemo(() => {
-    return (
-      allProducts.find(
-        (product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.fishes
-      ) || null
+  const bestSellerPicks = useMemo(() => {
+    const sorted = [...allProducts].sort(
+      (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
     );
+    const fishes = sorted
+      .filter((product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.fishes)
+      .slice(0, 4);
+    const accessories = sorted
+      .filter((product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.accessories)
+      .slice(0, 4);
+
+    const primary = [...fishes, ...accessories];
+    const usedIds = new Set(primary.map((product) => product?.id));
+    if (primary.length >= 8) return primary.slice(0, 8);
+
+    const fallback = sorted.filter((product) => !usedIds.has(product?.id));
+    return [...primary, ...fallback].slice(0, 8);
   }, [allProducts, CATEGORY_SLUG_MAP]);
-  const bestFishCurrentPrice = Number(bestSellingFish?.price) || 0;
+
+  useEffect(() => {
+    if (!bestSellerPicks.length) {
+      setBestSellerIndex(0);
+      return;
+    }
+    if (bestSellerIndex >= bestSellerPicks.length) {
+      setBestSellerIndex(0);
+    }
+  }, [bestSellerPicks, bestSellerIndex]);
+
+  const activeBestSeller = bestSellerPicks[bestSellerIndex] || null;
+  const bestFishCurrentPrice = Number(activeBestSeller?.price) || 0;
   const bestFishOriginalPrice =
-    Number(bestSellingFish?.original_price ?? bestSellingFish?.mrp ?? bestSellingFish?.price) || 0;
+    Number(activeBestSeller?.original_price ?? activeBestSeller?.mrp ?? activeBestSeller?.price) || 0;
   const bestFishSavings = Math.max(0, bestFishOriginalPrice - bestFishCurrentPrice);
-  const bestFishStockCount = Number.isFinite(Number(bestSellingFish?.stock_count))
-    ? Number(bestSellingFish?.stock_count)
+  const bestFishStockCount = Number.isFinite(Number(activeBestSeller?.stock_count))
+    ? Number(activeBestSeller?.stock_count)
     : null;
-  const bestFishAvailabilityText = String(bestSellingFish?.availability || bestSellingFish?.status || '').toLowerCase();
+  const bestFishAvailabilityText = String(activeBestSeller?.availability || activeBestSeller?.status || '').toLowerCase();
   const isBestFishSoldOut = bestFishStockCount !== null
     ? bestFishStockCount <= 0
     : /out|sold/.test(bestFishAvailabilityText);
   const bestFishQty =
-    cartItems?.find((item) => item.id === bestSellingFish?.id)?.qty || 0;
+    cartItems?.find((item) => item.id === activeBestSeller?.id)?.qty || 0;
+
+  useEffect(() => {
+    const target = bestSellerSlideRefs.current?.[bestSellerIndex];
+    if (!target) return;
+    target.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [bestSellerIndex]);
+
+  useEffect(() => {
+    return () => {
+      if (bestSellerScrollRafRef.current) {
+        window.cancelAnimationFrame(bestSellerScrollRafRef.current);
+      }
+    };
+  }, []);
+
+  const handleBestSellerTrackScroll = () => {
+    if (Date.now() < bestSellerProgrammaticUntilRef.current) return;
+    if (bestSellerScrollRafRef.current) return;
+    bestSellerScrollRafRef.current = window.requestAnimationFrame(() => {
+      bestSellerScrollRafRef.current = null;
+      const track = bestSellerTrackRef.current;
+      if (!track) return;
+      const trackRect = track.getBoundingClientRect();
+      const trackCenter = trackRect.left + trackRect.width / 2;
+
+      let closestIndex = 0;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      bestSellerSlideRefs.current.forEach((card, index) => {
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(cardCenter - trackCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setBestSellerIndex((prev) => (prev === closestIndex ? prev : closestIndex));
+    });
+  };
+
+  const goToBestSeller = (nextIndex) => {
+    if (!bestSellerPicks.length) return;
+    bestSellerProgrammaticUntilRef.current = Date.now() + 420;
+    setBestSellerIndex((nextIndex + bestSellerPicks.length) % bestSellerPicks.length);
+  };
 
   const purposeCollections = useMemo(() => {
     const picks = [
@@ -761,7 +844,7 @@ const Home = ({ profile }) => {
                 aria-label="Enlarge highlight image"
               >
                 <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" />
-                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow">
                   <svg
                     viewBox="0 0 24 24"
                     className="h-4 w-4"
@@ -786,7 +869,7 @@ const Home = ({ profile }) => {
                 aria-label="Enlarge highlight image"
               >
                 <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" />
-                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow">
                   <svg
                     viewBox="0 0 24 24"
                     className="h-4 w-4"
@@ -904,7 +987,17 @@ const Home = ({ profile }) => {
               {categoryShowcaseCards.map((card) => (
                 <article
                   key={card.id}
-                  className="group relative aspect-square overflow-hidden rounded-[22px] border border-white/40 shadow-[0_14px_40px_rgba(15,23,42,0.16)] sm:rounded-[24px] md:aspect-[16/9] lg:aspect-[21/9]"
+                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-[22px] border border-white/40 shadow-[0_14px_40px_rgba(15,23,42,0.16)] sm:rounded-[24px] md:aspect-[16/9] lg:aspect-[21/9]"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open ${card.title}`}
+                  onClick={() => navigate(card.target)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(card.target);
+                    }
+                  }}
                 >
                   <img
                     src={card.recentImage || BgImage}
@@ -918,137 +1011,262 @@ const Home = ({ profile }) => {
                     <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/95 sm:text-[11px]">
                       {card.startFrom !== null ? `Starts from \u20B9${card.startFrom.toLocaleString('en-IN')}` : 'Starts from \u20B9-'}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => navigate(card.target)}
-                      className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-blue-700 sm:px-3.5 sm:text-xs"
-                    >
+                    <span className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition group-hover:bg-blue-700 sm:px-3.5 sm:text-xs">
                       Shop Now
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                         <path d="M5 12h14m-5-5 5 5-5 5" />
                       </svg>
-                    </button>
+                    </span>
                   </div>
                 </article>
               ))}
             </div>
           </section>
 
-          {bestSellingFish && (
+          {activeBestSeller && (
             <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <article className="grid min-h-[260px] grid-cols-[1.05fr_0.95fr] overflow-hidden rounded-[28px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_20px_55px_rgba(146,117,34,0.14)]">
-                <div className="flex flex-col justify-center px-5 py-5 text-center sm:px-7">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Selling Fish</p>
-                  <h2 className="mt-2 text-2xl font-semibold leading-tight text-[#102A43] sm:text-4xl">
-                    {bestSellingFish?.name || 'Top Fish Pick'}
-                  </h2>
-                  <div className="mt-3 flex justify-center">
-                    <span className="inline-block rounded-sm border border-amber-500/70 bg-amber-200/80 px-2 py-1 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-amber-600/30">
-                      Peaceful {"\u2022"} Easy Care
-                    </span>
-                  </div>
-                  <div className="mt-4 flex items-end justify-center gap-3">
-                    {bestFishOriginalPrice > bestFishCurrentPrice && (
-                      <p className="text-sm font-medium text-slate-400 line-through">
-                        {"\u20B9"}
-                        {bestFishOriginalPrice.toLocaleString('en-IN')}
-                      </p>
-                    )}
-                    <p className="text-3xl font-semibold text-[#1D3A8A]">
-                      {"\u20B9"}
-                      {bestFishCurrentPrice.toLocaleString('en-IN')}
-                    </p>
-                  </div>
-                  {bestFishSavings > 0 && (
-                    <p className="mt-1 text-sm font-semibold text-emerald-600">
-                      You Save {"\u20B9"}
-                      {bestFishSavings.toLocaleString('en-IN')}
-                    </p>
-                  )}
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
-                    <p className={`inline-flex items-center gap-2 text-sm font-semibold ${isBestFishSoldOut ? 'text-rose-600' : 'text-emerald-600'}`}>
-                      <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-white ${isBestFishSoldOut ? 'bg-rose-500' : 'bg-emerald-500'}`}>
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                          {isBestFishSoldOut ? <path d="m7 7 10 10M17 7 7 17" /> : <path d="m5 13 4 4L19 7" />}
-                        </svg>
-                      </span>
-                      {isBestFishSoldOut ? 'Out of Stock' : 'In Stock'}
-                    </p>
-                    <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
-                  </div>
-                  {bestFishQty > 0 ? (
-                    <div className="mt-5 flex justify-center">
-                      <div className="w-[160px] min-w-[160px]">
-                        <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (bestFishQty <= 1) {
-                                setShowBestFishRemoveConfirm(true);
-                                return;
-                              }
-                              updateQty?.(bestSellingFish?.id, bestFishQty - 1);
-                            }}
-                            className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
-                            aria-label="Decrease quantity"
-                          >
-                            <img src={incMinusIcon} alt="" className="h-7 w-7" />
-                          </button>
-                          <span className="text-sm font-semibold text-[#1D3A8A]">
-                            {bestFishQty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateQty?.(bestSellingFish?.id, bestFishQty + 1)}
-                            className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
-                            aria-label="Increase quantity"
-                          >
-                            <img src={incPlusIcon} alt="" className="h-7 w-7" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="relative mt-5 flex justify-center">
-                      {showBestFishAddedHint && (
-                        <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
-                          1 item added
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (isBestFishSoldOut) return;
-                          addToCart?.(bestSellingFish, 1);
-                          setShowBestFishAddedHint(true);
+              <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Best Seller Picks</h2>
+                <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                  Most Loved This Week
+                </span>
+              </div>
+              <div className="relative mx-auto max-w-[980px]">
+                <div
+                  ref={bestSellerTrackRef}
+                  onScroll={handleBestSellerTrackScroll}
+                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto px-[12%] sm:px-[15%] md:px-[22%] lg:px-[27%]"
+                >
+                  {bestSellerPicks.map((product, index) => {
+                    const isActive = index === bestSellerIndex;
+                    const favoriteSelected = isFavorite(product?.id);
+                    const currentPrice = Number(product?.price) || 0;
+                    const originalPrice =
+                      Number(product?.original_price ?? product?.mrp ?? product?.price) || 0;
+                    const savings = Math.max(0, originalPrice - currentPrice);
+                    const stockCount = Number.isFinite(Number(product?.stock_count))
+                      ? Number(product?.stock_count)
+                      : null;
+                    const availabilityText = String(product?.availability || product?.status || "").toLowerCase();
+                    const soldOut = stockCount !== null ? stockCount <= 0 : /out|sold/.test(availabilityText);
+                    const qty = cartItems?.find((item) => item.id === product?.id)?.qty || 0;
+
+                    return (
+                      <article
+                        key={`best-seller-${product.id}`}
+                        ref={(node) => {
+                          bestSellerSlideRefs.current[index] = node;
                         }}
-                        disabled={isBestFishSoldOut}
-                        className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                        onClick={() => goToBestSeller(index)}
+                        className={`relative snap-center shrink-0 basis-[76%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[70%] md:basis-[56%] lg:basis-[46%] ${
+                          isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-65"
+                        }`}
                       >
-                        <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
-                          <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        Add to Cart
-                      </button>
-                    </div>
-                  )}
+                        <div className="flex min-h-[248px] flex-col md:min-h-[220px]">
+                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                toggleFavorite(product);
+                              }}
+                              className={`absolute right-2 top-2 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
+                                favoriteSelected
+                                  ? "border-rose-200 bg-rose-50 text-rose-600"
+                                  : "border-slate-200 bg-white/95 text-slate-600 hover:text-rose-600"
+                              }`}
+                              aria-label={favoriteSelected ? "Remove from favorites" : "Add to favorites"}
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                className="h-4 w-4"
+                                fill={favoriteSelected ? "currentColor" : "none"}
+                                stroke="currentColor"
+                                strokeWidth="1.9"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                              </svg>
+                            </button>
+                            <img
+                              src={bestSellerIcon}
+                              alt="Best seller"
+                              className="pointer-events-none absolute right-10 top-2 z-20 h-12 w-12 rotate-[-10deg] drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] sm:h-14 sm:w-14"
+                            />
+                            <img
+                              src={product?.product_images?.[0]?.url || product?.image || BgImage}
+                              alt={product?.name || "Best seller"}
+                              className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+                            />
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setSelectedProduct(product);
+                                setIsProductOpen(true);
+                              }}
+                              className="absolute bottom-2 right-2 z-30 inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow"
+                              aria-label="Enlarge product image"
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M14 5h5v5" />
+                                <path d="M19 5l-7 7" />
+                                <path d="M10 19H5v-5" />
+                                <path d="M5 19l7-7" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="flex flex-1 flex-col justify-center px-3 py-3 text-center sm:px-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
+                            <h2 className="mt-1 text-lg font-semibold leading-tight text-[#102A43] sm:text-2xl">
+                              {product?.name || "Top Pick"}
+                            </h2>
+                            <div className="mt-3 flex justify-center">
+                              <span className="inline-block rounded-sm border border-amber-500/70 bg-amber-200/80 px-2 py-1 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-amber-600/30">
+                                Peaceful {"\u2022"} Easy Care
+                              </span>
+                            </div>
+                            <div className="mt-4 flex items-end justify-center gap-3">
+                              {originalPrice > currentPrice && (
+                                <p className="text-sm font-medium text-slate-400 line-through">
+                                  {"\u20B9"}
+                                  {originalPrice.toLocaleString("en-IN")}
+                                </p>
+                              )}
+                              <p className="text-2xl font-semibold text-[#1D3A8A]">
+                                {"\u20B9"}
+                                {currentPrice.toLocaleString("en-IN")}
+                              </p>
+                            </div>
+                            {savings > 0 && (
+                              <p className="mt-1 text-sm font-semibold text-emerald-600">
+                                You Save {"\u20B9"}
+                                {savings.toLocaleString("en-IN")}
+                              </p>
+                            )}
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
+                              <p className={`inline-flex items-center gap-2 text-sm font-semibold ${soldOut ? "text-rose-600" : "text-emerald-600"}`}>
+                                <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-white ${soldOut ? "bg-rose-500" : "bg-emerald-500"}`}>
+                                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                                    {soldOut ? <path d="m7 7 10 10M17 7 7 17" /> : <path d="m5 13 4 4L19 7" />}
+                                  </svg>
+                                </span>
+                                {soldOut ? "Out of Stock" : "In Stock"}
+                              </p>
+                              <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
+                            </div>
+                            <div className="relative mt-5 flex justify-center">
+                              {showBestFishAddedHint && isActive && (
+                                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                                  1 item added
+                                </span>
+                              )}
+                              {qty > 0 ? (
+                                <div className="w-[160px] min-w-[160px]">
+                                  <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        if (qty <= 1) {
+                                          setPendingBestFishRemove(product);
+                                          return;
+                                        }
+                                        updateQty?.(product?.id, qty - 1);
+                                      }}
+                                      className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
+                                      aria-label="Decrease quantity"
+                                    >
+                                      <img src={incMinusIcon} alt="" className="h-7 w-7" />
+                                    </button>
+                                    <span className="text-sm font-semibold text-[#1D3A8A]">{qty}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        updateQty?.(product?.id, qty + 1);
+                                      }}
+                                      className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
+                                      aria-label="Increase quantity"
+                                    >
+                                      <img src={incPlusIcon} alt="" className="h-7 w-7" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    if (soldOut) return;
+                                    setBestSellerIndex(index);
+                                    addToCart?.(product, 1);
+                                    setShowBestFishAddedHint(true);
+                                  }}
+                                  disabled={soldOut}
+                                  className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                >
+                                  <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                                    <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                  Add to Cart
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-                <div className="relative h-full min-h-[260px] border-l border-amber-200/70 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-4">
-                  <img
-                    src={bestSellingFish?.product_images?.[0]?.url || bestSellingFish?.image || BgImage}
-                    alt={bestSellingFish?.name || 'Best selling fish'}
-                    className="h-full w-full rounded-2xl object-contain bg-white"
-                  />
-                </div>
-              </article>
+                {bestSellerPicks.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        goToBestSeller(bestSellerIndex - 1)
+                      }
+                      className="absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow sm:h-9 sm:w-9 md:left-[5%]"
+                      aria-label="Previous best seller"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        goToBestSeller(bestSellerIndex + 1)
+                      }
+                      className="absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow sm:h-9 sm:w-9 md:right-[5%]"
+                      aria-label="Next best seller"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
             </section>
           )}
 
           <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
             <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-            <div className="mb-3 text-left">
+            <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
               <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
               <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
             </div>
@@ -1072,7 +1290,7 @@ const Home = ({ profile }) => {
             <section key={section.key} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
               <div className="relative mb-3">
-                <div className="text-left">
+                <div className="border-l-4 border-amber-400 pl-3 text-left">
                   <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
                   <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                     {section.subtitle}
@@ -1111,7 +1329,7 @@ const Home = ({ profile }) => {
           {medicineAndFilterPicks.length > 0 && (
             <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 text-left">
+              <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -1129,11 +1347,11 @@ const Home = ({ profile }) => {
 
         </>
       ))}
-      {showBestFishRemoveConfirm && (
+      {pendingBestFishRemove && (
         <div
           className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
           onClick={(event) => {
-            if (event.target === event.currentTarget) setShowBestFishRemoveConfirm(false);
+            if (event.target === event.currentTarget) setPendingBestFishRemove(null);
           }}
           role="dialog"
           aria-modal="true"
@@ -1141,12 +1359,12 @@ const Home = ({ profile }) => {
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
             <h3 className="text-lg font-semibold text-slate-900">Remove item?</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Remove {bestSellingFish?.name || "this item"} from your cart?
+              Remove {pendingBestFishRemove?.name || "this item"} from your cart?
             </p>
             <div className="mt-4 flex items-center justify-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowBestFishRemoveConfirm(false)}
+                onClick={() => setPendingBestFishRemove(null)}
                 className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
                 Cancel
@@ -1154,8 +1372,8 @@ const Home = ({ profile }) => {
               <button
                 type="button"
                 onClick={() => {
-                  removeItem?.(bestSellingFish?.id);
-                  setShowBestFishRemoveConfirm(false);
+                  removeItem?.(pendingBestFishRemove?.id);
+                  setPendingBestFishRemove(null);
                 }}
                 className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
               >

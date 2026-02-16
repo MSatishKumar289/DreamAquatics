@@ -81,7 +81,7 @@ const ProductImageArea = ({
             <img
               src={imageSrc}
               alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-              className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] transition-transform duration-300 group-hover:scale-105"
               onClick={onImageClick}
               onError={(e) => {
                 e.target.src =
@@ -96,7 +96,7 @@ const ProductImageArea = ({
         <img
           src={imageSrc}
           alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-          className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] transition-transform duration-300 group-hover:scale-105"
           onClick={onImageClick}
           onError={(e) => {
             e.target.src =
@@ -134,7 +134,7 @@ const ProductImageArea = ({
               <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
             </svg>
           </button>
-          <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+          <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow">
             <svg
               viewBox="0 0 24 24"
               className="h-4 w-4"
@@ -312,22 +312,10 @@ const CartControls = ({
 
 const SubcategoryFooter = ({
   startFromPrice,
-  onClick,
 }) => {
-  const commonProps = {
-    type: "button",
-    onClick: (event) => {
-      event.stopPropagation();
-      onClick?.();
-    },
-  };
-
   return (
     <div className="absolute inset-x-3 bottom-2 flex items-center">
-      <button
-        {...commonProps}
-        className="relative inline-flex w-full items-center justify-between px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-      >
+      <div className="relative inline-flex w-full items-center justify-between px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700">
         <span className="relative top-0.5 flex flex-1 items-center justify-center gap-1 pl-1 text-center text-[10px] tracking-[0.1em] whitespace-nowrap sm:text-[11px] sm:tracking-[0.16em]">
           <span>Starts from</span>
           <span>
@@ -338,7 +326,7 @@ const SubcategoryFooter = ({
         <span className="relative ml-3 inline-flex h-10 w-10 flex-none items-center justify-center pr-1">
           <img src={arrowIcon} alt="" className="h-8 w-8" aria-hidden="true" />
         </span>
-      </button>
+      </div>
     </div>
   );
 };
@@ -368,7 +356,7 @@ const PreviewModal = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -379,18 +367,18 @@ const PreviewModal = ({
         </button>
         <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-stretch">
           <div className="flex w-full flex-col md:w-1/2">
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
               <img
                 src={imageSrc}
                 alt={productTitle}
-                className="h-full w-full object-contain bg-white"
+                className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
               />
             </div>
-            <div className="mt-1 flex flex-col items-center text-center">
+            <div className="mt-1 flex flex-col items-center rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC]/75 via-[#FFF3C4]/65 to-[#FFFDF2]/80 px-3 py-3 text-center">
               <h2 className="text-2xl font-semibold text-slate-900">
                 {productTitle}
               </h2>
-              <p className="text-lg font-semibold text-slate-900">
+              <p className="text-2xl font-semibold text-[#1D3A8A] sm:text-3xl">
                 {"\u20B9"}
                 {Number(price ?? 0).toLocaleString("en-IN")}
               </p>
@@ -740,6 +728,13 @@ const CategoryCard = ({
         isSubCategory ? `View ${productTitle} subcategory` : productTitle
       }
       onClick={handleClick}
+      onKeyDown={(event) => {
+        if (!isSubCategory) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
     >
       <ProductImageArea
         isSubCategory={isSubCategory}
@@ -810,7 +805,6 @@ const CategoryCard = ({
       {isSubCategory && (
         <SubcategoryFooter
           startFromPrice={startFromPrice}
-          onClick={handleClick}
         />
       )}
 

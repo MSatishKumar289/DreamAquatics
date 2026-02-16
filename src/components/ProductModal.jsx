@@ -98,7 +98,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="relative mx-4 w-full max-w-4xl rounded-3xl bg-white p-5 shadow-2xl md:p-8 max-h-[90dvh] overflow-y-auto md:max-h-[90vh] md:overflow-hidden">
+      <div className="relative mx-4 w-full max-w-4xl rounded-3xl bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] p-5 shadow-2xl md:p-8 max-h-[90dvh] overflow-hidden">
         <div className="mb-4 flex justify-end">
           <button
             onClick={onClose}
@@ -109,10 +109,10 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
           </button>
         </div>
 
-        <div className="relative flex flex-col gap-6 md:min-h-[420px] md:flex-row max-h-none md:max-h-[calc(90vh-5rem)]">
+        <div className="relative flex max-h-[calc(90dvh-4.5rem)] flex-col gap-5 md:h-[calc(90dvh-8rem)] md:flex-row md:gap-6">
           <div className="space-y-4 md:w-1/2">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
-              <img src={imageSrc} alt={title} className="w-full h-full object-cover" />
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
+              <img src={imageSrc} alt={title} className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]" />
 
               {showConfirmation && (
                 <div className="pointer-events-none absolute inset-x-4 bottom-4 flex justify-center">
@@ -126,38 +126,25 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               )}
             </div>
 
-            <div className="space-y-2 text-center">
-              <h2 id="modal-title" className="text-3xl font-semibold text-gray-900">
+            <div className="space-y-2 rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC]/75 via-[#FFF3C4]/65 to-[#FFFDF2]/80 px-3 py-3 text-center">
+              <h2 id="modal-title" className="text-2xl font-semibold text-gray-900 sm:text-[1.95rem]">
                 {title}
               </h2>
-              <div className="mx-auto inline-flex items-center justify-center gap-2 sm:gap-3">
-                {priceValue > 0 ? (
-                  <p className="text-xl font-medium text-gray-400 line-through">
-                    {"\u20B9"}
-                    {formattedOriginalPriceValue}
-                  </p>
-                ) : (
-                  <span />
-                )}
-                <p className="text-3xl font-semibold text-blue-700">
-                  {"\u20B9"}
-                  {formattedPriceValue}
-                </p>
-              </div>
-              <p className="mt-2 text-center text-xs text-sky-600/80">
-                Images are for reference. Actual product appearance may vary.
+              <p className="text-3xl font-semibold text-[#1D3A8A]">
+                {"\u20B9"}
+                {formattedPriceValue}
               </p>
             </div>
           </div>
 
-          <div className="space-y-4 md:w-1/2 flex flex-col min-h-0">
-            <section className="space-y-4 flex flex-col min-h-0">
-              <div className="text-md text-gray-700 leading-relaxed overflow-y-auto pr-2 max-h-[35vh] md:max-h-none">
+          <div className="flex min-h-0 h-full flex-col md:w-1/2">
+            <section className="flex min-h-0 flex-1 flex-col">
+              <div className="text-md min-h-0 flex-1 overflow-y-auto pr-2 leading-relaxed text-gray-700">
                 {renderFormattedDescription(safeProduct?.description || "")}
               </div>
             </section>
 
-            <div className="flex w-full items-stretch justify-end gap-3 md:pt-2">
+            <div className="mt-auto flex w-full items-stretch justify-center gap-3 pt-3 md:pt-2">
               {qty === 0 ? (
                 <button
                   onClick={handleAddToCart}
