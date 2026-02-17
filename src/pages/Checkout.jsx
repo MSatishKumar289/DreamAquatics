@@ -432,7 +432,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
     
 
     return (
-      <main className="min-h-screen bg-gray-50 py-8">
+      <main className="min-h-screen bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] py-8">
         {ToastUI}
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -694,7 +694,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
   // ---- Address form screen ----
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <main className="min-h-screen bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] py-8">
       {ToastUI}
 
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

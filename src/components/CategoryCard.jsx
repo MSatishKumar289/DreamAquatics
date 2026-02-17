@@ -270,7 +270,7 @@ const CartControls = ({
           type="button"
           onClick={onAddToCart}
           disabled={isSoldOut}
-                  className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                  className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
         >
           <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
             <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -323,7 +323,7 @@ const SubcategoryFooter = ({
             {startFromPrice !== null ? startFromPrice.toLocaleString("en-IN") : "-"}
           </span>
         </span>
-        <span className="relative ml-3 inline-flex h-10 w-10 flex-none items-center justify-center pr-1">
+        <span className="relative ml-[7px] inline-flex h-10 w-10 flex-none items-center justify-center pr-1">
           <img src={arrowIcon} alt="" className="h-8 w-8" aria-hidden="true" />
         </span>
       </div>
@@ -385,7 +385,7 @@ const PreviewModal = ({
             </div>
           </div>
           <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
-            <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:pr-0">
+            <div className="premium-flat-scrollbar flex-1 overflow-y-auto overscroll-contain pr-1 md:mt-1 md:pr-0">
               {productDescription ? (
                 <div className="text-sm leading-relaxed text-slate-600">
                   {renderFormattedDescription(productDescription)}
@@ -407,7 +407,7 @@ const PreviewModal = ({
                   type="button"
                   onClick={onAddToCart}
                   disabled={isSoldOut}
-                  className="group inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+                  className="group inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
                 >
                   <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
                     <img src={plusIcon} alt="" className="h-6 w-6" />

@@ -75,13 +75,13 @@ const AdminOrdersDrawer = ({
       }}
     >
       <aside
-        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] shadow-2xl transition-transform duration-300 ease-out ${
           isVisible ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
               DreamAquatics
             </p>
             <h2 className="mt-1 text-lg font-semibold text-slate-900">

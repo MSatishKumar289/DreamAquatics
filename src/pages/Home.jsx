@@ -52,6 +52,7 @@ const Home = ({ profile }) => {
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
   const [quickPickIndex, setQuickPickIndex] = useState(0);
+  const [showFloatingWhatsApp, setShowFloatingWhatsApp] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
     imageOneUrl: '',
@@ -65,10 +66,12 @@ const Home = ({ profile }) => {
   const quickPickTrackRef = useRef(null);
   const quickPickItemRefs = useRef([]);
   const quickPickScrollRafRef = useRef(null);
+  const quickPickInitRef = useRef(false);
   const newArrivalsSectionRef = useRef(null);
   const trendingSectionRef = useRef(null);
   const underHundredSectionRef = useRef(null);
   const essentialsSectionRef = useRef(null);
+  const heroSectionRef = useRef(null);
 
   const categoryOptions = [
     { value: 'all', label: 'All categories' },
@@ -303,10 +306,62 @@ const Home = ({ profile }) => {
   }, [searchQuery]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const sections = Array.from(document.querySelectorAll("[data-home-reveal]"));
+    if (!sections.length) return undefined;
+
+    sections.forEach((section) => {
+      section.classList.add("home-scroll-animate");
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const element = entry.target;
+          if (entry.isIntersecting) {
+            element.classList.remove("home-scroll-fade-in");
+            void element.offsetWidth;
+            element.classList.add("home-scroll-revealed", "home-scroll-fade-in");
+            return;
+          }
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+          const rect = entry.boundingClientRect;
+          const isFullyOutOfView = rect.bottom <= 0 || rect.top >= viewportHeight;
+          if (!isFullyOutOfView) return;
+          element.classList.remove("home-scroll-fade-in");
+        });
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -6% 0px" }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [allProducts.length]);
+
+  useEffect(() => {
     if (bestFishAddedHintIndex === null) return;
     const timer = setTimeout(() => setBestFishAddedHintIndex(null), 1600);
     return () => clearTimeout(timer);
   }, [bestFishAddedHintIndex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || isSearching) {
+      setShowFloatingWhatsApp(false);
+      return undefined;
+    }
+    const hero = heroSectionRef.current;
+    if (!hero) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingWhatsApp(!entry.isIntersecting);
+      },
+      { threshold: 0.08 }
+    );
+
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [isSearching]);
 
   const highlightVideoSrc = homeMedia.videoUrl || HighlightVideo;
   const highlightImageOne = homeMedia.imageOneUrl || HighlightTwo;
@@ -711,10 +766,16 @@ const Home = ({ profile }) => {
   useEffect(() => {
     if (!homeShortcutCircles.length) {
       setQuickPickIndex(0);
+      quickPickInitRef.current = false;
+      return;
+    }
+    if (!quickPickInitRef.current) {
+      setQuickPickIndex(homeShortcutCircles.length >= 4 ? 1 : 0);
+      quickPickInitRef.current = true;
       return;
     }
     if (quickPickIndex >= homeShortcutCircles.length) {
-      setQuickPickIndex(0);
+      setQuickPickIndex(homeShortcutCircles.length >= 4 ? 1 : 0);
     }
   }, [homeShortcutCircles, quickPickIndex]);
 
@@ -868,7 +929,7 @@ const Home = ({ profile }) => {
       />
 
       {!isSearching && (
-      <section className="relative overflow-hidden pt-4 pb-6 md:pb-8">
+      <section ref={heroSectionRef} className="relative overflow-hidden pt-4 pb-6 md:pb-8">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0 hidden scale-105 bg-cover bg-center blur-[2px] md:block"
@@ -1100,7 +1161,7 @@ const Home = ({ profile }) => {
         <Spinner />
       ) : (
         <>
-          <section className="container mx-auto px-4 pt-4 sm:px-6">
+          <section data-home-reveal className="container mx-auto px-4 pt-4 sm:px-6">
             <div className="mb-3 text-center sm:mb-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-700/80 sm:text-xs">
                 Explore
@@ -1137,7 +1198,7 @@ const Home = ({ profile }) => {
                     <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/95 sm:text-[11px]">
                       {card.startFrom !== null ? `Starts from \u20B9${card.startFrom.toLocaleString('en-IN')}` : 'Starts from \u20B9-'}
                     </p>
-                    <span className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition group-hover:bg-blue-700 sm:px-3.5 sm:text-xs">
+                    <span className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-950 transition group-hover:brightness-105 sm:px-3.5 sm:text-xs">
                       Shop Now
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                         <path d="M5 12h14m-5-5 5 5-5 5" />
@@ -1150,8 +1211,8 @@ const Home = ({ profile }) => {
           </section>
 
           {homeShortcutCircles.length > 0 && (
-            <section className="container mx-auto mt-4 px-4 pt-1 sm:px-6">
-              <div className="mx-0 mb-4 h-px bg-amber-300/90" />
+            <section data-home-reveal className="container mx-auto mt-4 px-4 pt-1 sm:px-6">
+              <div className="home-progress-line mx-0 mb-4 h-px bg-amber-300/90" />
               <div className="mb-2 text-center">
                 <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Quick Picks</h2>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Jump To Sections</p>
@@ -1205,9 +1266,9 @@ const Home = ({ profile }) => {
           )}
 
           {activeBestSeller && (
-            <section className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
-              <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
+            <section data-home-reveal className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+              <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Best Seller Picks</h2>
                 <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                   Most Loved This Week
@@ -1400,7 +1461,7 @@ const Home = ({ profile }) => {
                                     setBestFishAddedHintIndex(index);
                                   }}
                                   disabled={soldOut}
-                                  className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                  className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-amber-950 shadow-lg shadow-amber-900/20 transition hover:brightness-105 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
                                 >
                                   <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                                     <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
@@ -1483,7 +1544,7 @@ const Home = ({ profile }) => {
                           className={`inline-flex items-center justify-center rounded-full transition ${
                             active
                               ? "h-4 w-4 bg-amber-500 ring-2 ring-amber-200"
-                              : "h-3 w-3 bg-slate-300 hover:bg-slate-400"
+                              : "h-3 w-3 bg-white/90 hover:bg-white"
                           }`}
                           aria-label={`Go to best seller ${index + 1}`}
                           aria-current={active ? "true" : "false"}
@@ -1496,9 +1557,9 @@ const Home = ({ profile }) => {
             </section>
           )}
 
-          <section ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
-            <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-            <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
+          <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+            <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+            <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
               <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
               <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
             </div>
@@ -1520,13 +1581,14 @@ const Home = ({ profile }) => {
 
           {smartSections.map((section) => (
             <section
+              data-home-reveal
               key={section.key}
               ref={section.key === "trending" ? trendingSectionRef : section.key === "under-100" ? underHundredSectionRef : null}
               className="container mx-auto mt-5 px-4 pt-5 sm:px-6"
             >
-              <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
               <div className="relative mb-3">
-                <div className="border-l-4 border-amber-400 pl-3 text-left">
+                <div className="rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
                   <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
                   <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                     {section.subtitle}
@@ -1536,7 +1598,7 @@ const Home = ({ profile }) => {
                   <button
                     type="button"
                     onClick={() => navigate("/under-100")}
-                    className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-md shadow-blue-900/20 transition hover:bg-blue-700"
+                    className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-950 shadow-md shadow-amber-900/20 transition hover:brightness-105"
                   >
                     View All
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
@@ -1563,9 +1625,9 @@ const Home = ({ profile }) => {
           ))}
 
           {medicineAndFilterPicks.length > 0 && (
-            <section ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
-              <div className="mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 border-l-4 border-amber-400 pl-3 text-left">
+            <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
+              <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
                 <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                   Everyday Must-Haves
@@ -1647,6 +1709,17 @@ const Home = ({ profile }) => {
             />
           </div>
         </div>
+      )}
+      {showFloatingWhatsApp && !isSearching && (
+        <a
+          href="https://wa.me/918667418965"
+          target="_blank"
+          rel="noreferrer"
+          className="fixed bottom-5 right-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/80 bg-transparent p-1.5 shadow-lg shadow-emerald-500/35 transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+          aria-label="Chat on WhatsApp"
+        >
+          <img src={WhatsIcon} alt="" className="h-full w-full object-contain" aria-hidden="true" />
+        </a>
       )}
       <ProductModal
         isOpen={isProductOpen}

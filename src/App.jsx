@@ -27,6 +27,7 @@ import { fetchAllOrdersAdmin, fetchMyOrders, normalizeAdminOrders } from './lib/
 import { clearCartStorage, clearFavoritesStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
 import ProtectedRoute from "./components/ProtectedRoute";
+import WhatsIcon from './assets/Icons/whatsapp.png';
 
 
 function AppContent() {
@@ -50,6 +51,11 @@ function AppContent() {
   const userOrderStatusMapRef = useRef({});
   const userOrdersSeededRef = useRef(false);
   const location = useLocation();
+  const pathname = location.pathname || '';
+  const showPersistentWhatsApp =
+    pathname === '/profile' ||
+    pathname === '/checkout' ||
+    pathname.startsWith('/category/');
 
   const { clearCart, lastAddedAt, lastAddedItem } = useCart();
   const { clearFavorites } = useFavorites();
@@ -576,6 +582,18 @@ function AppContent() {
               </div>
             </div>
           </div>
+        )}
+
+        {showPersistentWhatsApp && (
+          <a
+            href="https://wa.me/918667418965"
+            target="_blank"
+            rel="noreferrer"
+            className="fixed bottom-5 right-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/80 bg-transparent p-1.5 shadow-lg shadow-emerald-500/35 transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            aria-label="Chat on WhatsApp"
+          >
+            <img src={WhatsIcon} alt="" className="h-full w-full object-contain" aria-hidden="true" />
+          </a>
         )}
 
         <Footer />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
@@ -96,59 +97,62 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
+      aria-label={title}
     >
-      <div className="relative mx-4 w-full max-w-4xl rounded-3xl bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] p-5 shadow-2xl md:p-8 max-h-[90dvh] overflow-hidden">
-        <div className="mb-4 flex justify-end">
-          <button
-            onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
-            aria-label="Close modal"
-          >
-            <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-2xl">
+        <button
+          onClick={onClose}
+          className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+          aria-label="Close modal"
+        >
+          <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+        </button>
 
-        <div className="relative flex max-h-[calc(90dvh-4.5rem)] flex-col gap-5 md:h-[calc(90dvh-8rem)] md:flex-row md:gap-6">
-          <div className="space-y-4 md:w-1/2">
+        <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-stretch">
+          <div className="flex w-full flex-col md:w-1/2">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
               <img src={imageSrc} alt={title} className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]" />
-
               {showConfirmation && (
                 <div className="pointer-events-none absolute inset-x-4 bottom-4 flex justify-center">
-                  <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-white/95 px-3 py-2 text-emerald-600 shadow-lg">
-                    <span className="text-base font-bold">?</span>
-                    <span className="text-xs font-semibold uppercase tracking-[0.3em]">
-                      Added to cart
-                    </span>
+                  <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white shadow-lg">
+                    Added to cart
                   </div>
                 </div>
               )}
             </div>
-
-            <div className="space-y-2 rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC]/75 via-[#FFF3C4]/65 to-[#FFFDF2]/80 px-3 py-3 text-center">
-              <h2 id="modal-title" className="text-2xl font-semibold text-gray-900 sm:text-[1.95rem]">
-                {title}
-              </h2>
-              <p className="text-3xl font-semibold text-[#1D3A8A]">
-                {"\u20B9"}
-                {formattedPriceValue}
-              </p>
+            <div className="mt-1 flex flex-col items-center rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC]/75 via-[#FFF3C4]/65 to-[#FFFDF2]/80 px-3 py-3 text-center">
+              <h2 className="text-2xl font-semibold text-slate-900">{title}</h2>
+              <div className="mt-1 flex items-center justify-center gap-2">
+                <p className="text-2xl font-semibold text-[#1D3A8A] sm:text-3xl">
+                  {"\u20B9"}
+                  {formattedPriceValue}
+                </p>
+                {originalPriceValue > priceValue && (
+                  <p className="text-xl font-medium text-slate-400 line-through">
+                    {"\u20B9"}
+                    {formattedOriginalPriceValue}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex min-h-0 h-full flex-col md:w-1/2">
-            <section className="flex min-h-0 flex-1 flex-col">
-              <div className="text-md min-h-0 flex-1 overflow-y-auto pr-2 leading-relaxed text-gray-700">
-                {renderFormattedDescription(safeProduct?.description || "")}
-              </div>
-            </section>
+          <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
+            <div className="premium-flat-scrollbar flex-1 overflow-y-auto overscroll-contain pr-1 md:mt-1 md:pr-0">
+              {safeProduct?.description ? (
+                <div className="text-sm leading-relaxed text-slate-600">
+                  {renderFormattedDescription(safeProduct?.description || "")}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">Product details will be available soon.</p>
+              )}
+            </div>
 
-            <div className="mt-auto flex w-full items-stretch justify-center gap-3 pt-3 md:pt-2">
+            <div className="relative mt-auto flex justify-center pt-1">
               {qty === 0 ? (
                 <button
                   onClick={handleAddToCart}
-                  className="group inline-flex h-12 w-52 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  className="group inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2"
                   aria-label={`Add ${title} to cart`}
                 >
                   <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
@@ -157,43 +161,41 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
                   Add to cart
                 </button>
               ) : (
-                <div className="w-52">
+                <div className="inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
                   <div
-                    className="inline-flex h-12 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm"
+                    className="contents"
                     role="group"
                     aria-label={`Quantity control for ${title}`}
                   >
                     <button
                       type="button"
-                      onClick={() => {
-                        if (qty <= 1) {
-                          setPendingRemove(true);
-                          return;
-                        }
-                        const next = qty - 1;
-                        setQty(next);
-                        updateQty?.(safeProduct?.id, next);
-                      }}
-                      aria-label={`Decrease quantity for ${title}`}
-                      className="h-10 w-10 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      <img src={incMinusIcon} alt="" className="h-10 w-10" />
-                    </button>
-                    <span className="text-base font-semibold text-blue-700">
-                      {qty}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = qty + 1;
-                        setQty(next);
-                        updateQty?.(safeProduct?.id, next);
-                      }}
-                      aria-label={`Increase quantity for ${title}`}
-                      className="h-10 w-10 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      <img src={incPlusIcon} alt="" className="h-10 w-10" />
-                    </button>
+                        onClick={() => {
+                          if (qty <= 1) {
+                            setPendingRemove(true);
+                            return;
+                          }
+                          const next = qty - 1;
+                          setQty(next);
+                          updateQty?.(safeProduct?.id, next);
+                        }}
+                        aria-label={`Decrease quantity for ${title}`}
+                        className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      >
+                        <img src={incMinusIcon} alt="" className="h-9 w-9" />
+                      </button>
+                      <span className="px-3 text-base font-semibold text-blue-700">{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = qty + 1;
+                          setQty(next);
+                          updateQty?.(safeProduct?.id, next);
+                        }}
+                        aria-label={`Increase quantity for ${title}`}
+                        className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      >
+                        <img src={incPlusIcon} alt="" className="h-9 w-9" />
+                      </button>
                   </div>
                 </div>
               )}

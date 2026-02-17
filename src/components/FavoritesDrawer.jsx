@@ -61,13 +61,13 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
       }}
     >
       <aside
-        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] shadow-2xl transition-transform duration-300 ease-out ${
           isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
               DreamAquatics
             </p>
             <h2 className="mt-1 text-lg font-semibold text-slate-900">
@@ -96,7 +96,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
               <Link
                 to="/"
                 onClick={onClose}
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-950 shadow-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
               >
                 Browse products
               </Link>
@@ -180,7 +180,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
                           addToCart(item, 1);
                         }}
                         disabled={isSoldOut}
-                        className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                        className="rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-amber-950 shadow-sm transition hover:brightness-105 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
                         aria-label={`Add ${item.title} to cart`}
                       >
                         Add to Cart

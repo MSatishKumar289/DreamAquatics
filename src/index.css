@@ -71,6 +71,9 @@
 .premium-flat-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #6ea7dc #dbe9f6;
+  scrollbar-gutter: stable both-edges;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .premium-flat-scrollbar::-webkit-scrollbar {
@@ -98,4 +101,56 @@
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.home-scroll-animate {
+  opacity: 1;
+  will-change: opacity;
+}
+
+.home-scroll-fade-in {
+  animation: homeFadeIn 280ms ease-out both;
+}
+
+@keyframes homeFadeIn {
+  0% {
+    opacity: 0.58;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.home-progress-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-progress-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.95) 0%, rgba(251, 191, 36, 0.95) 100%);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-scroll-revealed .home-progress-line::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-scroll-animate,
+  .home-scroll-fade-in {
+    opacity: 1;
+    animation: none;
+    transition: none;
+  }
+
+  .home-progress-line::after,
+  .home-scroll-revealed .home-progress-line::after {
+    transform: scaleX(1);
+    transition: none;
+  }
 }
