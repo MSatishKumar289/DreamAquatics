@@ -236,8 +236,8 @@ const ProductDetailsPage = () => {
                 </p>
               )}
 
-              <div className="mt-5 flex flex-col items-start gap-3">
-                <div className="relative w-full max-w-[220px]">
+              <div className="mt-5 flex w-full max-w-[410px] items-start gap-3">
+                <div className="relative w-[48%] min-w-0">
                   {showAddedHint && (
                     <span className="pointer-events-none absolute -top-9 left-2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                       Added 1 item
@@ -295,7 +295,7 @@ const ProductDetailsPage = () => {
                         },
                       });
                     }}
-                    className="inline-flex h-11 w-full max-w-[220px] items-center justify-center rounded-lg border border-[#d97706] bg-[#f59e0b] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#d97706]"
+                    className="inline-flex h-11 w-[48%] min-w-0 items-center justify-center rounded-lg border border-[#d97706] bg-[#f59e0b] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#d97706]"
                   >
                     Buy Now
                   </button>
@@ -360,16 +360,16 @@ const ProductDetailsPage = () => {
                           state: { product: item, relatedProducts: relatedProducts.concat(product) },
                         })
                       }
-                      className="relative snap-start min-w-[150px] rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-sm transition hover:shadow-md"
+                      className="relative snap-start min-w-[150px] rounded-2xl border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 text-left shadow-sm transition hover:shadow-md"
                     >
                       <p className="line-clamp-3 min-h-[3rem] px-1 text-xs font-semibold tracking-wide text-[#102A43]">
                         {itemTitle}
                       </p>
-                      <div className="h-28 overflow-hidden rounded-xl bg-white">
+                      <div className="h-28 overflow-hidden rounded-xl bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
                         <img src={itemImageSrc} alt={itemTitle} className="h-full w-full object-contain" />
                       </div>
                       <div className="relative mt-2 w-full">
-                        <p className="text-left text-lg font-semibold text-[#1D3A8A]">
+                        <p className="text-center text-lg font-semibold text-[#1D3A8A]">
                           {"\u20B9"}{itemPrice.toLocaleString("en-IN")}
                         </p>
                         <span className="absolute right-[2px] top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-amber-300/90">

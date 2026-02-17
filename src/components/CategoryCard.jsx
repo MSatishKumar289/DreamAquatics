@@ -173,7 +173,7 @@ const ProductInfo = ({
       </div>
       {!isSubCategory && productBadgeText && (
         <div className="mt-1 flex justify-start">
-          <span className="inline-flex max-w-[88%] items-center rounded-md border border-[#1d4ed8] bg-[#2563eb] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">
+          <span className="inline-flex max-w-[88%] items-center rounded-md bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">
             <span className="truncate">{productBadgeText}</span>
           </span>
         </div>
@@ -230,7 +230,7 @@ const CartControls = ({
         <button
           type="button"
           onClick={onAddToCart}
-          className="group inline-flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-[#1f4f8a] bg-[#2b6cb0] px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#245c97] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
+          className="group inline-flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
         >
           <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
             <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -356,7 +356,7 @@ const CategoryCard = ({
   compact = false,
   borderless = false,
   itemDetailGoldenBorder = false,
-  whiteCard = true,
+  whiteCard = false,
 }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
