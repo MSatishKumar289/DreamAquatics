@@ -190,7 +190,7 @@ const ProductDetailsPage = () => {
               <img src={imageSrc} alt={title} className="h-full w-full object-contain" />
             </div>
 
-            <div className="relative rounded-2xl border-0 bg-transparent p-4 text-center sm:p-5">
+            <div className="relative rounded-2xl border-0 bg-transparent p-4 text-left sm:p-5">
               <button
                 type="button"
                 onClick={() => toggleFavorite(product)}
@@ -215,7 +215,7 @@ const ProductDetailsPage = () => {
                 </svg>
               </button>
               <h1 className="text-[1.68rem] font-semibold text-[#102A43] sm:text-[2.25rem]">{title}</h1>
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+              <div className="mt-3 flex flex-wrap items-center justify-start gap-3">
                 {originalPrice > currentPrice && (
                   <p className="text-2xl font-medium text-slate-400 line-through">
                     {"\u20B9"}{originalPrice.toLocaleString("en-IN")}
@@ -236,10 +236,10 @@ const ProductDetailsPage = () => {
                 </p>
               )}
 
-              <div className="mt-5 flex flex-col items-center gap-3">
+              <div className="mt-5 flex flex-col items-start gap-3">
                 <div className="relative w-full max-w-[220px]">
                   {showAddedHint && (
-                    <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                    <span className="pointer-events-none absolute -top-9 left-2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                       Added 1 item
                     </span>
                   )}
@@ -276,7 +276,7 @@ const ProductDetailsPage = () => {
                         addToCart?.(product, 1);
                         setShowAddedHint(true);
                       }}
-                      className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 text-sm font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105"
+                      className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-[#1f4f8a] bg-[#2b6cb0] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#245c97]"
                     >
                       Add to Cart
                     </button>
@@ -295,7 +295,7 @@ const ProductDetailsPage = () => {
                         },
                       });
                     }}
-                    className="inline-flex h-11 w-full max-w-[220px] items-center justify-center rounded-lg bg-gradient-to-r from-[#2b6cb0] via-[#3b82f6] to-[#1e40af] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:brightness-105"
+                    className="inline-flex h-11 w-full max-w-[220px] items-center justify-center rounded-lg border border-[#d97706] bg-[#f59e0b] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#d97706]"
                   >
                     Buy Now
                   </button>
@@ -360,16 +360,16 @@ const ProductDetailsPage = () => {
                           state: { product: item, relatedProducts: relatedProducts.concat(product) },
                         })
                       }
-                      className="relative snap-start min-w-[150px] rounded-2xl border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 text-center shadow-sm transition hover:shadow-md"
+                      className="relative snap-start min-w-[150px] rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-sm transition hover:shadow-md"
                     >
                       <p className="line-clamp-3 min-h-[3rem] px-1 text-xs font-semibold tracking-wide text-[#102A43]">
                         {itemTitle}
                       </p>
-                      <div className="h-28 overflow-hidden rounded-xl bg-white/70">
+                      <div className="h-28 overflow-hidden rounded-xl bg-white">
                         <img src={itemImageSrc} alt={itemTitle} className="h-full w-full object-contain" />
                       </div>
                       <div className="relative mt-2 w-full">
-                        <p className="text-center text-lg font-semibold text-[#1D3A8A]">
+                        <p className="text-left text-lg font-semibold text-[#1D3A8A]">
                           {"\u20B9"}{itemPrice.toLocaleString("en-IN")}
                         </p>
                         <span className="absolute right-[2px] top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-amber-300/90">

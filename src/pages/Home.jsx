@@ -1118,6 +1118,7 @@ const Home = ({ profile }) => {
                         product={product}
                         relatedProducts={getRelatedProductsFor(product)}
                         showStockBadge
+                        whiteCard
                       />
                     </div>
                   ))}
@@ -1237,7 +1238,7 @@ const Home = ({ profile }) => {
           {activeBestSeller && (
             <section data-home-reveal className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
+              <div className="mb-3 rounded-r-lg border-l-4 border-blue-300 bg-gradient-to-r from-blue-100/80 via-sky-50/65 to-transparent px-3 py-2 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Best Seller Picks</h2>
                 <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                   Most Loved This Week
@@ -1253,15 +1254,33 @@ const Home = ({ profile }) => {
                     const isActive = index === bestSellerIndex;
                     const favoriteSelected = isFavorite(product?.id);
                     const currentPrice = Number(product?.price) || 0;
-                    const originalPrice =
+                    const originalPriceRaw =
                       Number(product?.original_price ?? product?.mrp ?? product?.price) || 0;
+                    const originalPrice =
+                      originalPriceRaw > currentPrice
+                        ? originalPriceRaw
+                        : Math.round(currentPrice * 1.15);
                     const savings = Math.max(0, originalPrice - currentPrice);
+                    const productBadgeTextRaw =
+                      product?.badge || product?.label || product?.tag || product?.badgeText || "";
+                    const productBadgeText =
+                      typeof productBadgeTextRaw === "string" && productBadgeTextRaw.trim()
+                        ? productBadgeTextRaw.trim()
+                        : "Top Pick";
                     const stockCount = Number.isFinite(Number(product?.stock_count))
                       ? Number(product?.stock_count)
                       : null;
                     const availabilityText = String(product?.availability || product?.status || "").toLowerCase();
                     const soldOut = stockCount !== null ? stockCount <= 0 : /out|sold/.test(availabilityText);
                     const qty = cartItems?.find((item) => item.id === product?.id)?.qty || 0;
+                    const openProductDetails = () => {
+                      navigate(`/product/${product?.id}`, {
+                        state: {
+                          product,
+                          relatedProducts: getRelatedProductsFor(product),
+                        },
+                      });
+                    };
 
                     return (
                       <article
@@ -1269,13 +1288,27 @@ const Home = ({ profile }) => {
                         ref={(node) => {
                           bestSellerSlideRefs.current[index] = node;
                         }}
-                        onClick={() => goToBestSeller(index)}
-                        className={`relative h-[430px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                        onClick={openProductDetails}
+                        tabIndex={0}
+                        role="button"
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openProductDetails();
+                          }
+                        }}
+                        className={`relative h-[430px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.12)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
                         <div className="flex h-full flex-col">
-                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
+                          <div className="relative aspect-[4/4.2] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-white sm:aspect-[4/4.3]">
+                            {savings > 0 && (
+                              <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
+                                Save {"\u20B9"}
+                                {Math.round(savings).toLocaleString("en-IN")}
+                              </span>
+                            )}
                             <button
                               type="button"
                               onClick={(event) => {
@@ -1305,27 +1338,25 @@ const Home = ({ profile }) => {
                             <img
                               src={product?.product_images?.[0]?.url || product?.image || BgImage}
                               alt={product?.name || "Best seller"}
-                              className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+                              className="h-full w-full object-cover bg-white"
                             />
                           </div>
-                          <div className="flex flex-1 flex-col px-3 py-3 text-center sm:px-4">
+                          <div className="flex flex-1 flex-col px-3 py-3 text-left sm:px-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
                             <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
                             </h2>
-                            <div className="mt-3 flex justify-center">
-                              <span className="inline-block rounded-sm border border-amber-500/70 bg-amber-200/80 px-2 py-1 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-amber-600/30">
-                                Peaceful {"\u2022"} Easy Care
+                            <div className="mt-2 flex justify-start">
+                              <span className="inline-flex max-w-[88%] items-center rounded-md border border-[#1d4ed8] bg-[#2563eb] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">
+                                <span className="truncate">{productBadgeText}</span>
                               </span>
                             </div>
                             <div className="relative mt-4">
-                              <div className="flex items-end justify-center gap-3 text-center">
-                                {originalPrice > currentPrice && (
-                                  <p className="text-sm font-medium text-slate-400 line-through">
-                                    {"\u20B9"}
-                                    {originalPrice.toLocaleString("en-IN")}
-                                  </p>
-                                )}
+                              <div className="flex items-end justify-start gap-3 text-left">
+                                <p className="text-sm font-medium text-slate-400 line-through">
+                                  {"\u20B9"}
+                                  {originalPrice.toLocaleString("en-IN")}
+                                </p>
                                 <p className="text-2xl font-semibold text-[#1D3A8A]">
                                   {"\u20B9"}
                                   {currentPrice.toLocaleString("en-IN")}
@@ -1335,50 +1366,24 @@ const Home = ({ profile }) => {
                                 src={bestSellerIcon}
                                 alt="Best seller"
                                 title="Best Seller"
-                                className="pointer-events-none absolute -right-[10px] top-1/2 h-[74px] w-[74px] -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-[86px] sm:w-[86px]"
+                                className="pointer-events-none absolute -right-[10px] top-[calc(50%-10px)] h-[74px] w-[74px] -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-[86px] sm:w-[86px]"
                               />
                             </div>
-                            {savings > 0 && (
-                              <p className="mt-1 text-sm font-semibold text-emerald-600">
-                                You Save {"\u20B9"}
-                                {savings.toLocaleString("en-IN")}
-                              </p>
-                            )}
-                            <div className="mt-2 flex items-center gap-2">
-                              <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
-                              <p className={`inline-flex items-center gap-2 text-sm font-semibold ${soldOut ? "text-rose-600" : "text-emerald-600"}`}>
-                                <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-white ${soldOut ? "bg-rose-500" : "bg-emerald-500"}`}>
-                                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                                    {soldOut ? <path d="m7 7 10 10M17 7 7 17" /> : <path d="m5 13 4 4L19 7" />}
-                                  </svg>
-                                </span>
-                                {soldOut ? "Out of Stock" : "In Stock"}
-                              </p>
-                              <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
-                            </div>
-                            <div className="relative mt-auto flex flex-col items-center gap-2 pt-5">
+                            <div className="relative mt-auto flex flex-col items-center gap-2 pt-4">
                               {bestFishAddedHintIndex === index && (
                                 <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                                   1 item added
                                 </span>
                               )}
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  navigate(`/product/${product?.id}`, {
-                                    state: {
-                                      product,
-                                      relatedProducts: getRelatedProductsFor(product),
-                                    },
-                                  });
-                                }}
-                                className="inline-flex min-w-[150px] items-center justify-center rounded-xl bg-gradient-to-r from-[#2b6cb0] via-[#3b82f6] to-[#1e40af] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg transition hover:brightness-105 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
-                                aria-label="View product details"
-                              >
-                                View Details
-                              </button>
-                              {qty > 0 ? (
+                              {soldOut ? (
+                                <button
+                                  type="button"
+                                  disabled
+                                  className="inline-flex min-w-[150px] items-center justify-center self-center whitespace-nowrap rounded-xl bg-slate-200 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                >
+                                  Out of Stock
+                                </button>
+                              ) : qty > 0 ? (
                                 <div className="w-[160px] min-w-[160px]">
                                   <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
                                     <button
@@ -1420,7 +1425,7 @@ const Home = ({ profile }) => {
                                     setBestFishAddedHintIndex(index);
                                   }}
                                   disabled={soldOut}
-                                  className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-amber-950 shadow-lg shadow-amber-900/20 transition hover:brightness-105 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                  className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl border border-[#1f4f8a] bg-[#2b6cb0] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-[#245c97] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
                                 >
                                   <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                                     <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
@@ -1518,7 +1523,7 @@ const Home = ({ profile }) => {
 
           <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
             <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-            <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
+            <div className="mb-3 rounded-r-lg border-l-4 border-blue-300 bg-gradient-to-r from-blue-100/80 via-sky-50/65 to-transparent px-3 py-2 text-left">
               <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
               <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
             </div>
@@ -1533,6 +1538,7 @@ const Home = ({ profile }) => {
                     product={product}
                     relatedProducts={getRelatedProductsFor(product)}
                     showStockBadge
+                    whiteCard
                   />
                 );
               })}
@@ -1548,7 +1554,7 @@ const Home = ({ profile }) => {
             >
               <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
               <div className="relative mb-3">
-                <div className="rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
+                <div className="rounded-r-lg border-l-4 border-blue-300 bg-gradient-to-r from-blue-100/80 via-sky-50/65 to-transparent px-3 py-2 text-left">
                   <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
                   <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                     {section.subtitle}
@@ -1576,6 +1582,7 @@ const Home = ({ profile }) => {
                       product={product}
                       relatedProducts={getRelatedProductsFor(product)}
                       showStockBadge
+                      whiteCard
                     />
                   );
                 })}
@@ -1586,7 +1593,7 @@ const Home = ({ profile }) => {
           {medicineAndFilterPicks.length > 0 && (
             <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
               <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
+              <div className="mb-3 rounded-r-lg border-l-4 border-blue-300 bg-gradient-to-r from-blue-100/80 via-sky-50/65 to-transparent px-3 py-2 text-left">
                 <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
                 <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
                   Everyday Must-Haves
@@ -1600,6 +1607,7 @@ const Home = ({ profile }) => {
                     product={product}
                     relatedProducts={getRelatedProductsFor(product)}
                     showStockBadge
+                    whiteCard
                   />
                 ))}
               </div>

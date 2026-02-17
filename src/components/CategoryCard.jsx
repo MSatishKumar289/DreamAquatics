@@ -12,6 +12,8 @@ import { useFavorites } from "../context/FavoritesContext";
 const ProductImageArea = ({
   isSubCategory,
   compact,
+  whiteCard,
+  savingsBadgeAmount,
   imageSrc,
   productTitle,
   productSubtitle,
@@ -22,9 +24,11 @@ const ProductImageArea = ({
 }) => (
       <div
         className={`relative w-full overflow-hidden rounded-t-2xl ${
-          isSubCategory
-            ? "bg-gradient-to-br from-[#FFF9E6] via-[#FFF4CC] to-[#FFFDF3]"
-            : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+          whiteCard
+            ? "bg-white"
+            : isSubCategory
+              ? "bg-gradient-to-br from-[#FFF9E6] via-[#FFF4CC] to-[#FFFDF3]"
+              : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
         }`}
       >
         <div
@@ -56,7 +60,11 @@ const ProductImageArea = ({
             <img
               src={imageSrc}
               alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-              className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] transition-transform duration-300 group-hover:scale-105"
+              className={`h-full w-full object-contain transition-transform duration-300 group-hover:scale-105 ${
+                whiteCard
+                  ? "bg-white"
+                  : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+              }`}
               onClick={onImageClick}
               onError={(e) => {
                 e.target.src =
@@ -71,7 +79,11 @@ const ProductImageArea = ({
         <img
           src={imageSrc}
           alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-          className="h-full w-full object-cover bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] transition-transform duration-300 group-hover:scale-105"
+          className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+            whiteCard
+              ? "bg-white"
+              : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+          }`}
           onClick={onImageClick}
           onError={(e) => {
             e.target.src =
@@ -83,6 +95,12 @@ const ProductImageArea = ({
       )}
       {!isSubCategory && (
         <>
+          {savingsBadgeAmount > 0 && (
+            <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
+              Save {"\u20B9"}
+              {savingsBadgeAmount.toLocaleString("en-IN")}
+            </span>
+          )}
           <button
             type="button"
             onClick={(event) => {
@@ -119,10 +137,11 @@ const ProductInfo = ({
   isSubCategory,
   isMasonry,
   productTitle,
+  productBadgeText,
   price,
+  originalPrice,
 }) => {
   const currentPrice = Number(price ?? 0);
-  const originalPrice = Math.round(currentPrice * 1.15);
   const formattedCurrentPrice = currentPrice.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -131,16 +150,15 @@ const ProductInfo = ({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-
   return (
     <div
-      className={`text-center ${
+      className={`text-left ${
         isSubCategory ? "min-h-[32px]" : "min-h-[64px]"
       } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
       <div
         className={`${
-          isSubCategory ? "" : "flex min-h-[40px] items-center justify-center"
+          isSubCategory ? "" : "flex min-h-[40px] items-center justify-start"
         }`}
       >
         <h3
@@ -153,10 +171,17 @@ const ProductInfo = ({
           {productTitle}
         </h3>
       </div>
+      {!isSubCategory && productBadgeText && (
+        <div className="mt-1 flex justify-start">
+          <span className="inline-flex max-w-[88%] items-center rounded-md border border-[#1d4ed8] bg-[#2563eb] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">
+            <span className="truncate">{productBadgeText}</span>
+          </span>
+        </div>
+      )}
       {!isSubCategory && (
-        <div className="mt-1 flex min-h-[34px] w-full flex-col items-center justify-center">
-          <div className="flex h-[28px] w-full items-center justify-center">
-            <div className="inline-flex items-center justify-center gap-2 sm:gap-3">
+        <div className="mt-1 flex min-h-[34px] w-full flex-col items-start justify-center">
+          <div className="flex h-[28px] w-full items-center justify-start">
+            <div className="inline-flex items-center justify-start gap-2 sm:gap-3">
               {currentPrice > 0 ? (
                 <p className="text-[12px] font-medium text-slate-400 line-through">
                   {"\u20B9"}
@@ -205,7 +230,7 @@ const CartControls = ({
         <button
           type="button"
           onClick={onAddToCart}
-          className="group inline-flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
+          className="group inline-flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-[#1f4f8a] bg-[#2b6cb0] px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#245c97] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
         >
           <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
             <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -331,6 +356,7 @@ const CategoryCard = ({
   compact = false,
   borderless = false,
   itemDetailGoldenBorder = false,
+  whiteCard = true,
 }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -352,10 +378,26 @@ const CategoryCard = ({
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
     : product?.product_images?.[0]?.url || product?.image;
+  const productBadgeTextRaw =
+    product?.badge || product?.label || product?.tag || product?.badgeText || "";
+  const productBadgeTextValue = typeof productBadgeTextRaw === "string"
+    ? productBadgeTextRaw.trim()
+    : "";
+  const productBadgeText = !isSubCategory
+    ? productBadgeTextValue || "Top Pick"
+    : productBadgeTextValue;
 
   const availabilityText = String(
     product?.availability || product?.status || ""
   ).toLowerCase();
+  const currentPrice = Number(product?.price ?? 0);
+  const derivedOriginalPrice = Number(
+    product?.original_price ?? product?.mrp ?? Math.round(currentPrice * 1.15)
+  );
+  const priceForDisplay = Number.isFinite(derivedOriginalPrice) && derivedOriginalPrice > 0
+    ? derivedOriginalPrice
+    : Math.round(currentPrice * 1.15);
+  const savingsBadgeAmount = Math.max(0, Math.round(priceForDisplay - currentPrice));
   const parsedStockCount = Number.isFinite(Number(product?.stock_count))
     ? Number(product?.stock_count)
     : null;
@@ -516,9 +558,13 @@ const CategoryCard = ({
   return (
     <article
       className={`group relative overflow-visible rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
-        isSubCategory
-          ? "cursor-pointer pb-6 sm:pb-8 bg-gradient-to-b from-[#FFF9E6] via-[#FFF4CD] to-[#FFFDF3] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
-          : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
+        whiteCard
+          ? isSubCategory
+            ? "cursor-pointer pb-6 sm:pb-8 bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
+            : "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
+          : isSubCategory
+            ? "cursor-pointer pb-6 sm:pb-8 bg-gradient-to-b from-[#FFF9E6] via-[#FFF4CD] to-[#FFFDF3] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
+            : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
       } ${
         itemDetailGoldenBorder && !isSubCategory
           ? "border-[0.5px] border-amber-300/90"
@@ -542,6 +588,8 @@ const CategoryCard = ({
       <ProductImageArea
         isSubCategory={isSubCategory}
         compact={compact}
+        whiteCard={whiteCard}
+        savingsBadgeAmount={savingsBadgeAmount}
         imageSrc={imageSrc}
         productTitle={productTitle}
         productSubtitle={productSubtitle}
@@ -571,7 +619,9 @@ const CategoryCard = ({
             isSubCategory={isSubCategory}
             isMasonry={isMasonry}
             productTitle={productTitle}
+            productBadgeText={productBadgeText}
             price={product?.price}
+            originalPrice={priceForDisplay}
           />
         )}
 
