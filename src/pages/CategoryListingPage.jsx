@@ -21,6 +21,7 @@ const CategoryListingPage = () => {
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
   const [hasLongDescription, setHasLongDescription] = useState(false);
+  const [customTankRequest, setCustomTankRequest] = useState("");
   const searchInputRef = useRef(null);
   const descriptionRef = useRef(null);
   const openingSearchRef = useRef(false);
@@ -265,6 +266,7 @@ const CategoryListingPage = () => {
 
   // ✅ decide which list to render
   const isSubcategoryMode = !!subCategorySlug;
+  const isTankCategoryLanding = normalizedCategorySlug === "tanks" && !isSubcategoryMode;
   const listForGrid = isSubcategoryMode ? productsForIteration : subcategoryCards;
   const filteredList = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -324,6 +326,13 @@ const CategoryListingPage = () => {
 
   const handleAddToCart = (product, qty = 1) => {
     addToCart(product, qty);
+  };
+
+  const handleSendCustomTankRequest = () => {
+    const message = customTankRequest.trim()
+      ? `Hi Dream Aquatics, I need a custom aquarium tank.\n\nMy requirement:\n${customTankRequest.trim()}`
+      : "Hi Dream Aquatics, I need a custom aquarium tank. Please contact me for consultation.";
+    window.open(`https://wa.me/918667418965?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
   const searchBar = (
@@ -526,6 +535,47 @@ const CategoryListingPage = () => {
               </p>
             </div>
           </div>
+          </section>
+        )}
+
+        {!isSearching && isTankCategoryLanding && (
+          <section className="mt-6 rounded-3xl border border-slate-200 bg-white/85 p-5 shadow-lg">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-slate-900 sm:text-2xl">
+                Custom Tank Enquiry
+              </h2>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                Tell Us Your Size, Budget, And Preferred Setup
+              </p>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 sm:p-4">
+              <label htmlFor="tank-custom-request" className="mb-2 block text-sm font-semibold text-slate-800">
+                Share your custom tank requirement
+              </label>
+              <div className="flex items-center gap-2">
+                <textarea
+                  id="tank-custom-request"
+                  value={customTankRequest}
+                  onChange={(event) => setCustomTankRequest(event.target.value)}
+                  rows={3}
+                  placeholder="Example: 4ft planted tank with cabinet, low maintenance setup, budget under ₹35,000"
+                  className="min-h-[84px] w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendCustomTankRequest}
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md transition hover:brightness-105"
+                  aria-label="Send custom tank requirement"
+                  title="Send"
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.1">
+                    <path d="M3 11.5 21 3l-8.5 18-2.2-7.3L3 11.5Z" />
+                    <path d="M10.4 13.7 21 3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </section>
         )}
 

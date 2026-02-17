@@ -1,34 +1,13 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
-import inStockIcon from "../assets/Icons/in.png";
-import outStockIcon from "../assets/Icons/out.png";
 import arrowIcon from "../assets/Icons/arrow.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
-
-const StockStatusRow = ({ isSoldOut }) => (
-  <div className="mb-0.5 flex items-center gap-2">
-    <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap sm:gap-1.5 sm:px-2.5 sm:text-[11px] ${
-        isSoldOut ? "text-rose-700" : "text-emerald-700"
-      }`}
-    >
-      <img
-        src={isSoldOut ? outStockIcon : inStockIcon}
-        alt=""
-        className="h-5 w-5"
-        aria-hidden="true"
-      />
-      {isSoldOut ? "Out of Stock" : "In Stock"}
-    </span>
-    <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
-  </div>
-);
 
 const ProductImageArea = ({
   isSubCategory,
@@ -50,7 +29,7 @@ const ProductImageArea = ({
       >
         <div
           className={`relative w-full border-b border-slate-200/60 rounded-t-2xl overflow-hidden ${
-            compact ? "aspect-[1/1]" : "aspect-[4/3] sm:aspect-[4/3]"
+            compact ? "aspect-[1/1]" : "aspect-[4/4.2] sm:aspect-[4/4.3]"
           }`}
         >
       {isSubCategory ? (
@@ -92,7 +71,7 @@ const ProductImageArea = ({
         <img
           src={imageSrc}
           alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-          className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] transition-transform duration-300 group-hover:scale-105"
           onClick={onImageClick}
           onError={(e) => {
             e.target.src =
@@ -140,12 +119,10 @@ const ProductInfo = ({
   isSubCategory,
   isMasonry,
   productTitle,
-  productSubtitle,
   price,
 }) => {
   const currentPrice = Number(price ?? 0);
   const originalPrice = Math.round(currentPrice * 1.15);
-  const savingsAmount = Math.max(0, originalPrice - currentPrice);
   const formattedCurrentPrice = currentPrice.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -154,47 +131,31 @@ const ProductInfo = ({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  const formattedSavingsAmount = savingsAmount.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 
   return (
     <div
       className={`text-center ${
-        isSubCategory ? "min-h-[32px]" : "min-h-[95px]"
+        isSubCategory ? "min-h-[32px]" : "min-h-[64px]"
       } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
       <div
         className={`${
-          isSubCategory ? "" : "flex min-h-[34px] items-center justify-center"
+          isSubCategory ? "" : "flex min-h-[40px] items-center justify-center"
         }`}
       >
         <h3
           className={`px-1 font-semibold text-[#102A43] ${
             isSubCategory
               ? "text-[0.72rem] sm:text-[0.82rem] line-clamp-2"
-              : "text-[0.850rem] sm:text-[1rem] line-clamp-none sm:line-clamp-2"
+              : "text-[0.82rem] sm:text-[0.92rem] leading-tight line-clamp-2"
           }`}
         >
           {productTitle}
         </h3>
       </div>
-      {!isSubCategory && productSubtitle && (
-        <p className="mt-1 text-sm text-slate-600 line-clamp-1">
-          {productSubtitle}
-        </p>
-      )}
       {!isSubCategory && (
-        <div className="mt-1 flex justify-center">
-          <span className="inline-block rounded-sm border border-amber-500/70 bg-amber-200/80 px-1.5 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-amber-600/30">
-            Peaceful {"\u2022"} Easy Care
-          </span>
-        </div>
-      )}
-      {!isSubCategory && (
-        <div className="mt-1 flex min-h-[48px] w-full flex-col items-center justify-center">
-          <div className="flex h-[32px] w-full items-center justify-center">
+        <div className="mt-1 flex min-h-[34px] w-full flex-col items-center justify-center">
+          <div className="flex h-[28px] w-full items-center justify-center">
             <div className="inline-flex items-center justify-center gap-2 sm:gap-3">
               {currentPrice > 0 ? (
                 <p className="text-[12px] font-medium text-slate-400 line-through">
@@ -210,12 +171,6 @@ const ProductInfo = ({
               </p>
             </div>
           </div>
-          {savingsAmount > 0 && (
-            <p className="text-[11px] font-semibold text-emerald-600">
-              You Save {"\u20B9"}
-              {formattedSavingsAmount}
-            </p>
-          )}
         </div>
       )}
     </div>
@@ -225,7 +180,6 @@ const ProductInfo = ({
 const CartControls = ({
   currentQty,
   isSoldOut,
-  onViewDetails,
   onAddToCart,
   onDecrease,
   onIncrease,
@@ -238,33 +192,33 @@ const CartControls = ({
         Added 1 item
       </span>
     )}
-    <div className="mb-2 flex justify-center">
-      <button
-        type="button"
-        onClick={onViewDetails}
-        className="inline-flex h-8 w-[135px] min-w-[135px] items-center justify-center rounded-lg bg-gradient-to-r from-[#2b6cb0] via-[#3b82f6] to-[#1e40af] px-3 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-      >
-        View Details
-      </button>
-    </div>
-    {currentQty === 0 ? (
-      <div className="relative flex justify-center">
+    <div className="flex items-center gap-2">
+      {isSoldOut ? (
+        <button
+          type="button"
+          disabled
+          className="inline-flex h-9 w-full min-w-0 items-center justify-center rounded-lg bg-slate-200 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm"
+        >
+          Out of stock
+        </button>
+      ) : currentQty === 0 ? (
         <button
           type="button"
           onClick={onAddToCart}
-          disabled={isSoldOut}
-                  className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
+          className="group inline-flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
         >
           <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
             <img src={plusIcon} alt="" className="h-5 w-5" />
           </span>
           Add to cart
         </button>
-      </div>
-    ) : (
-      <div className="flex justify-center">
-        <div className="w-[160px] min-w-[160px]">
-          <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
+      ) : (
+        <div className="w-full min-w-0">
+          <div
+            className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm"
+            onClick={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
             <button
               type="button"
               onClick={onDecrease}
@@ -288,8 +242,8 @@ const CartControls = ({
             </button>
           </div>
         </div>
-      </div>
-    )}
+      )}
+    </div>
   </div>
 );
 
@@ -317,16 +271,22 @@ const SubcategoryFooter = ({
 const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
   if (!isOpen || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4"
       onClick={(event) => {
+        event.stopPropagation();
         if (event.target === event.currentTarget) onCancel?.();
       }}
+      onPointerDown={(event) => event.stopPropagation()}
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+      <div
+        className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl"
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
         <h3 className="text-lg font-semibold text-slate-900">
           Remove item?
         </h3>
@@ -336,21 +296,28 @@ const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
         <div className="mt-4 flex items-center justify-center gap-3">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={(event) => {
+              event.stopPropagation();
+              onCancel?.();
+            }}
             className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
             Cancel
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={(event) => {
+              event.stopPropagation();
+              onConfirm?.();
+            }}
             className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
           >
             Remove
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -360,7 +327,6 @@ const CategoryCard = ({
   relatedProducts = [],
   isSubCategory = false,
   onAddToCart,
-  showStockBadge,
   isMasonry = false,
   compact = false,
   borderless = false,
@@ -397,13 +363,15 @@ const CategoryCard = ({
     ? parsedStockCount <= 0
     : /out|sold/.test(availabilityText);
 
-  const shouldShowStockBadge =
-    typeof showStockBadge === "boolean" ? showStockBadge : !isSubCategory;
-
   const handleClick = () => {
-    if (!isSubCategory) return;
-    if (product?.subcategorySlug) {
-      navigate(`/category/${categoryName}/${product.subcategorySlug}`);
+    if (isSubCategory) {
+      if (product?.subcategorySlug) {
+        navigate(`/category/${categoryName}/${product.subcategorySlug}`);
+      }
+      return;
+    }
+    if (product?.id) {
+      navigate(`/product/${product.id}`, { state: { product, relatedProducts } });
     }
   };
 
@@ -558,14 +526,13 @@ const CategoryCard = ({
             ? "border-0"
             : "border border-slate-300"
       } ${compact ? "h-full" : ""}`}
-      tabIndex={isSubCategory ? "0" : undefined}
-      role={isSubCategory ? "button" : "group"}
+      tabIndex="0"
+      role="button"
       aria-label={
         isSubCategory ? `View ${productTitle} subcategory` : productTitle
       }
       onClick={handleClick}
       onKeyDown={(event) => {
-        if (!isSubCategory) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           handleClick();
@@ -596,7 +563,7 @@ const CategoryCard = ({
               ? "flex flex-1 flex-col gap-1 sm:gap-1.5"
               : compact
                 ? "flex min-h-[111px] flex-1 flex-col gap-1 sm:gap-1.5"
-                : "flex min-h-[137px] flex-1 flex-col gap-1 sm:min-h-[159px] sm:gap-1.5"
+                : "flex min-h-[108px] flex-1 flex-col gap-1 sm:min-h-[120px] sm:gap-1.5"
         }`}
       >
         {!isSubCategory && (
@@ -604,23 +571,14 @@ const CategoryCard = ({
             isSubCategory={isSubCategory}
             isMasonry={isMasonry}
             productTitle={productTitle}
-            productSubtitle={productSubtitle}
             price={product?.price}
           />
-        )}
-
-        {!isSubCategory && (
-          <StockStatusRow isSoldOut={isSoldOut} />
         )}
 
         {!isSubCategory && (
           <CartControls
             currentQty={currentQty}
             isSoldOut={isSoldOut}
-            onViewDetails={(event) => {
-              event.stopPropagation();
-              navigate(`/product/${product?.id}`, { state: { product, relatedProducts } });
-            }}
             onAddToCart={handleAddToCart}
             onDecrease={(event) => {
               event.stopPropagation();

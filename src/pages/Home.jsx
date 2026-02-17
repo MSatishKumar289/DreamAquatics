@@ -1141,11 +1141,11 @@ const Home = ({ profile }) => {
                 Shop by Category
               </h2>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {categoryShowcaseCards.map((card) => (
                 <article
                   key={card.id}
-                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-[22px] border border-white/40 shadow-[0_14px_40px_rgba(15,23,42,0.16)] sm:rounded-[24px] md:aspect-[16/9] lg:aspect-[21/9]"
+                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-[22px] border border-white/40 shadow-[0_14px_40px_rgba(15,23,42,0.16)] sm:rounded-[24px] md:aspect-[16/9] lg:aspect-[3/4]"
                   role="button"
                   tabIndex={0}
                   aria-label={`Open ${card.title}`}
@@ -1202,15 +1202,15 @@ const Home = ({ profile }) => {
                       quickPickItemRefs.current[homeShortcutCircles.findIndex((it) => it.key === item.key)] = node;
                     }}
                   >
-                    <span className="mx-auto inline-flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 shadow-sm transition group-hover:shadow-md sm:h-[108px] sm:w-[108px] lg:h-[208px] lg:w-[208px]">
+                    <span className="relative mx-auto inline-flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 shadow-sm transition group-hover:shadow-md sm:h-[108px] sm:w-[108px] lg:h-[208px] lg:w-[208px]">
                       <img
                         src={item.image}
                         alt={item.title}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       />
-                    </span>
-                    <span className="mt-2 block max-w-full text-center text-[1.05rem] font-semibold leading-tight text-[#1D4ED8] sm:max-w-[122px] sm:text-base lg:max-w-full">
-                      {item.title}
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/45 via-black/20 to-black/10 px-3 text-center text-[1rem] font-semibold leading-tight text-white sm:text-[0.95rem] lg:text-[1.05rem]">
+                        {item.title}
+                      </span>
                     </span>
                   </button>
                 ))}

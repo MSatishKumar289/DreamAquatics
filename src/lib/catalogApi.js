@@ -103,6 +103,50 @@ export async function fetchAllProductsWithCategories() {
 }
 
 /**
+ * Fetch single product by id with category + subcategory
+ * (Used for direct-open product details URLs)
+ */
+export async function fetchProductById(productId) {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        price,
+        description,
+        stock_count,
+        is_active,
+        created_at,
+        subcategory:subcategories (
+          id,
+          name,
+          slug,
+          description,
+          category:categories (
+            id,
+            name,
+            slug
+          )
+        ),
+        product_images (
+          id,
+          url,
+          alt,
+          position
+        )
+      `)
+      .eq("id", productId)
+      .eq("is_active", true)
+      .single();
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+/**
  * Create product
  */
 export async function createProduct(payload) {

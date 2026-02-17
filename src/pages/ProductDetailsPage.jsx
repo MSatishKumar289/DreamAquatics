@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { getImageWithFallback } from "../assets";
@@ -8,18 +8,61 @@ import incMinusIcon from "../assets/Icons/iminus.png";
 import arrowIcon from "../assets/Icons/arrow.png";
 import { renderFormattedDescription } from "../utils/formatDescription";
 import { useEffect, useState } from "react";
+import { fetchProductById } from "../lib/catalogApi";
 
 const ProductDetailsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { productId } = useParams();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [showAddedHint, setShowAddedHint] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [isResolvingProduct, setIsResolvingProduct] = useState(false);
+  const [resolveError, setResolveError] = useState("");
   const relatedTrackRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const product = location.state?.product || null;
+  const stateProduct = location.state?.product || null;
+  const [resolvedProduct, setResolvedProduct] = useState(stateProduct);
+  const product = resolvedProduct || null;
+
+  useEffect(() => {
+    if (stateProduct) {
+      setResolvedProduct(stateProduct);
+      setResolveError("");
+      setIsResolvingProduct(false);
+      return;
+    }
+
+    if (!productId) {
+      setResolvedProduct(null);
+      setResolveError("Missing product id.");
+      setIsResolvingProduct(false);
+      return;
+    }
+
+    let active = true;
+    setIsResolvingProduct(true);
+    setResolveError("");
+
+    (async () => {
+      const { data, error } = await fetchProductById(productId);
+      if (!active) return;
+
+      if (error || !data) {
+        setResolvedProduct(null);
+        setResolveError("Product not found.");
+      } else {
+        setResolvedProduct(data);
+      }
+      setIsResolvingProduct(false);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [stateProduct, productId]);
   const relatedProducts = useMemo(() => {
     if (!product) return [];
     const source = Array.isArray(location.state?.relatedProducts) ? location.state.relatedProducts : [];
@@ -92,13 +135,27 @@ const ProductDetailsPage = () => {
     node.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
   };
 
+  if (isResolvingProduct) {
+    return (
+      <main className="min-h-screen bg-white py-8">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg">
+            <p className="text-lg font-semibold text-slate-900">Loading product details...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (!product) {
     return (
       <main className="min-h-screen bg-white py-8">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg">
-            <p className="text-lg font-semibold text-slate-900">Product details are unavailable on direct open.</p>
-            <p className="mt-2 text-sm text-slate-600">Please open this page using the View Details button from listing/home.</p>
+            <p className="text-lg font-semibold text-slate-900">Product not available.</p>
+            <p className="mt-2 text-sm text-slate-600">
+              {resolveError || "This product may be inactive or removed."}
+            </p>
             <Link to="/" className="mt-4 inline-flex rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
               Back to Home
             </Link>
