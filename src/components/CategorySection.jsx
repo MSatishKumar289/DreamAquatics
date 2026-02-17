@@ -108,11 +108,11 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
               </p>
             </div>
             <button
-              className="group relative inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-200 hover:shadow-[0_10px_20px_rgba(37,99,235,0.2)] focus:outline-none sm:px-4 sm:text-xs sm:tracking-[0.3em]"
+              className="group relative inline-flex items-center gap-2 rounded-2xl border border-transparent bg-transparent px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-amber-600 transition hover:-translate-y-0.5 hover:text-amber-700 focus:outline-none sm:px-4 sm:text-[14px] sm:tracking-[0.3em] lg:text-[15px]"
               aria-label={`View all ${displayName.toLowerCase()}`}
               onClick={handleViewAll}
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-transparent text-amber-600">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-3.5 w-3.5"
@@ -126,7 +126,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
                 </svg>
               </span>
               <span>View All</span>
-              <span className="absolute -right-2 -top-2 inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white shadow ring-2 ring-blue-300">
+              <span className="absolute -right-2 -top-2 inline-flex min-w-[22px] items-center justify-center rounded-full border border-amber-300 bg-transparent px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-amber-600">
                 {productCount}
               </span>
             </button>

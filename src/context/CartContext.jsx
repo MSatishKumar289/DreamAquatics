@@ -36,7 +36,7 @@ export const CartProvider = ({ children }) => {
     persistCartToStorage(cartItems);
   }, [cartItems]);
 
-  const addItem = (product, qty = 1) => {
+  const addItem = (product, qty = 1, options = {}) => {
     if (!product?.id) return;
     setCartItems((prev) => {
       const existing = prev.find((item) => item.id === product.id);
@@ -49,10 +49,12 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, normalizeItem({ ...product, qty })];
     });
-    setLastAdded({
-      item: normalizeItem({ ...product, qty }),
-      at: Date.now(),
-    });
+    if (!options?.silent) {
+      setLastAdded({
+        item: normalizeItem({ ...product, qty }),
+        at: Date.now(),
+      });
+    }
   };
 
   const updateQty = (productId, qty) => {

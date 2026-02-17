@@ -571,6 +571,7 @@ const CategoryListingPage = () => {
                       <CategoryCard
                         categoryName={categorySlug}
                         product={item}
+                        relatedProducts={isSubcategoryMode ? productsForIteration : []}
                         isSubCategory={!isSubcategoryMode}
                         onAddToCart={handleAddToCart}
                         showStockBadge={isSubcategoryMode}
@@ -587,6 +588,7 @@ const CategoryListingPage = () => {
                       key={item.id}
                       categoryName={categorySlug}
                       product={item}
+                      relatedProducts={isSubcategoryMode ? productsForIteration : []}
                       isSubCategory={!isSubcategoryMode}
                       onAddToCart={handleAddToCart}
                       showStockBadge={isSubcategoryMode}

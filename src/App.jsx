@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import Search from './pages/Search';
 import TrackOrder from './pages/TrackOrder';
 import UnderHundredPage from './pages/UnderHundredPage';
+import ProductDetailsPage from './pages/ProductDetailsPage';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
@@ -55,7 +56,8 @@ function AppContent() {
   const showPersistentWhatsApp =
     pathname === '/profile' ||
     pathname === '/checkout' ||
-    pathname.startsWith('/category/');
+    pathname.startsWith('/category/') ||
+    pathname.startsWith('/product/');
 
   const { clearCart, lastAddedAt, lastAddedItem } = useCart();
   const { clearFavorites } = useFavorites();
@@ -528,6 +530,7 @@ function AppContent() {
               path="/category/:categorySlug/:subCategorySlug"
               element={<CategoryListingPage />}
             />
+            <Route path="/product/:productId" element={<ProductDetailsPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route
               path="/checkout"

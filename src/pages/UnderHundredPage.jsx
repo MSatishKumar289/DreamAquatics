@@ -46,6 +46,12 @@ const UnderHundredPage = () => {
     return slug || "fishes";
   };
 
+  const getRelatedProductsFor = (baseProduct) => {
+    const subcategoryId = baseProduct?.subcategory?.id;
+    if (!subcategoryId) return [];
+    return items.filter((item) => item?.subcategory?.id === subcategoryId);
+  };
+
   return (
     <main className="min-h-screen bg-transparent px-4 pb-12 pt-16 sm:px-6 md:pt-20">
       <section className="container mx-auto">
@@ -88,6 +94,7 @@ const UnderHundredPage = () => {
                   key={product.id}
                   categoryName={getRouteCategorySlug(product)}
                   product={product}
+                  relatedProducts={getRelatedProductsFor(product)}
                   showStockBadge
                   borderless
                   itemDetailGoldenBorder

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useCart } from "../context/CartContext";
 import { getImageWithFallback } from "../assets";
@@ -20,8 +20,20 @@ const Spinner = ({ size = 20 }) => (
 );
 
 const Checkout = ({ user, onRequestLogin }) => {
+  const location = useLocation();
   const { cartItems, subtotal, clearCart } = useCart();
   const { addresses, loadingAddresses, addAddress, updateAddress, refreshAddresses } = useProfile();
+  const buyNowProduct = location.state?.buyNowProduct || null;
+  const isBuyNowCheckout = !!buyNowProduct;
+  const checkoutItems = useMemo(() => {
+    if (!buyNowProduct) return cartItems;
+    const qty = Math.max(1, Number(buyNowProduct?.qty || 1));
+    return [{ ...buyNowProduct, qty }];
+  }, [buyNowProduct, cartItems]);
+  const checkoutSubtotal = useMemo(() => {
+    if (!isBuyNowCheckout) return subtotal;
+    return checkoutItems.reduce((sum, item) => sum + Number(item?.price || 0) * Number(item?.qty || 1), 0);
+  }, [isBuyNowCheckout, subtotal, checkoutItems]);
 
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderSnapshot, setOrderSnapshot] = useState(null);
@@ -130,8 +142,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
     // Auto show review screen (as per requirement)
     setOrderSnapshot({
-      items: cartItems,
-      subtotal,
+      items: checkoutItems,
+      subtotal: checkoutSubtotal,
       address: nextForm,
     });
 
@@ -140,7 +152,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
     window.scrollTo({ top: 0, behavior: "auto" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, loadingAddresses, addresses]);
+  }, [isLoggedIn, loadingAddresses, addresses, checkoutItems, checkoutSubtotal]);
 
   useEffect(() => {
     if (!orderPlaced) return;
@@ -202,9 +214,9 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
         city: form.city,
         landmark: form.landmark || null,
         pincode: form.pincode,
-        subtotal,
+        subtotal: checkoutSubtotal,
         shipping_fee: STANDARD_SHIPPING,
-        total: subtotal + STANDARD_SHIPPING,
+        total: checkoutSubtotal + STANDARD_SHIPPING,
         status: "awaiting_approval",
       };
   
@@ -219,7 +231,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
       // 2) create order items
       const { error: itemsErr } = await createOrderItems({
         orderId: order.id,
-        cartItems,
+        cartItems: checkoutItems,
       });
   
       if (itemsErr) {
@@ -230,8 +242,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
   
       // 3) WhatsApp notification (non-blocking)
       try {
-        const orderTotal = subtotal + STANDARD_SHIPPING;
-        const itemsText = cartItems
+        const orderTotal = checkoutSubtotal + STANDARD_SHIPPING;
+        const itemsText = checkoutItems
           .map((item) => `${item.title || item.name || "Item"} x${item.qty || 1}`)
           .join(" ");
         const adminOrderBaseUrl = import.meta.env.VITE_ADMIN_ORDER_URL || "";
@@ -246,7 +258,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
           customerName: form.name,
           customerMobile: form.mobile,
           total: orderTotal,
-          itemCount: cartItems.length,
+          itemCount: checkoutItems.length,
           itemsText,
           orderLink,
         });
@@ -257,15 +269,15 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
       // 4) success UI
       setOrderSnapshot({
-        items: cartItems,
-        subtotal,
+        items: checkoutItems,
+        subtotal: checkoutSubtotal,
         address: form,
         order,
       });
   
       setOrderPlaced(true);
       setShowCelebration(true);
-      clearCart();
+      if (!isBuyNowCheckout) clearCart();
     } catch (err) {
       console.error(err);
       showToast(err.message || "Failed to place order", "error");
@@ -361,8 +373,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
       setEditingFromReview(false);
   
       setOrderSnapshot({
-        items: cartItems,
-        subtotal,
+        items: checkoutItems,
+        subtotal: checkoutSubtotal,
         address: form,
       });
   
@@ -405,8 +417,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
     setEditingFromReview(false);
   
     setOrderSnapshot({
-      items: cartItems,
-      subtotal,
+      items: checkoutItems,
+      subtotal: checkoutSubtotal,
       address: form,
     });
   
@@ -417,8 +429,8 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
   // ---- Review / Placed screen ----
   if (orderPlaced || showReviewScreen) {
-    const items = orderSnapshot?.items || cartItems;
-    const orderSubtotal = orderSnapshot?.subtotal ?? subtotal;
+    const items = orderSnapshot?.items || checkoutItems;
+    const orderSubtotal = orderSnapshot?.subtotal ?? checkoutSubtotal;
     const orderTotal = orderSubtotal + STANDARD_SHIPPING;
     const address = orderSnapshot?.address || form;
     const placedOrder = orderSnapshot?.order || null;
@@ -625,13 +637,12 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                       }`}
                     >
                       {items.map((item) => {
-                        let imageSrc = item.image;
-                        if (typeof item.image === "string") {
-                          if (!item.image.startsWith("http")) {
-                            imageSrc = getImageWithFallback(item.image, item.title);
-                          }
-                        }
-                        if (!imageSrc) imageSrc = getImageWithFallback("", item.title);
+                        const itemTitle = item.title || item.name || "Product";
+                        const rawImage = item.image || item?.product_images?.[0]?.url || "";
+                        const imageSrc =
+                          typeof rawImage === "string" && rawImage.startsWith("http")
+                            ? rawImage
+                            : getImageWithFallback(rawImage, itemTitle);
 
                         return (
                           <div
@@ -640,12 +651,12 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                           >
                             <img
                               src={imageSrc}
-                              alt={item.title}
+                              alt={itemTitle}
                               className="h-20 w-20 rounded-xl object-cover"
                             />
                             <div className="flex-1">
                               <p className="text-base font-semibold text-gray-900">
-                                {item.title}
+                                {itemTitle}
                               </p>
                               <p className="text-sm text-gray-600">Qty {item.qty}</p>
                             </div>

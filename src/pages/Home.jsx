@@ -4,7 +4,6 @@ import { fetchAllProductsWithCategories } from '../lib/catalogApi';
 import CategorySection from '../components/CategorySection';
 import CategoryCard from '../components/CategoryCard';
 import Spinner from '../components/Spinner';
-import ProductModal from '../components/ProductModal';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
 import BgImage from '../assets/Images/homebgnew.png';
@@ -19,6 +18,7 @@ import plusIcon from '../assets/Icons/plus.png';
 import incPlusIcon from '../assets/Icons/iplus.png';
 import incMinusIcon from '../assets/Icons/iminus.png';
 import mapIcon from '../assets/Icons/map.png';
+import arrowIcon from '../assets/Icons/arrow.png';
 import bestSellerIcon from '../assets/Icons/BestSeller.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
 
@@ -42,8 +42,6 @@ const Home = ({ profile }) => {
   const [activeHighlight, setActiveHighlight] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCategory, setSearchCategory] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isProductOpen, setIsProductOpen] = useState(false);
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(true);
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
@@ -375,6 +373,12 @@ const Home = ({ profile }) => {
       }, {}),
     [CATEGORY_SLUG_MAP]
   );
+
+  const getRelatedProductsFor = (baseProduct) => {
+    const subcategoryId = baseProduct?.subcategory?.id;
+    if (!subcategoryId) return [];
+    return allProducts.filter((item) => item?.subcategory?.id === subcategoryId);
+  };
 
   const newArrivals = useMemo(() => {
     const sorted = [...allProducts].sort(
@@ -1031,23 +1035,6 @@ const Home = ({ profile }) => {
                 aria-label="Enlarge highlight image"
               >
                 <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" />
-                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M14 5h5v5" />
-                    <path d="M19 5l-7 7" />
-                    <path d="M10 19H5v-5" />
-                    <path d="M5 19l7-7" />
-                  </svg>
-                </span>
               </button>
               <button
                 type="button"
@@ -1056,23 +1043,6 @@ const Home = ({ profile }) => {
                 aria-label="Enlarge highlight image"
               >
                 <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" />
-                <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M14 5h5v5" />
-                    <path d="M19 5l-7 7" />
-                    <path d="M10 19H5v-5" />
-                    <path d="M5 19l7-7" />
-                  </svg>
-                </span>
               </button>
             </div>
             <div className="mt-2 flex justify-center">
@@ -1146,6 +1116,7 @@ const Home = ({ profile }) => {
                           ) || 'fishes'
                         }
                         product={product}
+                        relatedProducts={getRelatedProductsFor(product)}
                         showStockBadge
                       />
                     </div>
@@ -1198,11 +1169,9 @@ const Home = ({ profile }) => {
                     <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/95 sm:text-[11px]">
                       {card.startFrom !== null ? `Starts from \u20B9${card.startFrom.toLocaleString('en-IN')}` : 'Starts from \u20B9-'}
                     </p>
-                    <span className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-950 transition group-hover:brightness-105 sm:px-3.5 sm:text-xs">
+                    <span className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-400 transition group-hover:text-amber-300 sm:px-3.5 sm:text-[13px]">
                       Shop Now
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                        <path d="M5 12h14m-5-5 5 5-5 5" />
-                      </svg>
+                      <img src={arrowIcon} alt="" className="h-[21px] w-[21px] object-contain" aria-hidden="true" />
                     </span>
                   </div>
                 </article>
@@ -1338,32 +1307,6 @@ const Home = ({ profile }) => {
                               alt={product?.name || "Best seller"}
                               className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
                             />
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setSelectedProduct(product);
-                                setIsProductOpen(true);
-                              }}
-                              className="absolute bottom-2 right-2 z-30 inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow"
-                              aria-label="Enlarge product image"
-                            >
-                              <svg
-                                viewBox="0 0 24 24"
-                                className="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                              >
-                                <path d="M14 5h5v5" />
-                                <path d="M19 5l-7 7" />
-                                <path d="M10 19H5v-5" />
-                                <path d="M5 19l7-7" />
-                              </svg>
-                            </button>
                           </div>
                           <div className="flex flex-1 flex-col px-3 py-3 text-center sm:px-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
@@ -1413,12 +1356,28 @@ const Home = ({ profile }) => {
                               </p>
                               <span className="h-px flex-1 bg-slate-300" aria-hidden="true" />
                             </div>
-                            <div className="relative mt-auto flex justify-center pt-5">
+                            <div className="relative mt-auto flex flex-col items-center gap-2 pt-5">
                               {bestFishAddedHintIndex === index && (
                                 <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                                   1 item added
                                 </span>
                               )}
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  navigate(`/product/${product?.id}`, {
+                                    state: {
+                                      product,
+                                      relatedProducts: getRelatedProductsFor(product),
+                                    },
+                                  });
+                                }}
+                                className="inline-flex min-w-[150px] items-center justify-center rounded-xl bg-gradient-to-r from-[#2b6cb0] via-[#3b82f6] to-[#1e40af] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg transition hover:brightness-105 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                aria-label="View product details"
+                              >
+                                View Details
+                              </button>
                               {qty > 0 ? (
                                 <div className="w-[160px] min-w-[160px]">
                                   <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm">
@@ -1572,6 +1531,7 @@ const Home = ({ profile }) => {
                     key={`new-${product.id}`}
                     categoryName={categoryKey}
                     product={product}
+                    relatedProducts={getRelatedProductsFor(product)}
                     showStockBadge
                   />
                 );
@@ -1598,12 +1558,10 @@ const Home = ({ profile }) => {
                   <button
                     type="button"
                     onClick={() => navigate("/under-100")}
-                    className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-950 shadow-md shadow-amber-900/20 transition hover:brightness-105"
+                    className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-transparent px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-amber-600 transition hover:text-amber-700 lg:text-[14px]"
                   >
                     View All
-                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                      <path d="M5 12h14m-5-5 5 5-5 5" />
-                    </svg>
+                    <img src={arrowIcon} alt="" className="h-[21px] w-[21px] object-contain" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -1616,6 +1574,7 @@ const Home = ({ profile }) => {
                       key={`${section.key}-${product.id}`}
                       categoryName={categoryKey}
                       product={product}
+                      relatedProducts={getRelatedProductsFor(product)}
                       showStockBadge
                     />
                   );
@@ -1639,6 +1598,7 @@ const Home = ({ profile }) => {
                     key={`med-filter-${product.id}`}
                     categoryName="accessories"
                     product={product}
+                    relatedProducts={getRelatedProductsFor(product)}
                     showStockBadge
                   />
                 ))}
@@ -1721,12 +1681,6 @@ const Home = ({ profile }) => {
           <img src={WhatsIcon} alt="" className="h-full w-full object-contain" aria-hidden="true" />
         </a>
       )}
-      <ProductModal
-        isOpen={isProductOpen}
-        product={selectedProduct}
-        onClose={() => setIsProductOpen(false)}
-        onAddToCart={(product, qty) => addToCart(product, qty)}
-      />
     </main>
   );
 };

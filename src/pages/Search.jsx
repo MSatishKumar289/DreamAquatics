@@ -82,6 +82,12 @@ const Search = () => {
     });
   }, [allProducts, searchCategory, searchQuery, CATEGORY_SLUG_MAP]);
 
+  const getRelatedProductsFor = (baseProduct) => {
+    const subcategoryId = baseProduct?.subcategory?.id;
+    if (!subcategoryId) return [];
+    return allProducts.filter((item) => item?.subcategory?.id === subcategoryId);
+  };
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
     let mounted = true;
@@ -269,6 +275,7 @@ const Search = () => {
                         ) || "fishes"
                       }
                       product={product}
+                      relatedProducts={getRelatedProductsFor(product)}
                       showStockBadge
                       compact
                     />

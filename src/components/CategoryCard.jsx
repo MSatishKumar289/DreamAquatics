@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
-import closeIcon from "../assets/Icons/close_one.png";
 import inStockIcon from "../assets/Icons/in.png";
 import outStockIcon from "../assets/Icons/out.png";
 import arrowIcon from "../assets/Icons/arrow.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
-import { renderFormattedDescription } from "../utils/formatDescription";
 
 const StockStatusRow = ({ isSoldOut }) => (
   <div className="mb-0.5 flex items-center gap-2">
@@ -40,7 +37,6 @@ const ProductImageArea = ({
   productTitle,
   productSubtitle,
   showViewHint,
-  showExpandHint,
   isFavorite,
   onToggleFavorite,
   onImageClick,
@@ -134,28 +130,6 @@ const ProductImageArea = ({
               <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
             </svg>
           </button>
-          <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-100/90 text-amber-900 shadow">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M14 5h5v5" />
-              <path d="M19 5l-7 7" />
-              <path d="M10 19H5v-5" />
-              <path d="M5 19l7-7" />
-            </svg>
-          </div>
-          {showExpandHint && (
-            <span className="pointer-events-none absolute bottom-12 right-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md sm:hidden">
-              Tap to enlarge
-            </span>
-          )}
         </>
       )}
     </div>
@@ -251,19 +225,28 @@ const ProductInfo = ({
 const CartControls = ({
   currentQty,
   isSoldOut,
+  onViewDetails,
   onAddToCart,
   onDecrease,
   onIncrease,
   showAddedHint,
-  isPreviewOpen,
   productTitle,
 }) => (
   <div className="relative mt-auto pt-0.5">
-    {showAddedHint && !isPreviewOpen && (
+    {showAddedHint && (
       <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
         Added 1 item
       </span>
     )}
+    <div className="mb-2 flex justify-center">
+      <button
+        type="button"
+        onClick={onViewDetails}
+        className="inline-flex h-8 w-[135px] min-w-[135px] items-center justify-center rounded-lg bg-gradient-to-r from-[#2b6cb0] via-[#3b82f6] to-[#1e40af] px-3 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+      >
+        View Details
+      </button>
+    </div>
     {currentQty === 0 ? (
       <div className="relative flex justify-center">
         <button
@@ -331,127 +314,10 @@ const SubcategoryFooter = ({
   );
 };
 
-const PreviewModal = ({
-  isOpen,
-  productTitle,
-  productDescription,
-  imageSrc,
-  price,
-  currentQty,
-  isSoldOut,
-  showAddedHint,
-  onClose,
-  onAddToCart,
-  onDecrease,
-  onIncrease,
-}) => {
-  if (!isOpen || typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose?.();
-      }}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-2xl">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
-          aria-label="Close image preview"
-        >
-          <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
-        </button>
-        <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-stretch">
-          <div className="flex w-full flex-col md:w-1/2">
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
-              <img
-                src={imageSrc}
-                alt={productTitle}
-                className="h-full w-full object-contain bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
-              />
-            </div>
-            <div className="mt-1 flex flex-col items-center rounded-2xl border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC]/75 via-[#FFF3C4]/65 to-[#FFFDF2]/80 px-3 py-3 text-center">
-              <h2 className="text-2xl font-semibold text-slate-900">
-                {productTitle}
-              </h2>
-              <p className="text-2xl font-semibold text-[#1D3A8A] sm:text-3xl">
-                {"\u20B9"}
-                {Number(price ?? 0).toLocaleString("en-IN")}
-              </p>
-            </div>
-          </div>
-          <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
-            <div className="premium-flat-scrollbar flex-1 overflow-y-auto overscroll-contain pr-1 md:mt-1 md:pr-0">
-              {productDescription ? (
-                <div className="text-sm leading-relaxed text-slate-600">
-                  {renderFormattedDescription(productDescription)}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">
-                  Product details will be available soon.
-                </p>
-              )}
-            </div>
-            <div className="relative mt-auto flex justify-center pt-1">
-              {showAddedHint && (
-                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
-                  Added 1 item
-                </span>
-              )}
-              {currentQty === 0 ? (
-                <button
-                  type="button"
-                  onClick={onAddToCart}
-                  disabled={isSoldOut}
-                  className="group inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
-                >
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
-                    <img src={plusIcon} alt="" className="h-6 w-6" />
-                  </span>
-                  Add to cart
-                </button>
-              ) : (
-                <div className="inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={onDecrease}
-                    disabled={isSoldOut}
-                    className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                    aria-label={`Decrease quantity for ${productTitle}`}
-                  >
-                    <img src={incMinusIcon} alt="" className="h-9 w-9" />
-                  </button>
-                  <span className="px-3 text-base font-semibold text-blue-700">
-                    {currentQty}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onIncrease}
-                    disabled={isSoldOut}
-                    className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                    aria-label={`Increase quantity for ${productTitle}`}
-                  >
-                    <img src={incPlusIcon} alt="" className="h-9 w-9" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-};
-
 const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
   if (!isOpen || typeof document === "undefined") return null;
 
-  return createPortal(
+  return (
     <div
       className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
       onClick={(event) => {
@@ -484,14 +350,14 @@ const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
           </button>
         </div>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 };
 
 const CategoryCard = ({
   categoryName,
   product,
+  relatedProducts = [],
   isSubCategory = false,
   onAddToCart,
   showStockBadge,
@@ -503,9 +369,7 @@ const CategoryCard = ({
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
   const { toggleFavorite, isFavorite: isProductFavorite } = useFavorites();
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [showViewHint, setShowViewHint] = useState(false);
-  const [showExpandHint, setShowExpandHint] = useState(false);
   const [showAddedHint, setShowAddedHint] = useState(false);
   const [favoriteToastMessage, setFavoriteToastMessage] = useState("");
   const [pendingRemove, setPendingRemove] = useState(false);
@@ -515,8 +379,6 @@ const CategoryCard = ({
     : product?.name || product?.title || "Product";
 
   const productSubtitle = product?.subtitle || "";
-  const productDescription =
-    product?.description || product?.details || product?.summary || "";
   const startFromPrice = Number.isFinite(Number(product?.startFromPrice))
     ? Number(product?.startFromPrice)
     : null;
@@ -544,19 +406,6 @@ const CategoryCard = ({
       navigate(`/category/${categoryName}/${product.subcategorySlug}`);
     }
   };
-
-  useEffect(() => {
-    if (!isPreviewOpen) return;
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") setIsPreviewOpen(false);
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [isPreviewOpen]);
 
   // One-time hint to nudge users to view product details (subcategories only)
   useEffect(() => {
@@ -696,19 +545,6 @@ const CategoryCard = ({
     }
   };
 
-  // One-time hint for product image expand (products only)
-  useEffect(() => {
-    if (isSubCategory) return;
-    if (typeof window === "undefined") return;
-    const storageKey = "da-expand-hint-shown";
-    const alreadyShown = window.localStorage.getItem(storageKey);
-    if (alreadyShown) return;
-    setShowExpandHint(true);
-    const timer = setTimeout(() => setShowExpandHint(false), 1600);
-    window.localStorage.setItem(storageKey, "1");
-    return () => clearTimeout(timer);
-  }, [isSubCategory]);
-
   return (
     <article
       className={`group relative overflow-visible rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
@@ -743,13 +579,12 @@ const CategoryCard = ({
         productTitle={productTitle}
         productSubtitle={productSubtitle}
         showViewHint={showViewHint}
-        showExpandHint={showExpandHint}
         isFavorite={favoriteSelected}
         onToggleFavorite={handleFavoriteToggle}
         onImageClick={(event) => {
           if (isSubCategory) return;
           event.stopPropagation();
-          setIsPreviewOpen(true);
+          navigate(`/product/${product?.id}`, { state: { product, relatedProducts } });
         }}
       />
 
@@ -782,6 +617,10 @@ const CategoryCard = ({
           <CartControls
             currentQty={currentQty}
             isSoldOut={isSoldOut}
+            onViewDetails={(event) => {
+              event.stopPropagation();
+              navigate(`/product/${product?.id}`, { state: { product, relatedProducts } });
+            }}
             onAddToCart={handleAddToCart}
             onDecrease={(event) => {
               event.stopPropagation();
@@ -796,7 +635,6 @@ const CategoryCard = ({
               updateQty?.(product?.id, currentQty + 1);
             }}
             showAddedHint={showAddedHint}
-            isPreviewOpen={isPreviewOpen}
             productTitle={productTitle}
           />
         )}
@@ -807,31 +645,6 @@ const CategoryCard = ({
           startFromPrice={startFromPrice}
         />
       )}
-
-      <PreviewModal
-        isOpen={isPreviewOpen}
-        productTitle={productTitle}
-        productDescription={productDescription}
-        imageSrc={imageSrc}
-        price={product?.price}
-        currentQty={currentQty}
-        isSoldOut={isSoldOut}
-        showAddedHint={showAddedHint}
-        onClose={() => setIsPreviewOpen(false)}
-        onAddToCart={handleAddToCart}
-        onDecrease={(event) => {
-          event.stopPropagation();
-          if (currentQty <= 1) {
-            setPendingRemove(true);
-            return;
-          }
-          updateQty?.(product?.id, currentQty - 1);
-        }}
-        onIncrease={(event) => {
-          event.stopPropagation();
-          updateQty?.(product?.id, currentQty + 1);
-        }}
-      />
 
       <RemoveConfirmModal
         isOpen={pendingRemove}
