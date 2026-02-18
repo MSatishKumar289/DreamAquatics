@@ -309,7 +309,8 @@ const CategoryListingPage = () => {
     const toneMap = {
       fishes: {
         panel: "from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2]",
-        ribbon: "from-[#FFE35A] via-[#FFD74D] to-[#FFC935]",
+        ribbon: "from-[#1E5CB7] via-[#1B4F9D] to-[#163F7C]",
+        ribbonText: "text-white",
         accent: "bg-[#1E40AF]/75",
         dot: "bg-[#EAF6FF]",
       },
@@ -322,20 +323,22 @@ const CategoryListingPage = () => {
       },
       accessories: {
         panel: "from-[#8452C9] via-[#9564D8] to-[#AF8AF0]",
-        ribbon: "from-[#0D4FA3] via-[#0B4591] to-[#093A7A]",
+        ribbon: "from-[#5B2DA8] via-[#4D2496] to-[#3F1D7E]",
         ribbonText: "text-white",
         accent: "bg-[#A855F7]/80",
         dot: "bg-[#FFE45A]",
       },
       tanks: {
         panel: "from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2]",
-        ribbon: "from-[#FFE35A] via-[#FFD74D] to-[#FFC935]",
+        ribbon: "from-[#1E5CB7] via-[#1B4F9D] to-[#163F7C]",
+        ribbonText: "text-white",
         accent: "bg-[#1E40AF]/75",
         dot: "bg-[#EAF6FF]",
       },
       default: {
         panel: "from-[#4C8FE2] via-[#62A0EB] to-[#7BB3F5]",
-        ribbon: "from-[#FFE35A] via-[#FFD74D] to-[#FFC935]",
+        ribbon: "from-[#1E5CB7] via-[#1B4F9D] to-[#163F7C]",
+        ribbonText: "text-white",
         accent: "bg-[#00D5FF]/70",
         dot: "bg-[#FFFFFF]",
       },
