@@ -598,19 +598,31 @@ const CategoryListingPage = () => {
         )}
 
         {!isSearching && isTankCategoryLanding && (
-          <section className="mt-6 rounded-3xl border border-slate-200 bg-white/85 p-5 shadow-lg">
+          <section className="mt-6 rounded-3xl border border-white/40 bg-gradient-to-r from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2] p-5 shadow-lg shadow-slate-900/20">
             <div className="text-center">
               <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-slate-900 sm:text-2xl">
-                Custom Tank Enquiry
+                <span className="inline-block -skew-x-[10deg] rounded-[6px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-4 py-1 shadow-[0_10px_20px_rgba(15,23,42,0.16)]">
+                  <span className="inline-block skew-x-[10deg] text-white">
+                    Custom Tank Enquiry
+                  </span>
+                </span>
               </h2>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
-                Tell Us Your Size, Budget, And Preferred Setup
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white px-3 py-1 shadow-sm">
+                  <span className="inline-block skew-x-[10deg] text-[#0A66D9]">
+                    Tell Us Your Size, Budget, And Preferred Setup
+                  </span>
+                </span>
               </p>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 sm:p-4">
+            <div className="mt-4 rounded-2xl border border-white/30 bg-[#2A7ED6]/45 p-3 sm:p-4">
               <label htmlFor="tank-custom-request" className="mb-2 block text-sm font-semibold text-slate-800">
-                Share your custom tank requirement
+                <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-3 py-0.5">
+                  <span className="inline-block skew-x-[10deg] text-white">
+                    Share your custom tank requirement
+                  </span>
+                </span>
               </label>
               <div className="flex items-center gap-2">
                 <textarea
