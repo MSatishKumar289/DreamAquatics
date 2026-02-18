@@ -49,6 +49,7 @@ function AppContent() {
   const adminPollInFlightRef = useRef(false);
   const userPollTimerRef = useRef(null);
   const userPollInFlightRef = useRef(false);
+  const signOutRecoveryTimerRef = useRef(null);
   const userOrderStatusMapRef = useRef({});
   const userOrdersSeededRef = useRef(false);
   const location = useLocation();
@@ -86,28 +87,45 @@ function AppContent() {
         console.log('AUTH EVENT:', event);
 
         if (event === 'SIGNED_OUT') {
-          setSessionUser(null);
-          setProfile(null);
-          setAuthLoading(false);
-          localStorage.removeItem('da_profile_hint_seen');
-          setUserOrders([]);
-          setUserOrdersLastRefreshedAt(null);
-          setUserOrderNotifications([]);
-          setIsUserOrdersOpen(false);
-          userOrderStatusMapRef.current = {};
-          userOrdersSeededRef.current = false;
-          clearUserPollTimer();
+          if (signOutRecoveryTimerRef.current) {
+            clearTimeout(signOutRecoveryTimerRef.current);
+          }
 
-          // 🔒 Cart cleanup happens ONLY here
-          clearCart();
-          clearCartStorage();
-          clearFavorites();
-          clearFavoritesStorage();
+          signOutRecoveryTimerRef.current = setTimeout(async () => {
+            if (!active) return;
+            const { data, error } = await supabase.auth.getSession();
+            if (!active) return;
+
+            if (!error && data?.session?.user) {
+              setSessionUser(data.session.user);
+              setAuthLoading(false);
+              return;
+            }
+
+            setSessionUser(null);
+            setProfile(null);
+            setAuthLoading(false);
+            localStorage.removeItem('da_profile_hint_seen');
+            setUserOrders([]);
+            setUserOrdersLastRefreshedAt(null);
+            setUserOrderNotifications([]);
+            setIsUserOrdersOpen(false);
+            userOrderStatusMapRef.current = {};
+            userOrdersSeededRef.current = false;
+            clearUserPollTimer();
+            clearCart();
+            clearCartStorage();
+            clearFavorites();
+            clearFavoritesStorage();
+          }, 450);
 
           return;
         }
 
         if (session?.user) {
+          if (signOutRecoveryTimerRef.current) {
+            clearTimeout(signOutRecoveryTimerRef.current);
+          }
           setSessionUser(session.user);
           setAuthLoading(false);
         }
@@ -115,6 +133,9 @@ function AppContent() {
 
     return () => {
       active = false;
+      if (signOutRecoveryTimerRef.current) {
+        clearTimeout(signOutRecoveryTimerRef.current);
+      }
       subscription.unsubscribe();
     };
   }, [clearCart, clearFavorites]);
@@ -620,6 +641,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

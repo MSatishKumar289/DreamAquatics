@@ -502,8 +502,8 @@ const CategoryListingPage = () => {
           <div className="pointer-events-none absolute -left-8 bottom-0 h-20 w-28 -skew-x-[26deg] bg-white/15" />
           <div className={`pointer-events-none absolute -right-10 -top-8 h-28 w-28 rotate-12 rounded-2xl ${listingHeaderTheme.accent}`} />
           <div className="pointer-events-none absolute right-0 bottom-0 h-24 w-40 -skew-x-[28deg] bg-white/10" />
-          <div className={`pointer-events-none absolute left-6 top-9 h-2.5 w-2.5 rounded-full ${listingHeaderTheme.dot}`} />
-          <div className={`pointer-events-none absolute left-10 top-11 h-1.5 w-1.5 rounded-full ${listingHeaderTheme.dot}`} />
+          <div className={`pointer-events-none absolute left-4 top-[11px] h-2.5 w-2.5 rounded-full ${listingHeaderTheme.dot}`} />
+          <div className={`pointer-events-none absolute left-8 top-[19px] h-1.5 w-1.5 rounded-full ${listingHeaderTheme.dot}`} />
           <nav
             className="relative z-10 text-xs font-semibold uppercase tracking-[0.3em] text-white/80"
             aria-label="Breadcrumb"
@@ -534,13 +534,13 @@ const CategoryListingPage = () => {
 
           <div className="relative z-10 mt-4 flex flex-col gap-4">
             <div className="flex flex-row items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm uppercase tracking-[0.4em] text-white">
+              <div className="min-w-0 flex-1 pl-[10px]">
+                <p className="text-xs uppercase tracking-[0.35em] text-white">
                   <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-0.5 shadow-sm">
                     <span className="inline-block skew-x-[10deg] text-[#0D2F5A]">Collection</span>
                   </span>
                 </p>
-                <h1 className="mt-2 text-2xl font-bold text-slate-900 line-clamp-2 sm:text-5xl">
+                <h1 className="mt-2 text-xl font-bold text-slate-900 sm:text-4xl">
                   <span className={`inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r ${listingHeaderTheme.ribbon} px-4 py-1 shadow-[0_10px_25px_rgba(15,23,42,0.2)]`}>
                     <span
                       className="inline-block skew-x-[10deg]"
@@ -665,7 +665,9 @@ const CategoryListingPage = () => {
               )}
               {isSearching ? (
                 <div
-                  className={`grid grid-cols-2 max-h-[70vh] overflow-y-auto overflow-x-hidden pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:grid-cols-3 lg:grid-cols-4 ${
+                  className={`grid ${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} max-h-[70vh] overflow-y-auto overflow-x-hidden pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:grid-cols-3 ${
+                    isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"
+                  } ${
                     isSubcategoryMode ? "gap-2" : "gap-2"
                   }`}
                   onScroll={() => searchInputRef.current?.blur()}
@@ -686,7 +688,7 @@ const CategoryListingPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <div className={`grid ${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"}`}>
                   {filteredList.map((item) => (
                     <CategoryCard
                       key={item.id}

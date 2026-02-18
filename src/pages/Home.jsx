@@ -146,6 +146,11 @@ const Home = ({ profile }) => {
 
   useEffect(() => {
     let active = true;
+    const loadingGuardTimer = window.setTimeout(() => {
+      if (active) {
+        setLoading(false);
+      }
+    }, 15000);
     const loadHomeMedia = async () => {
       const { data, error } = await fetchHomeMedia();
       if (!active) return;
@@ -256,6 +261,7 @@ const Home = ({ profile }) => {
     loadProducts();
     return () => {
       active = false;
+      window.clearTimeout(loadingGuardTimer);
     };
   }, []);
 
@@ -1545,14 +1551,16 @@ const Home = ({ profile }) => {
               </div>
               {homeShortcutCircles.length > 1 && (
                 <div className="mt-2 flex items-center justify-center gap-1.5 lg:hidden">
-                  <span className="relative h-1.5 w-14 overflow-hidden rounded-full bg-[#E8D8A8]" aria-hidden="true">
+                  <span className="text-xs font-semibold text-slate-500" aria-hidden="true">&lt;</span>
+                  <span className="relative h-1.5 w-14 overflow-hidden rounded-full bg-slate-300" aria-hidden="true">
                     <span
-                      className="absolute top-0 h-1.5 w-6 rounded-full bg-[#D4AF37] transition-all duration-300"
+                      className="absolute top-0 h-1.5 w-6 rounded-full bg-slate-600 transition-all duration-300"
                       style={{
                         left: `${quickPickScrollProgress * (56 - 24)}px`,
                       }}
                     />
                   </span>
+                  <span className="text-xs font-semibold text-slate-500" aria-hidden="true">&gt;</span>
                 </div>
               )}
             </section>

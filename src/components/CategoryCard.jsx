@@ -4,7 +4,6 @@ import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
-import arrowIcon from "../assets/Icons/arrow.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
@@ -38,17 +37,6 @@ const ProductImageArea = ({
         >
       {isSubCategory ? (
         <>
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-11 border-b border-slate-200 bg-white px-3">
-            <h3
-              className="line-clamp-1 flex h-full items-center justify-center text-center text-[0.76rem] font-semibold uppercase tracking-[0.06em] text-slate-900 sm:text-[0.88rem]"
-              style={{
-                color: "#0f172a",
-                textShadow: "0 1px 1px rgba(255,255,255,0.55)",
-              }}
-            >
-              {productTitle}
-            </h3>
-          </div>
           <span
             className={`pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
               showViewHint ? "opacity-100" : ""
@@ -56,15 +44,15 @@ const ProductImageArea = ({
           >
             Tap to view
           </span>
-          <div className="h-full w-full pt-11">
+          <div className="h-full w-full">
             <img
               src={imageSrc}
               alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-              className={`h-full w-full object-contain transition-transform duration-300 group-hover:scale-105 ${
+              className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
                 whiteCard
                   ? "bg-white"
                   : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
-              }`}
+              } ${isSubCategory ? "brightness-[0.93] group-hover:brightness-100" : ""}`}
               onClick={onImageClick}
               onError={(e) => {
                 e.target.src =
@@ -272,23 +260,17 @@ const CartControls = ({
   </div>
 );
 
-const SubcategoryFooter = ({
-  startFromPrice,
-}) => {
+const SubcategoryFooter = ({ title }) => {
   return (
-    <div className="absolute inset-x-3 bottom-2 flex items-center">
-      <div className="relative inline-flex w-full items-center justify-between px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700">
-        <span className="relative top-0.5 flex flex-1 items-center justify-center gap-1 pl-1 text-center text-[10px] tracking-[0.1em] whitespace-nowrap sm:text-[11px] sm:tracking-[0.16em]">
-          <span>Starts from</span>
-          <span>
-            {"\u20B9"}
-            {startFromPrice !== null ? startFromPrice.toLocaleString("en-IN") : "-"}
-          </span>
-        </span>
-        <span className="relative ml-[7px] inline-flex h-10 w-10 flex-none items-center justify-center pr-1">
-          <img src={arrowIcon} alt="" className="h-8 w-8" aria-hidden="true" />
-        </span>
-      </div>
+    <div className="flex flex-col items-center gap-1 px-1 pt-0.5 text-center">
+      <span className="inline-block w-full -skew-x-[10deg] rounded-[5px] bg-[#0A66D9] px-2 py-1 shadow-[0_8px_18px_rgba(15,23,42,0.24)]">
+        <p
+          className="line-clamp-2 w-full skew-x-[10deg] text-left text-[0.52rem] font-semibold uppercase leading-tight tracking-[0.08em] text-white sm:text-[0.68rem]"
+          style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+        >
+          {title}
+        </p>
+      </span>
     </div>
   );
 };
@@ -371,10 +353,6 @@ const CategoryCard = ({
     : product?.name || product?.title || "Product";
 
   const productSubtitle = product?.subtitle || "";
-  const startFromPrice = Number.isFinite(Number(product?.startFromPrice))
-    ? Number(product?.startFromPrice)
-    : null;
-
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
     : product?.product_images?.[0]?.url || product?.image;
@@ -560,10 +538,10 @@ const CategoryCard = ({
       className={`group relative overflow-visible rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
         whiteCard
           ? isSubCategory
-            ? "cursor-pointer pb-6 sm:pb-8 bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
+            ? "cursor-pointer pb-2 sm:pb-2.5 bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
             : "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
           : isSubCategory
-            ? "cursor-pointer pb-6 sm:pb-8 bg-gradient-to-b from-[#FFF9E6] via-[#FFF4CD] to-[#FFFDF3] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
+            ? "cursor-pointer pb-2 sm:pb-2.5 bg-gradient-to-b from-[#FFF9E6] via-[#FFF4CD] to-[#FFFDF3] opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
             : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
       } ${
         itemDetailGoldenBorder && !isSubCategory
@@ -606,7 +584,7 @@ const CategoryCard = ({
       <div
         className={`${compact ? "px-2 pb-2 pt-1.5" : "px-2 pb-2 pt-1.5 sm:px-3 sm:pb-3 sm:pt-2"} ${
           isSubCategory
-            ? "flex flex-col gap-2 pb-8 sm:gap-3 sm:pb-9"
+            ? "flex flex-col gap-0.5 pb-1 sm:gap-1 sm:pb-1.5"
             : isMasonry
               ? "flex flex-1 flex-col gap-1 sm:gap-1.5"
               : compact
@@ -649,9 +627,7 @@ const CategoryCard = ({
       </div>
 
       {isSubCategory && (
-        <SubcategoryFooter
-          startFromPrice={startFromPrice}
-        />
+        <SubcategoryFooter title={productTitle} />
       )}
 
       <RemoveConfirmModal
