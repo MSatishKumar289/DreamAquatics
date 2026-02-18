@@ -315,13 +315,15 @@ const CategoryListingPage = () => {
       },
       plants: {
         panel: "from-[#3BBC73] via-[#53C786] to-[#69D299]",
-        ribbon: "from-[#C6FF31] via-[#B6F92D] to-[#A8F12A]",
+        ribbon: "from-[#00A84F] via-[#009748] to-[#00843F]",
+        ribbonText: "text-white",
         accent: "bg-[#58C138]/80",
         dot: "bg-[#F5F5F5]",
       },
       accessories: {
         panel: "from-[#8452C9] via-[#9564D8] to-[#AF8AF0]",
-        ribbon: "from-[#FFC62B] via-[#FFBC1A] to-[#FFB100]",
+        ribbon: "from-[#0D4FA3] via-[#0B4591] to-[#093A7A]",
+        ribbonText: "text-white",
         accent: "bg-[#A855F7]/80",
         dot: "bg-[#FFE45A]",
       },
@@ -543,7 +545,7 @@ const CategoryListingPage = () => {
                 <h1 className="mt-2 text-xl font-bold text-slate-900 sm:text-4xl">
                   <span className={`inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r ${listingHeaderTheme.ribbon} px-4 py-1 shadow-[0_10px_25px_rgba(15,23,42,0.2)]`}>
                     <span
-                      className="inline-block skew-x-[10deg]"
+                      className={`inline-block skew-x-[10deg] ${listingHeaderTheme.ribbonText || ""}`}
                       style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
                     >
                       {titleOfListingPage}

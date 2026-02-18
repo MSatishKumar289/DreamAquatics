@@ -161,8 +161,13 @@ const ProductInfo = ({
       </div>
       {!isSubCategory && productBadgeText && (
         <div className="mt-1 flex justify-start">
-          <span className="inline-flex max-w-[88%] items-center rounded-md bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">
-            <span className="truncate">{productBadgeText}</span>
+          <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+            <span
+              className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
+              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+            >
+              {productBadgeText}
+            </span>
           </span>
         </div>
       )}

@@ -873,7 +873,8 @@ const Home = ({ profile }) => {
         },
         "under-100": {
           strong: "#00A84F",
-          ribbon: "from-[#B9FF2D] to-[#A8F12A]",
+          ribbon: "from-[#00A84F] via-[#009748] to-[#00843F]",
+          text: "text-white",
         },
         trending: {
           strong: "#6B1DD2",
@@ -898,7 +899,7 @@ const Home = ({ profile }) => {
           <h2 className="relative text-lg font-semibold sm:text-xl">
             <span className={`inline-block -skew-x-[10deg] rounded-[3px] bg-gradient-to-r ${selectedTone.ribbon} px-3 py-0.5`}>
               <span
-                className="inline-block skew-x-[10deg] text-[#0D2F5A]"
+                className={`inline-block skew-x-[10deg] ${selectedTone.text || "text-[#0D2F5A]"}`}
                 style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
               >
                 {title}
@@ -1533,13 +1534,13 @@ const Home = ({ profile }) => {
                     key={item.key}
                     type="button"
                     onClick={() => goToHomeShortcut(item.key)}
-                    className="group snap-start shrink-0 w-[182px] sm:w-auto sm:basis-[34%] lg:w-full lg:basis-auto"
+                    className="group snap-start shrink-0 basis-[70%] w-[70%] sm:w-auto sm:basis-[34%] lg:w-full lg:basis-auto"
                     aria-label={`Open ${item.title}`}
                     ref={(node) => {
                       quickPickItemRefs.current[homeShortcutCircles.findIndex((it) => it.key === item.key)] = node;
                     }}
                   >
-                    <span className="relative mx-auto inline-flex h-[108px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md sm:h-[120px] lg:h-[136px]">
+                    <span className="relative mx-auto inline-flex h-[116px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md sm:h-[120px] lg:h-[136px]">
                       <img
                         src={item.image}
                         alt={item.title}
@@ -1678,8 +1679,13 @@ const Home = ({ profile }) => {
                               {product?.name || "Top Pick"}
                             </h2>
                             <div className="mt-2 flex justify-start">
-                              <span className="inline-flex max-w-[88%] items-center rounded-md bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">
-                                <span className="truncate">{productBadgeText}</span>
+                              <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+                                <span
+                                  className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
+                                  style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                                >
+                                  {productBadgeText}
+                                </span>
                               </span>
                             </div>
                             <div className="relative mt-4">
