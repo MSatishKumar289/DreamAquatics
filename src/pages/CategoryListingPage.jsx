@@ -5,6 +5,7 @@ import closeIcon from "../assets/Icons/close_one.png";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
+import { renderFormattedDescription } from "../utils/formatDescription";
 
 const CategoryListingPage = () => {
   const { categorySlug, subCategorySlug } = useParams();
@@ -304,6 +305,41 @@ const CategoryListingPage = () => {
     ? subcategoryDescription
     : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
   const isSearching = searchQuery.trim().length > 0;
+  const listingHeaderTheme = useMemo(() => {
+    const toneMap = {
+      fishes: {
+        panel: "from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2]",
+        ribbon: "from-[#FFE35A] via-[#FFD74D] to-[#FFC935]",
+        accent: "bg-[#1E40AF]/75",
+        dot: "bg-[#EAF6FF]",
+      },
+      plants: {
+        panel: "from-[#3BBC73] via-[#53C786] to-[#69D299]",
+        ribbon: "from-[#C6FF31] via-[#B6F92D] to-[#A8F12A]",
+        accent: "bg-[#58C138]/80",
+        dot: "bg-[#F5F5F5]",
+      },
+      accessories: {
+        panel: "from-[#8452C9] via-[#9564D8] to-[#AF8AF0]",
+        ribbon: "from-[#FFC62B] via-[#FFBC1A] to-[#FFB100]",
+        accent: "bg-[#A855F7]/80",
+        dot: "bg-[#FFE45A]",
+      },
+      tanks: {
+        panel: "from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2]",
+        ribbon: "from-[#FFE35A] via-[#FFD74D] to-[#FFC935]",
+        accent: "bg-[#1E40AF]/75",
+        dot: "bg-[#EAF6FF]",
+      },
+      default: {
+        panel: "from-[#4C8FE2] via-[#62A0EB] to-[#7BB3F5]",
+        ribbon: "from-[#FFE35A] via-[#FFD74D] to-[#FFC935]",
+        accent: "bg-[#00D5FF]/70",
+        dot: "bg-[#FFFFFF]",
+      },
+    };
+    return toneMap[normalizedCategorySlug] || toneMap.default;
+  }, [normalizedCategorySlug]);
 
   useEffect(() => {
     const measureDescriptionOverflow = () => {
@@ -460,52 +496,68 @@ const CategoryListingPage = () => {
       <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
       <div className="container mx-auto px-1 pt-6 sm:px-6 lg:px-8">
         {!isSearching && (
-          <section className="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-xl shadow-blue-100/70 backdrop-blur">
+          <section
+            className={`relative overflow-hidden rounded-3xl border border-white/40 bg-gradient-to-r ${listingHeaderTheme.panel} p-6 shadow-xl shadow-slate-900/20 sm:p-7`}
+          >
+          <div className="pointer-events-none absolute -left-8 bottom-0 h-20 w-28 -skew-x-[26deg] bg-white/15" />
+          <div className={`pointer-events-none absolute -right-10 -top-8 h-28 w-28 rotate-12 rounded-2xl ${listingHeaderTheme.accent}`} />
+          <div className="pointer-events-none absolute right-0 bottom-0 h-24 w-40 -skew-x-[28deg] bg-white/10" />
+          <div className={`pointer-events-none absolute left-6 top-9 h-2.5 w-2.5 rounded-full ${listingHeaderTheme.dot}`} />
+          <div className={`pointer-events-none absolute left-10 top-11 h-1.5 w-1.5 rounded-full ${listingHeaderTheme.dot}`} />
           <nav
-            className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400"
+            className="relative z-10 text-xs font-semibold uppercase tracking-[0.3em] text-white/80"
             aria-label="Breadcrumb"
           >
             <Link
               to="/"
-              className="text-slate-500 transition hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded px-1"
+              className="text-white/80 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 rounded px-1"
             >
               Home
             </Link>
-            <span className="mx-2 text-slate-400">/</span>
+            <span className="mx-2 text-white/60">/</span>
 
-            {!subCategorySlug && <span className="text-slate-700">{categorySlug}</span>}
+            {!subCategorySlug && <span className="text-white">{categorySlug}</span>}
 
             {subCategorySlug && (
               <>
                 <Link
                   to={`/category/${categorySlug}`}
-                  className="text-slate-500 transition hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded px-1"
+                  className="text-white/80 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 rounded px-1"
                 >
                   {categorySlug}
                 </Link>
-                <span className="mx-2 text-slate-400">/</span>
-                <span className="text-slate-700">{subCategoryTitle}</span>
+                <span className="mx-2 text-white/60">/</span>
+                <span className="text-white">{subCategoryTitle}</span>
               </>
             )}
           </nav>
 
-          <div className="mt-6 flex flex-col gap-4">
+          <div className="relative z-10 mt-4 flex flex-col gap-4">
             <div className="flex flex-row items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm uppercase tracking-[0.4em] text-blue-600">
-                  Collection
+                <p className="text-sm uppercase tracking-[0.4em] text-white">
+                  <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-0.5 shadow-sm">
+                    <span className="inline-block skew-x-[10deg] text-[#0D2F5A]">Collection</span>
+                  </span>
                 </p>
-                <h1 className="text-2xl font-bold text-slate-900 line-clamp-2 sm:text-5xl">
-                  {titleOfListingPage}
+                <h1 className="mt-2 text-2xl font-bold text-slate-900 line-clamp-2 sm:text-5xl">
+                  <span className={`inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r ${listingHeaderTheme.ribbon} px-4 py-1 shadow-[0_10px_25px_rgba(15,23,42,0.2)]`}>
+                    <span
+                      className="inline-block skew-x-[10deg]"
+                      style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                    >
+                      {titleOfListingPage}
+                    </span>
+                  </span>
                 </h1>
               </div>
 
               <div className="flex flex-none gap-3">
-                <div className="rounded-2xl border border-blue-100 bg-white/90 px-4 py-3 text-center shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                    Listings
+                <div className="rounded-2xl border border-white/70 bg-gradient-to-b from-white to-[#F2F7FF] px-3 py-2 text-center shadow-[0_10px_24px_rgba(15,23,42,0.16)]">
+                  <p className="inline-block -skew-x-[10deg] rounded-[4px] bg-[#0D2F5A] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] text-white">
+                    <span className="inline-block skew-x-[10deg]">Listings</span>
                   </p>
-                  <p className="text-2xl font-semibold text-slate-900">
+                  <p className="mt-1 text-3xl font-semibold leading-none text-[#0D2F5A]">
                     {loading ? "-" : (isSubcategoryMode ? filteredList.length : listForGrid.length)}
                   </p>
                 </div>
@@ -513,26 +565,28 @@ const CategoryListingPage = () => {
             </div>
 
             <div>
-              <p
+              <div
                 ref={descriptionRef}
-                className="max-w-none text-base text-slate-600 line-clamp-4 sm:line-clamp-3"
+                className="max-w-none max-h-[4.8em] overflow-hidden rounded-lg border border-white/25 bg-slate-900/16 px-3 py-2 text-base leading-[1.6] text-white"
               >
-                {descriptionText}
-              </p>
+                {renderFormattedDescription(descriptionText)}
+              </div>
               {hasLongDescription && (
                 <div className="mt-2 flex justify-end">
                   <button
                     type="button"
                     onClick={() => setShowDescriptionModal(true)}
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    className="rounded-md bg-white px-2.5 py-1 text-sm font-semibold text-blue-600 shadow-sm hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     View more
                   </button>
                 </div>
               )}
-              <p className="mt-2 text-center text-xs text-sky-600/80">
-                Images are for reference. Actual product appearance may vary.
-              </p>
+              <div className="mt-2 flex justify-center">
+                <p className="rounded-md bg-white px-3 py-1 text-center text-xs text-sky-700/90 shadow-sm">
+                  Images are for reference. Actual product appearance may vary.
+                </p>
+              </div>
             </div>
           </div>
           </section>
@@ -708,7 +762,7 @@ const CategoryListingPage = () => {
               </button>
             </div>
             <div className="max-h-[70vh] overflow-y-auto px-5 py-4 text-base text-slate-600">
-              {descriptionText}
+              {renderFormattedDescription(descriptionText)}
             </div>
           </div>
         </div>

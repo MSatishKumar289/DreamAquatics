@@ -857,7 +857,7 @@ const Home = ({ profile }) => {
       const selectedTone = toneMap[tone] || toneMap.default;
       return (
         <div
-          className={`relative overflow-hidden rounded-2xl px-3 py-1 text-left sm:px-4 sm:py-1.5 ${className}`}
+          className={`relative overflow-hidden rounded-2xl border-l-[8px] border-l-[#D4AF37] bg-gradient-to-r from-white via-[#FFFDF5] to-[#F4F8FF] px-3 py-1 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] sm:px-4 sm:py-1.5 ${className}`}
         >
           <div className="pointer-events-none absolute -right-8 -top-7 h-24 w-24 rotate-12 bg-white/0" />
           <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-24 -skew-x-[24deg] bg-white/0" />
@@ -887,7 +887,7 @@ const Home = ({ profile }) => {
 
     return (
       <div
-        className={`relative overflow-hidden rounded-2xl px-3 py-1 text-left sm:px-4 sm:py-1.5 ${className}`}
+        className={`relative overflow-hidden rounded-2xl border-l-[8px] border-l-[#D4AF37] bg-gradient-to-r from-white via-[#FFFDF5] to-[#F4F8FF] px-3 py-1 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] sm:px-4 sm:py-1.5 ${className}`}
       >
         <div className="pointer-events-none absolute -right-12 -top-8 h-32 w-32 rotate-12 bg-fuchsia-300/0" />
         <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-24 -skew-x-[26deg] bg-cyan-300/0" />
@@ -1095,32 +1095,29 @@ const Home = ({ profile }) => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 md:justify-center">
+            <div className="flex items-center justify-center gap-4 md:justify-center">
               <a
                 href="tel:+918667418965"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:h-14 md:w-14"
+                aria-label="Call us"
               >
-                <img src={CallIcon} alt="" className="h-5 w-5 object-contain" aria-hidden />
-                Call us
+                <img src={CallIcon} alt="Call us" className="h-6 w-6 object-contain md:h-7 md:w-7" />
               </a>
               <a
                 href="https://wa.me/918667418965"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/80 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:h-14 md:w-14"
+                aria-label="Open WhatsApp"
               >
-                <img src={WhatsIcon} alt="" className="h-5 w-5 rounded-full object-contain" aria-hidden />
-                WhatsApp
+                <img src={WhatsIcon} alt="WhatsApp" className="h-7 w-7 object-contain" />
               </a>
-            </div>
-            <div className="mt-1 flex justify-center">
               <a
                 href={storeMapUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:text-base"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:h-14 md:w-14"
                 aria-label="Locate us on Google Maps"
               >
-                <img src={mapIcon} alt="" className="h-5 w-5 object-contain" aria-hidden="true" />
-                Locate Us
+                <img src={mapIcon} alt="Locate us" className="h-6 w-6 object-contain" />
               </a>
             </div>
           </div>
@@ -1163,24 +1160,29 @@ const Home = ({ profile }) => {
               </button>
             </div>
             <div className="mt-2 flex justify-center">
-              <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="flex w-full max-w-[560px] flex-nowrap items-center justify-center gap-2 sm:gap-3">
                 <a
                   href={instagramUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white"
+                  className="relative inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-5 sm:text-sm"
                 >
                   <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
-                  Follow us on Instagram
+                  <svg viewBox="0 0 24 24" className="relative z-10 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.4" cy="6.7" r="0.8" fill="currentColor" stroke="none" />
+                  </svg>
+                  <span className="relative z-10">Follow Us</span>
                 </a>
                 <a
                   href="https://chat.whatsapp.com/DiUn2Tr4sP8LuKAUoq1xpx"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/80 bg-white/10 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5"
+                  className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-emerald-400/80 bg-white/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 sm:px-5 sm:text-sm"
                 >
-                  <img src={WhatsIcon} alt="" className="h-4 w-4 rounded-full object-contain" aria-hidden />
-                  Join community
+                  <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
+                  <span>Join Community</span>
                 </a>
               </div>
             </div>
@@ -1251,13 +1253,13 @@ const Home = ({ profile }) => {
         <>
           <section data-home-reveal className="container mx-auto px-4 pt-4 sm:px-6">
             <div className="mb-3 text-center sm:mb-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0E4D7A] sm:text-xs">
+              <p className="inline-block rounded-[4px] bg-white px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0E4D7A] sm:text-xs">
                 Explore
               </p>
               <h2 className="mt-1">
-                <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r from-[#FFE600] via-[#FFDE00] to-[#FFD400] px-4 py-1">
+                <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-[#0A66D9] px-4 py-1">
                   <span
-                    className="inline-block skew-x-[10deg] text-xl font-semibold text-[#0D2F5A] sm:text-2xl"
+                    className="inline-block skew-x-[10deg] text-xl font-semibold text-white sm:text-2xl"
                     style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
                   >
                     Shop by Category

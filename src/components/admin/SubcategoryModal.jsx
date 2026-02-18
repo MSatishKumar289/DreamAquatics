@@ -1,3 +1,5 @@
+import { useRef } from "react";
+
 const SubcategoryModal = ({
   isOpen,
   onClose,
@@ -7,7 +9,43 @@ const SubcategoryModal = ({
   subcategoryError,
   handleSaveSubcategory
 }) => {
+  const descriptionRef = useRef(null);
   if (!isOpen) return null;
+
+  const updateDescription = (nextValue) => {
+    setSubcategoryDraft((prev) => ({ ...prev, description: nextValue }));
+  };
+
+  const insertDescriptionToken = (prefix, suffix = "", placeholder = "text") => {
+    const el = descriptionRef.current;
+    const current = subcategoryDraft.description || "";
+    if (!el) {
+      updateDescription(`${current}${prefix}${placeholder}${suffix}`);
+      return;
+    }
+
+    const start = el.selectionStart ?? current.length;
+    const end = el.selectionEnd ?? current.length;
+    const selected = current.slice(start, end);
+    const valueToWrap = selected || placeholder;
+    const next = `${current.slice(0, start)}${prefix}${valueToWrap}${suffix}${current.slice(end)}`;
+    updateDescription(next);
+
+    requestAnimationFrame(() => {
+      el.focus();
+      const nextCursor = selected
+        ? start + prefix.length + valueToWrap.length + suffix.length
+        : start + prefix.length + valueToWrap.length;
+      el.setSelectionRange(nextCursor, nextCursor);
+    });
+  };
+
+  const handleDescriptionKeyDown = (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "b") {
+      event.preventDefault();
+      insertDescriptionToken("**", "**");
+    }
+  };
 
   return (
     <div
@@ -46,12 +84,45 @@ const SubcategoryModal = ({
 
           <div>
             <label className="block text-sm font-medium text-slate-700">Description</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => insertDescriptionToken("**", "**")}
+                className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Bold
+              </button>
+              <button
+                type="button"
+                onClick={() => insertDescriptionToken("\n• ", "")}
+                className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Bullet
+              </button>
+              <button
+                type="button"
+                onClick={() => insertDescriptionToken("\n\n", "")}
+                className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Line Break
+              </button>
+              <button
+                type="button"
+                onClick={() => insertDescriptionToken("[", "](https://example.com)", "label")}
+                className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Link
+              </button>
+              <span className="text-[11px] text-slate-500">Shortcut: Ctrl/Cmd + B for bold</span>
+            </div>
             <textarea
+              ref={descriptionRef}
               rows={4}
               value={subcategoryDraft.description}
               onChange={(e) =>
                 setSubcategoryDraft((prev) => ({ ...prev, description: e.target.value }))
               }
+              onKeyDown={handleDescriptionKeyDown}
               className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
               placeholder="Description"
             />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AddressForm from "../components/AddressForm";
 import { useProfile } from "../context/ProfileContext";
 import edit_ic from "../assets/Icons/edit_ic.png";
@@ -46,6 +46,8 @@ const Profile = () => {
   });
 
   const [savingAddress, setSavingAddress] = useState(false);
+  const formSectionRef = useRef(null);
+  const formTitleRef = useRef(null);
 
   // forces AddressForm remount -> clears typed content
   const [formResetKey, setFormResetKey] = useState(0);
@@ -166,6 +168,30 @@ const Profile = () => {
     if (activeTab !== "orders") return;
     loadMyOrders();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "addresses") return;
+    setShowForm(false);
+    setEditing(null);
+    setError("");
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!editing || activeTab !== "addresses") return;
+
+    requestAnimationFrame(() => {
+      const titleEl = formTitleRef.current || formSectionRef.current;
+      if (titleEl) {
+        const y = window.scrollY + titleEl.getBoundingClientRect().top - 96;
+        window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+      }
+
+      const firstField = formSectionRef.current?.querySelector(
+        "input, textarea, select"
+      );
+      firstField?.focus?.({ preventScroll: true });
+    });
+  }, [editing, activeTab]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">
@@ -475,9 +501,12 @@ const Profile = () => {
         </section>
 
         {(showForm || editing) && (
-          <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <section
+            ref={formSectionRef}
+            className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
+          >
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 ref={formTitleRef} className="text-lg font-semibold text-slate-900">
                 {editing ? "Edit address" : "Add new address"}
               </h2>
 
