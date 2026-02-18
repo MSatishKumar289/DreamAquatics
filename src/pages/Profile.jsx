@@ -221,16 +221,16 @@ const Profile = () => {
       window.matchMedia("(max-width: 768px)").matches;
     if (!formVisible || !isMobileViewport) return;
 
-    const handleScrollDismiss = () => {
+    const handlePointerDownOutsideForm = (event) => {
+      const formNode = formSectionRef.current;
+      if (!formNode) return;
+      if (formNode.contains(event.target)) return;
       dismissActiveKeyboardInput();
     };
 
-    window.addEventListener("scroll", handleScrollDismiss, { passive: true });
-    window.addEventListener("touchmove", handleScrollDismiss, { passive: true });
-
+    document.addEventListener("pointerdown", handlePointerDownOutsideForm, true);
     return () => {
-      window.removeEventListener("scroll", handleScrollDismiss);
-      window.removeEventListener("touchmove", handleScrollDismiss);
+      document.removeEventListener("pointerdown", handlePointerDownOutsideForm, true);
     };
   }, [showForm, editing]);
 
