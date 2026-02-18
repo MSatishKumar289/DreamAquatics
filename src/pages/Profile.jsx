@@ -211,28 +211,54 @@ const Profile = () => {
       )}
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+        <header className="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-[#EAF4FF] via-[#DDEEFF] to-[#CEE5FF] p-6 shadow-sm">
+          <div className="pointer-events-none absolute -right-10 -top-8 h-24 w-24 rotate-12 rounded-2xl bg-blue-400/20" />
+          <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-20 -skew-x-[24deg] bg-blue-300/20" />
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
-                Profile
+            <div className="relative z-10">
+              <p className="text-xs uppercase tracking-[0.4em] text-blue-700">
+                <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-0.5 shadow-sm">
+                  <span className="inline-block skew-x-[10deg]">Profile</span>
+                </span>
               </p>
               {activeTab === "addresses" ? (
                 <>
                   <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-                    Saved Addresses
+                    <span className="inline-block -skew-x-[10deg] rounded-[6px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-4 py-1 text-white shadow-[0_10px_20px_rgba(15,23,42,0.18)]">
+                      <span
+                        className="inline-block skew-x-[10deg]"
+                        style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                      >
+                        Saved Addresses
+                      </span>
+                    </span>
                   </h1>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Add up to two delivery addresses and set a default one.
+                  <p className="mt-2 text-sm text-blue-900">
+                    <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-1 shadow-sm">
+                      <span className="inline-block skew-x-[10deg]">
+                        Add up to two delivery addresses and set a default one.
+                      </span>
+                    </span>
                   </p>
                 </>
               ) : (
                 <>
                   <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-                    Your Orders
+                    <span className="inline-block -skew-x-[10deg] rounded-[6px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-4 py-1 text-white shadow-[0_10px_20px_rgba(15,23,42,0.18)]">
+                      <span
+                        className="inline-block skew-x-[10deg]"
+                        style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                      >
+                        Your Orders
+                      </span>
+                    </span>
                   </h1>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Track your recent purchases and order history here.
+                  <p className="mt-2 text-sm text-blue-900">
+                    <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-1 shadow-sm">
+                      <span className="inline-block skew-x-[10deg]">
+                        Track your recent purchases and order history here.
+                      </span>
+                    </span>
                   </p>
                 </>
               )}

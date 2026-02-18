@@ -58,6 +58,8 @@ const Home = ({ profile }) => {
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
   const [quickPickIndex, setQuickPickIndex] = useState(0);
+  const [quickPickScrollProgress, setQuickPickScrollProgress] = useState(0);
+  const [quickPickVisibleCount, setQuickPickVisibleCount] = useState(1);
   const [showFloatingWhatsApp, setShowFloatingWhatsApp] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
@@ -562,6 +564,9 @@ const Home = ({ profile }) => {
       quickPickScrollRafRef.current = null;
       const track = quickPickTrackRef.current;
       if (!track) return;
+      const maxScroll = Math.max(1, track.scrollWidth - track.clientWidth);
+      const progress = Math.max(0, Math.min(1, track.scrollLeft / maxScroll));
+      setQuickPickScrollProgress((prev) => (Math.abs(prev - progress) < 0.005 ? prev : progress));
       const trackRect = track.getBoundingClientRect();
       const trackCenter = trackRect.left + trackRect.width / 2;
 
@@ -781,20 +786,43 @@ const Home = ({ profile }) => {
   }, []);
 
   useEffect(() => {
+    const measureQuickPickVisibleCount = () => {
+      const track = quickPickTrackRef.current;
+      const firstCard = quickPickItemRefs.current.find(Boolean);
+      if (!track || !firstCard) {
+        setQuickPickVisibleCount((prev) => (prev === 1 ? prev : 1));
+        return;
+      }
+      const visible = Math.max(1, Math.round(track.clientWidth / firstCard.clientWidth));
+      setQuickPickVisibleCount((prev) => (prev === visible ? prev : visible));
+    };
+
+    const raf = window.requestAnimationFrame(measureQuickPickVisibleCount);
+    window.addEventListener('resize', measureQuickPickVisibleCount);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener('resize', measureQuickPickVisibleCount);
+    };
+  }, [homeShortcutCircles]);
+
+  useEffect(() => {
     if (!homeShortcutCircles.length) {
       setQuickPickIndex(0);
+      setQuickPickScrollProgress(0);
       quickPickInitRef.current = false;
       return;
     }
+    const useCompactIndicatorMode =
+      homeShortcutCircles.length >= 4 && quickPickVisibleCount >= 3 && quickPickVisibleCount <= 4;
     if (!quickPickInitRef.current) {
-      setQuickPickIndex(homeShortcutCircles.length >= 4 ? 1 : 0);
+      setQuickPickIndex(useCompactIndicatorMode ? 1 : 0);
       quickPickInitRef.current = true;
       return;
     }
     if (quickPickIndex >= homeShortcutCircles.length) {
-      setQuickPickIndex(homeShortcutCircles.length >= 4 ? 1 : 0);
+      setQuickPickIndex(useCompactIndicatorMode ? 1 : 0);
     }
-  }, [homeShortcutCircles, quickPickIndex]);
+  }, [homeShortcutCircles, quickPickIndex, quickPickVisibleCount]);
 
   const goToHomeShortcut = (key) => {
     const scrollWithOffset = (element) => {
@@ -1062,32 +1090,40 @@ const Home = ({ profile }) => {
             style={{ backgroundImage: `url(${BgImage})` }}
             aria-hidden
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/45 to-black/35" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#021426]/76 via-[#062746]/58 to-[#0A3A66]/46" aria-hidden />
         </div>
 
-        <div className="relative mx-auto grid w-full max-w-[1600px] gap-3 px-2 text-white sm:px-3 lg:grid-cols-[1.15fr_0.85fr] lg:px-6">
-          <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/5 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.45)] backdrop-blur lg:px-10">
+        <div className="relative mx-auto grid w-full max-w-[1600px] gap-4 px-2 text-white sm:px-3 lg:grid-cols-[1.15fr_0.85fr] lg:px-6">
+          <div className="relative flex flex-col gap-6 overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-r from-[#04162E]/84 via-[#0B2E57]/78 to-[#0C3D73]/70 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.5)] backdrop-blur lg:px-10">
+            <div className="pointer-events-none absolute -right-12 -top-8 h-36 w-36 rotate-12 rounded-2xl bg-sky-300/18" />
+            <div className="pointer-events-none absolute -left-10 bottom-0 h-24 w-28 -skew-x-[24deg] bg-blue-300/12" />
             <div className="space-y-3 text-center">
-              <h1 className="text-[1.5rem] font-semibold leading-tight whitespace-nowrap sm:text-[2.2rem] md:text-[2.6rem] text-blue-600">
-                <span className="font-semibold text-blue-600">Exclusive and Exotics</span>
+              <h1 className="text-[1.5rem] font-semibold leading-tight sm:text-[2.2rem] md:text-[2.6rem]">
+                <span className="inline-block -skew-x-[10deg] rounded-[7px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-5 py-1 shadow-[0_12px_24px_rgba(0,0,0,0.22)]">
+                  <span className="inline-block skew-x-[10deg] text-white">Exclusive and Exotics</span>
+                </span>
               </h1>
-              <p className="text-base font-semibold text-white">
+              <p className="mx-auto max-w-4xl rounded-xl bg-white/10 px-4 py-2 text-base font-semibold text-white shadow-inner shadow-sky-900/20">
                 Welcome to the wonderful world of fish keeping. Your trusted source for exotic aquarium fishes with expert advice and nationwide shipping.
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 text-center shadow-inner shadow-sky-900/30 backdrop-blur">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] line-clamp-2">
+              <div className="rounded-2xl bg-gradient-to-br from-[#0B2B4E]/35 to-[#114373]/25 p-4 text-center shadow-[0_10px_22px_rgba(15,23,42,0.24)] backdrop-blur">
+                <p className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/90 px-2 py-0.5 text-[16px] font-semibold uppercase tracking-[0.06em] text-[#0D2F5A] sm:px-3 sm:text-sm sm:tracking-[0.16em]">
+                  <span className="inline-block skew-x-[10deg]">
                   Custom-built aquariums
+                  </span>
                 </p>
                 <p className="mt-2 text-base font-semibold text-white">
                  An elegant custom aquarium with a timeless aesthetic, tailored to your space and style, creating a stunning aquatic centerpiece. 
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 text-center shadow-inner shadow-sky-900/30 backdrop-blur">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] line-clamp-2">
+              <div className="rounded-2xl bg-gradient-to-br from-[#0B2B4E]/35 to-[#114373]/25 p-4 text-center shadow-[0_10px_22px_rgba(15,23,42,0.24)] backdrop-blur">
+                <p className="inline-block -skew-x-[10deg] whitespace-nowrap rounded-[4px] bg-white/90 px-2 py-0.5 text-[16px] font-semibold uppercase tracking-[0.06em] text-[#0D2F5A] sm:px-3 sm:text-sm sm:tracking-[0.16em]">
+                  <span className="inline-block skew-x-[10deg]">
                   Professional maintenance
+                  </span>
                 </p>
                 <p className="mt-2 text-base font-semibold text-white">
                   Scheduled care, water checks, and quick cleanups to keep your aquarium crystal clear and stress-free.
@@ -1095,17 +1131,17 @@ const Home = ({ profile }) => {
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-4 md:justify-center">
+            <div className="mx-auto flex w-fit items-center justify-center gap-4 rounded-full border border-white/20 bg-white/10 px-4 py-2 shadow-inner shadow-slate-900/30 md:justify-center">
               <a
                 href="tel:+918667418965"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:h-14 md:w-14"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/60 bg-white/95 text-sky-900 shadow-[0_10px_22px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:brightness-105 md:h-14 md:w-14"
                 aria-label="Call us"
               >
                 <img src={CallIcon} alt="Call us" className="h-6 w-6 object-contain md:h-7 md:w-7" />
               </a>
               <a
                 href="https://wa.me/918667418965"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/80 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 md:h-14 md:w-14"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-300/80 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_12px_24px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:brightness-105 md:h-14 md:w-14"
                 aria-label="Open WhatsApp"
               >
                 <img src={WhatsIcon} alt="WhatsApp" className="h-7 w-7 object-contain" />
@@ -1114,7 +1150,7 @@ const Home = ({ profile }) => {
                 href={storeMapUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-sky-900 shadow-lg transition hover:-translate-y-0.5 md:h-14 md:w-14"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/60 bg-white/95 text-sky-900 shadow-[0_10px_22px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:brightness-105 md:h-14 md:w-14"
                 aria-label="Locate us on Google Maps"
               >
                 <img src={mapIcon} alt="Locate us" className="h-6 w-6 object-contain" />
@@ -1122,15 +1158,21 @@ const Home = ({ profile }) => {
             </div>
           </div>
 
-          <div className="relative flex flex-col gap-4 rounded-[32px] border border-white/15 bg-white/10 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.35)] backdrop-blur">
+          <div className="relative flex flex-col gap-4 overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.42)] backdrop-blur">
+            <div className="pointer-events-none absolute right-0 top-0 h-24 w-32 -skew-x-[22deg] bg-blue-200/18" />
+            <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-32 -skew-x-[24deg] bg-sky-200/14" />
             <div className="space-y-1">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
-                Store highlights
+              <p className="inline-block -skew-x-[10deg] rounded-[5px] bg-white px-3 py-0.5 text-sm font-semibold uppercase tracking-[0.2em] text-[#0D2F5A]">
+                <span className="inline-block skew-x-[10deg]">Store Highlights</span>
               </p>
-              <p className="text-xl font-semibold text-white">This week at the studio</p>
+              <p className="text-xl font-semibold text-white">
+                <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-3 py-0.5 text-white">
+                  <span className="inline-block skew-x-[10deg]">This Week At The Studio</span>
+                </span>
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/10">
+              <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_22px_rgba(15,23,42,0.28)]">
                 <video
                   src={highlightVideoSrc}
                   className="h-full w-full object-cover"
@@ -1144,7 +1186,7 @@ const Home = ({ profile }) => {
               </div>
               <button
                 type="button"
-                className="relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none"
+                className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
                 onClick={() => setActiveHighlight(highlightImageOne)}
                 aria-label="Enlarge highlight image"
               >
@@ -1152,7 +1194,7 @@ const Home = ({ profile }) => {
               </button>
               <button
                 type="button"
-                className="relative h-32 overflow-hidden rounded-2xl border border-white/10 focus:outline-none"
+                className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
                 onClick={() => setActiveHighlight(highlightImageTwo)}
                 aria-label="Enlarge highlight image"
               >
@@ -1165,24 +1207,27 @@ const Home = ({ profile }) => {
                   href={instagramUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="relative inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl border border-white/30 bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-500 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-white shadow-[0_12px_40px_rgba(236,72,153,0.35)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-5 sm:text-sm"
+                  className="relative inline-flex min-w-0 flex-1 items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-5"
                 >
-                  <span className="absolute inset-0 bg-white/15 opacity-0 transition duration-300 hover:opacity-100" aria-hidden />
-                  <svg viewBox="0 0 24 24" className="relative z-10 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
-                    <circle cx="12" cy="12" r="4" />
-                    <circle cx="17.4" cy="6.7" r="0.8" fill="currentColor" stroke="none" />
-                  </svg>
-                  <span className="relative z-10">Follow Us</span>
+                  <span className="relative z-10 inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#833AB4] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:text-sm">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 skew-x-[10deg]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+                      <circle cx="12" cy="12" r="4" />
+                      <circle cx="17.4" cy="6.7" r="0.8" fill="currentColor" stroke="none" />
+                    </svg>
+                    <span className="inline-block skew-x-[10deg]">Follow Us</span>
+                  </span>
                 </a>
                 <a
                   href="https://chat.whatsapp.com/DiUn2Tr4sP8LuKAUoq1xpx"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-emerald-400/80 bg-white/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 sm:px-5 sm:text-sm"
+                  className="inline-flex min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 sm:px-5"
                 >
-                  <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
-                  <span>Join Community</span>
+                  <span className="inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#25D366] to-[#128C7E] px-[18px] py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:px-[22px] sm:text-sm">
+                    <img src={WhatsIcon} alt="" className="h-4 w-4 skew-x-[10deg] object-contain" aria-hidden />
+                    <span className="inline-block skew-x-[10deg]">Join Community</span>
+                  </span>
                 </a>
               </div>
             </div>
@@ -1423,18 +1468,14 @@ const Home = ({ profile }) => {
               </div>
               {homeShortcutCircles.length > 1 && (
                 <div className="mt-2 flex items-center justify-center gap-1.5 lg:hidden">
-                  {(homeShortcutCircles.length >= 4 ? [1, 2] : homeShortcutCircles.map((_, index) => index)).map((index) => {
-                    const item = homeShortcutCircles[index];
-                    return (
-                      <span
-                        key={`quick-pick-dot-${item?.key || index}`}
-                        className={`rounded-full transition-all ${
-                          index === quickPickIndex ? "h-1.5 w-6 bg-slate-900" : "h-1.5 w-3 bg-slate-300"
-                        }`}
-                        aria-hidden="true"
-                      />
-                    );
-                  })}
+                  <span className="relative h-1.5 w-14 overflow-hidden rounded-full bg-[#E8D8A8]" aria-hidden="true">
+                    <span
+                      className="absolute top-0 h-1.5 w-6 rounded-full bg-[#D4AF37] transition-all duration-300"
+                      style={{
+                        left: `${quickPickScrollProgress * (56 - 24)}px`,
+                      }}
+                    />
+                  </span>
                 </div>
               )}
             </section>
