@@ -1158,7 +1158,7 @@ const Home = ({ profile }) => {
             </div>
           </div>
 
-          <div className="relative flex flex-col gap-4 overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.42)] backdrop-blur">
+          <div className="relative hidden flex-col gap-4 overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.42)] backdrop-blur lg:flex">
             <div className="pointer-events-none absolute right-0 top-0 h-24 w-32 -skew-x-[22deg] bg-blue-200/18" />
             <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-32 -skew-x-[24deg] bg-sky-200/14" />
             <div className="space-y-1">
@@ -1323,7 +1323,7 @@ const Home = ({ profile }) => {
                 return (
                   <article
                     key={card.id}
-                    className="group relative h-[120px] cursor-pointer overflow-hidden rounded-2xl border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-auto lg:aspect-[3/4] lg:rounded-[24px]"
+                    className="group relative h-[162px] cursor-pointer overflow-hidden rounded-2xl border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-auto lg:aspect-[3/4] lg:rounded-[24px]"
                     role="button"
                     tabIndex={0}
                     aria-label={`Open ${card.title}`}
@@ -1343,7 +1343,7 @@ const Home = ({ profile }) => {
                     <div className="absolute inset-0 bg-[#06213D]/45" aria-hidden />
                     <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#9DD8FF]/35 via-[#9DD8FF]/10 to-transparent" aria-hidden />
                     <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#031427]/90 via-[#0A2743]/52 to-transparent" aria-hidden />
-                    <div className="pointer-events-none absolute -right-10 bottom-8 h-28 w-28 rounded-full bg-cyan-300/18 blur-2xl" />
+                    <div className="pointer-events-none absolute -right-10 bottom-8 h-28 w-28 rounded-full bg-cyan-300/18 blur-[48px]" />
 
                     {visualStyle === "neon-bubble" && (
                       <div className="relative z-10 flex h-full items-center justify-center p-2.5 sm:p-3">
@@ -1364,18 +1364,18 @@ const Home = ({ profile }) => {
                     )}
 
                     {visualStyle === "ticket-strip" && (
-                      <div className="relative z-10 flex h-full items-center justify-center p-2.5 sm:p-3">
+                      <div className="relative z-10 flex h-full items-center justify-center p-4 sm:p-3">
                         <div className="relative w-[92%] max-w-[230px]">
-                          <div className="-skew-x-[11deg] rounded-md bg-[#18D26E]/92 px-3 py-1.5 shadow-[0_8px_18px_rgba(22,163,74,0.35)]">
+                          <div className="-skew-x-[11deg] rounded-md bg-[#18D26E]/92 px-3.5 py-2 shadow-[0_8px_18px_rgba(22,163,74,0.35)]">
                             <h3
-                              className="skew-x-[11deg] text-center text-[0.7rem] font-semibold uppercase leading-tight text-white sm:text-[0.76rem] lg:text-[1.12rem]"
+                              className="skew-x-[11deg] text-center text-[0.96rem] font-semibold uppercase leading-tight text-white sm:text-[0.76rem] lg:text-[1.12rem]"
                               style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
                             >
                               {card.title}
                             </h3>
                           </div>
-                          <div className="mt-1.5 translate-x-2 -skew-x-[11deg] rounded-md bg-white/95 px-2.5 py-1 shadow-[0_8px_16px_rgba(15,23,42,0.28)]">
-                            <p className="skew-x-[11deg] text-center text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-[#B8860B] sm:text-[0.5rem] lg:text-[0.66rem]">
+                          <div className="mt-2 translate-x-2.5 -skew-x-[11deg] rounded-md bg-white/95 px-3 py-1.5 shadow-[0_8px_16px_rgba(15,23,42,0.28)]">
+                            <p className="skew-x-[11deg] text-center text-[0.64rem] font-semibold uppercase tracking-[0.08em] text-[#B8860B] sm:text-[0.5rem] lg:text-[0.66rem]">
                               {startsFromText}
                             </p>
                           </div>
@@ -1419,6 +1419,83 @@ const Home = ({ profile }) => {
                   </article>
                 );
               })}
+            </div>
+          </section>
+
+          <section data-home-reveal className="container mx-auto mt-4 px-4 sm:px-6 lg:hidden">
+            <div className="relative flex flex-col gap-4 overflow-hidden rounded-[24px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-4 text-center shadow-[0_16px_40px_rgba(15,23,42,0.34)] backdrop-blur">
+              <div className="pointer-events-none absolute right-0 top-0 h-24 w-32 -skew-x-[22deg] bg-blue-200/18" />
+              <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-32 -skew-x-[24deg] bg-sky-200/14" />
+              <div className="space-y-1">
+                <p className="inline-block -skew-x-[10deg] rounded-[5px] bg-white px-3 py-0.5 text-sm font-semibold uppercase tracking-[0.2em] text-[#0D2F5A]">
+                  <span className="inline-block skew-x-[10deg]">Store Highlights</span>
+                </p>
+                <p className="text-xl font-semibold text-white">
+                  <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-3 py-0.5 text-white">
+                    <span className="inline-block skew-x-[10deg]">This Week At The Studio</span>
+                  </span>
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_22px_rgba(15,23,42,0.28)]">
+                  <video
+                    src={highlightVideoSrc}
+                    className="h-full w-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                    poster={highlightPoster}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
+                  onClick={() => setActiveHighlight(highlightImageOne)}
+                  aria-label="Enlarge highlight image"
+                >
+                  <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" />
+                </button>
+                <button
+                  type="button"
+                  className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
+                  onClick={() => setActiveHighlight(highlightImageTwo)}
+                  aria-label="Enlarge highlight image"
+                >
+                  <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" />
+                </button>
+              </div>
+              <div className="mt-2 flex justify-center">
+                <div className="flex w-full max-w-[560px] flex-nowrap items-center justify-center gap-2 sm:gap-3">
+                  <a
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="relative inline-flex min-w-0 flex-1 items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-5"
+                  >
+                    <span className="relative z-10 inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#833AB4] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:text-sm">
+                      <svg viewBox="0 0 24 24" className="h-4 w-4 skew-x-[10deg]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+                        <circle cx="12" cy="12" r="4" />
+                        <circle cx="17.4" cy="6.7" r="0.8" fill="currentColor" stroke="none" />
+                      </svg>
+                      <span className="inline-block skew-x-[10deg]">Follow Us</span>
+                    </span>
+                  </a>
+                  <a
+                    href="https://chat.whatsapp.com/DiUn2Tr4sP8LuKAUoq1xpx"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 sm:px-5"
+                  >
+                    <span className="inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#25D366] to-[#128C7E] px-[18px] py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:px-[22px] sm:text-sm">
+                      <img src={WhatsIcon} alt="" className="h-4 w-4 skew-x-[10deg] object-contain" aria-hidden />
+                      <span className="inline-block skew-x-[10deg]">Join Community</span>
+                    </span>
+                  </a>
+                </div>
+              </div>
             </div>
           </section>
 
