@@ -7,6 +7,10 @@ import Spinner from '../components/Spinner';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
 import BgImage from '../assets/Images/homebgnew.png';
+import quickPickNewArrivals from '../assets/QuickPicks/new-arrivals-card.svg';
+import quickPickUnder100 from '../assets/QuickPicks/under-100-card.svg';
+import quickPickTrending from '../assets/QuickPicks/trending-card.svg';
+import quickPickEssentials from '../assets/QuickPicks/essentials-card.svg';
 import CallIcon from '../assets/Icons/phone.png';
 import WhatsIcon from '../assets/Icons/whatsapp.png';
 import HighlightOne from '../assets/Images/go.jpg';
@@ -21,6 +25,10 @@ import mapIcon from '../assets/Icons/map.png';
 import arrowIcon from '../assets/Icons/arrow.png';
 import bestSellerIcon from '../assets/Icons/BestSeller.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
+import fishCategoryVisual from '../assets/Images/Home/fish.png';
+import accessoriesCategoryVisual from '../assets/Images/Home/Accessories.png';
+import plantCategoryVisual from '../assets/Images/Home/plant.png';
+import tankCategoryVisual from '../assets/Images/Home/tank.png';
 
 const Home = ({ profile }) => {
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -642,13 +650,6 @@ const Home = ({ profile }) => {
 
     const rules = [
       {
-        key: 'trending',
-        title: 'Trending Now',
-        subtitle: 'Popular Picks',
-        filter: (p) => isInStock(p),
-        sort: byNewest,
-      },
-      {
         key: 'under-100',
         title: 'Under \u20B9100',
         subtitle: 'Budget Friendly',
@@ -657,6 +658,13 @@ const Home = ({ profile }) => {
           return price !== null && price <= 100;
         },
         sort: (a, b) => (toNumber(a?.price) ?? Number.MAX_SAFE_INTEGER) - (toNumber(b?.price) ?? Number.MAX_SAFE_INTEGER),
+      },
+      {
+        key: 'trending',
+        title: 'Trending Now',
+        subtitle: 'Popular Picks',
+        filter: (p) => isInStock(p),
+        sort: byNewest,
       },
     ];
 
@@ -706,6 +714,12 @@ const Home = ({ profile }) => {
       accessories: 'Accessories',
       tank: 'Tanks & Bowls',
     };
+    const visualMap = {
+      fishes: fishCategoryVisual,
+      'live-plants': plantCategoryVisual,
+      accessories: accessoriesCategoryVisual,
+      tank: tankCategoryVisual,
+    };
 
     return categories.map((categoryKey) => {
       const dbSlug = CATEGORY_SLUG_MAP[categoryKey];
@@ -736,36 +750,35 @@ const Home = ({ profile }) => {
         count: subcategoryCounts?.[categoryKey] || 0,
         startFrom: minPrice,
         tint: tints[categoryKey] || 'from-black/50 via-black/20 to-transparent',
+        visualImage: visualMap[categoryKey] || recentProduct?.product_images?.[0]?.url || recentProduct?.image || images[0] || BgImage,
       };
     });
   }, [allProducts, categories, subcategoryCounts, CATEGORY_SLUG_MAP]);
 
   const homeShortcutCircles = useMemo(() => {
-    const trendingSection = smartSections.find((section) => section.key === "trending");
-    const underHundredSection = smartSections.find((section) => section.key === "under-100");
     return [
       {
         key: "new-arrivals",
         title: "New Arrivals",
-        image: newArrivals?.[0]?.product_images?.[0]?.url || newArrivals?.[0]?.image || BgImage,
+        image: quickPickNewArrivals,
       },
       {
         key: "under-100",
         title: "Under \u20B9100",
-        image: underHundredSection?.items?.[0]?.product_images?.[0]?.url || underHundredSection?.items?.[0]?.image || BgImage,
+        image: quickPickUnder100,
       },
       {
         key: "trending",
         title: "Trending",
-        image: trendingSection?.items?.[0]?.product_images?.[0]?.url || trendingSection?.items?.[0]?.image || BgImage,
+        image: quickPickTrending,
       },
       {
         key: "essentials",
         title: "Essentials",
-        image: medicineAndFilterPicks?.[0]?.product_images?.[0]?.url || medicineAndFilterPicks?.[0]?.image || BgImage,
+        image: quickPickEssentials,
       },
     ].filter((item) => Boolean(item.image));
-  }, [newArrivals, smartSections, medicineAndFilterPicks]);
+  }, []);
 
   useEffect(() => {
     if (!homeShortcutCircles.length) {
@@ -797,6 +810,110 @@ const Home = ({ profile }) => {
       essentials: essentialsSectionRef.current,
     };
     scrollWithOffset(targets[key]);
+  };
+
+  const TopicTitleCard = ({ title, subtitle, className = "", variant = "sale-ribbon", tone = "default" }) => {
+    const hexToRgb = (hex) => {
+      const clean = String(hex || "").replace("#", "");
+      if (clean.length !== 6) return { r: 10, g: 61, b: 108 };
+      const value = parseInt(clean, 16);
+      return {
+        r: (value >> 16) & 255,
+        g: (value >> 8) & 255,
+        b: value & 255,
+      };
+    };
+    const toRgba = (hex, alpha) => {
+      const { r, g, b } = hexToRgb(hex);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+    // Keep strong color until ~20px after the yellow title box, then fade.
+    const holdPx = Math.min(560, 24 + title.length * 20 + 20);
+    const fadePx = holdPx + 110;
+
+    if (variant === "minimal-stripe") {
+      const toneMap = {
+        "new-arrivals": {
+          strong: "#FF005C",
+          ribbon: "from-[#FFE600] via-[#FFDE00] to-[#FFD400]",
+        },
+        "under-100": {
+          strong: "#00A84F",
+          ribbon: "from-[#B9FF2D] to-[#A8F12A]",
+        },
+        trending: {
+          strong: "#6B1DD2",
+          ribbon: "from-[#FFB100] to-[#FFC62B]",
+        },
+        essentials: {
+          strong: "#EF6A00",
+          ribbon: "from-[#FFE35A] to-[#FFD74A]",
+        },
+        default: {
+          strong: "#0A3D6C",
+          ribbon: "from-[#FFD74D] via-[#FFCD38] to-[#FFB31A]",
+        },
+      };
+      const selectedTone = toneMap[tone] || toneMap.default;
+      return (
+        <div
+          className={`relative overflow-hidden rounded-2xl px-3 py-1 text-left sm:px-4 sm:py-1.5 ${className}`}
+        >
+          <div className="pointer-events-none absolute -right-8 -top-7 h-24 w-24 rotate-12 bg-white/0" />
+          <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-24 -skew-x-[24deg] bg-white/0" />
+          <h2 className="relative text-lg font-semibold sm:text-xl">
+            <span className={`inline-block -skew-x-[10deg] rounded-[3px] bg-gradient-to-r ${selectedTone.ribbon} px-3 py-0.5`}>
+              <span
+                className="inline-block skew-x-[10deg] text-[#0D2F5A]"
+                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+              >
+                {title}
+              </span>
+            </span>
+          </h2>
+          <span className="relative mt-0.5 block text-xs font-semibold uppercase tracking-[0.16em]">
+            <span className="inline-block -skew-x-[10deg] rounded-[3px] bg-white px-2 py-0.5">
+              <span
+                className="inline-block skew-x-[10deg] text-[#0D2F5A]"
+                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+              >
+                {subtitle}
+              </span>
+            </span>
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`relative overflow-hidden rounded-2xl px-3 py-1 text-left sm:px-4 sm:py-1.5 ${className}`}
+      >
+        <div className="pointer-events-none absolute -right-12 -top-8 h-32 w-32 rotate-12 bg-fuchsia-300/0" />
+        <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-24 -skew-x-[26deg] bg-cyan-300/0" />
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-transparent" />
+        <h2 className="relative text-lg font-semibold sm:text-xl">
+          <span className="inline-block -skew-x-[12deg] rounded-[3px] bg-gradient-to-r from-[#FFD74D] via-[#FFCD38] to-[#FFB31A] px-2 py-0.5">
+            <span
+              className="inline-block skew-x-[12deg] text-[#0D2F5A]"
+              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+            >
+              {title}
+            </span>
+          </span>
+        </h2>
+        <span className="relative mt-0.5 block text-xs font-semibold uppercase tracking-[0.16em]">
+          <span className="inline-block -skew-x-[12deg] rounded-[3px] bg-white px-2 py-0.5">
+            <span
+              className="inline-block skew-x-[12deg] text-[#0D2F5A]"
+              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+            >
+              {subtitle}
+            </span>
+          </span>
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -1134,48 +1251,127 @@ const Home = ({ profile }) => {
         <>
           <section data-home-reveal className="container mx-auto px-4 pt-4 sm:px-6">
             <div className="mb-3 text-center sm:mb-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-700/80 sm:text-xs">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0E4D7A] sm:text-xs">
                 Explore
               </p>
-              <h2 className="mt-1 text-xl font-semibold text-[#102A43] sm:text-2xl">
-                Shop by Category
+              <h2 className="mt-1">
+                <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r from-[#FFE600] via-[#FFDE00] to-[#FFD400] px-4 py-1">
+                  <span
+                    className="inline-block skew-x-[10deg] text-xl font-semibold text-[#0D2F5A] sm:text-2xl"
+                    style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                  >
+                    Shop by Category
+                  </span>
+                </span>
               </h2>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              {categoryShowcaseCards.map((card) => (
-                <article
-                  key={card.id}
-                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-[22px] border border-white/40 shadow-[0_14px_40px_rgba(15,23,42,0.16)] sm:rounded-[24px] md:aspect-[16/9] lg:aspect-[3/4]"
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Open ${card.title}`}
-                  onClick={() => navigate(card.target)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      navigate(card.target);
-                    }
-                  }}
-                >
-                  <img
-                    src={card.recentImage || BgImage}
-                    alt={card.title}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-r ${card.tint}`} aria-hidden />
-                  <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-[#041426]/90 via-[#0A2540]/60 to-transparent" aria-hidden />
-                  <div className="relative z-10 flex h-full flex-col justify-end p-3 text-center text-white sm:p-4">
-                    <h3 className="text-[1.02rem] font-semibold leading-tight sm:text-xl">{card.title}</h3>
-                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/95 sm:text-[11px]">
-                      {card.startFrom !== null ? `Starts from \u20B9${card.startFrom.toLocaleString('en-IN')}` : 'Starts from \u20B9-'}
-                    </p>
-                    <span className="mt-3 inline-flex w-fit self-center items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-400 transition group-hover:text-amber-300 sm:px-3.5 sm:text-[13px]">
-                      Shop Now
-                      <img src={arrowIcon} alt="" className="h-[21px] w-[21px] object-contain" aria-hidden="true" />
-                    </span>
-                  </div>
-                </article>
-              ))}
+              {categoryShowcaseCards.map((card) => {
+                const startsFromText =
+                  card.startFrom !== null
+                    ? `Starts from \u20B9${card.startFrom.toLocaleString("en-IN")}`
+                    : "Starts from \u20B9-";
+                const visualStyle = "ticket-strip";
+
+                return (
+                  <article
+                    key={card.id}
+                    className="group relative h-[120px] cursor-pointer overflow-hidden rounded-2xl border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-auto lg:aspect-[3/4] lg:rounded-[24px]"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Open ${card.title}`}
+                    onClick={() => navigate(card.target)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        navigate(card.target);
+                      }
+                    }}
+                  >
+                    <img
+                      src={card.visualImage}
+                      alt={card.title}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                    <div className="absolute inset-0 bg-[#06213D]/45" aria-hidden />
+                    <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#9DD8FF]/35 via-[#9DD8FF]/10 to-transparent" aria-hidden />
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#031427]/90 via-[#0A2743]/52 to-transparent" aria-hidden />
+                    <div className="pointer-events-none absolute -right-10 bottom-8 h-28 w-28 rounded-full bg-cyan-300/18 blur-2xl" />
+
+                    {visualStyle === "neon-bubble" && (
+                      <div className="relative z-10 flex h-full items-center justify-center p-2.5 sm:p-3">
+                        <span className="pointer-events-none absolute left-5 top-5 h-2 w-2 rounded-full bg-cyan-100/90" />
+                        <span className="pointer-events-none absolute left-8 top-8 h-1.5 w-1.5 rounded-full bg-cyan-100/80" />
+                        <div className="relative flex h-[88px] w-[88px] flex-col items-center justify-center rounded-full border-2 border-cyan-200/70 bg-[#00B2FF]/40 shadow-[0_0_22px_rgba(56,189,248,0.55)] sm:h-[98px] sm:w-[98px] lg:h-[132px] lg:w-[132px]">
+                          <h3
+                            className="px-2 text-center text-[0.68rem] font-semibold uppercase leading-tight text-white sm:text-[0.74rem] lg:text-[1.02rem]"
+                            style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                          >
+                            {card.title}
+                          </h3>
+                          <p className="mt-1 px-2 text-center text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-cyan-50 sm:text-[0.49rem] lg:text-[0.65rem]">
+                            {startsFromText}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {visualStyle === "ticket-strip" && (
+                      <div className="relative z-10 flex h-full items-center justify-center p-2.5 sm:p-3">
+                        <div className="relative w-[92%] max-w-[230px]">
+                          <div className="-skew-x-[11deg] rounded-md bg-[#18D26E]/92 px-3 py-1.5 shadow-[0_8px_18px_rgba(22,163,74,0.35)]">
+                            <h3
+                              className="skew-x-[11deg] text-center text-[0.7rem] font-semibold uppercase leading-tight text-white sm:text-[0.76rem] lg:text-[1.12rem]"
+                              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                            >
+                              {card.title}
+                            </h3>
+                          </div>
+                          <div className="mt-1.5 translate-x-2 -skew-x-[11deg] rounded-md bg-white/95 px-2.5 py-1 shadow-[0_8px_16px_rgba(15,23,42,0.28)]">
+                            <p className="skew-x-[11deg] text-center text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-[#B8860B] sm:text-[0.5rem] lg:text-[0.66rem]">
+                              {startsFromText}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {visualStyle === "glass-plaque" && (
+                      <div className="relative z-10 flex h-full items-center justify-center p-2.5 sm:p-3">
+                        <div className="w-[92%] max-w-[230px] rounded-xl border border-white/55 bg-white/20 px-3 py-2 backdrop-blur-md shadow-[0_12px_22px_rgba(15,23,42,0.32)]">
+                          <h3
+                            className="text-center text-[0.68rem] font-semibold uppercase leading-tight text-white sm:text-[0.74rem] lg:text-[1.02rem]"
+                            style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                          >
+                            {card.title}
+                          </h3>
+                          <p className="mt-1 text-center text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-blue-50 sm:text-[0.49rem] lg:text-[0.65rem]">
+                            {startsFromText}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {visualStyle === "coral-tag" && (
+                      <div className="relative z-10 flex h-full items-center justify-center p-2.5 sm:p-3">
+                        <div className="relative flex min-h-[84px] w-[90%] max-w-[230px] flex-col items-center justify-center rounded-[24px] bg-[#FF7A1A]/92 px-3 py-2 shadow-[0_12px_22px_rgba(251,146,60,0.42)] sm:min-h-[92px] lg:min-h-[120px]">
+                          <span className="pointer-events-none absolute -left-2 top-4 h-4 w-4 rounded-full bg-[#FF7A1A]/92" />
+                          <span className="pointer-events-none absolute -right-2 bottom-5 h-4 w-4 rounded-full bg-[#FF7A1A]/92" />
+                          <h3
+                            className="text-center text-[0.68rem] font-semibold uppercase leading-tight text-white sm:text-[0.74rem] lg:text-[1.02rem]"
+                            style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                          >
+                            {card.title}
+                          </h3>
+                          <p className="mt-1 text-center text-[0.44rem] font-semibold uppercase tracking-[0.08em] text-orange-50 sm:text-[0.49rem] lg:text-[0.65rem]">
+                            {startsFromText}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           </section>
 
@@ -1183,34 +1379,42 @@ const Home = ({ profile }) => {
             <section data-home-reveal className="container mx-auto mt-4 px-4 pt-1 sm:px-6">
               <div className="home-progress-line mx-0 mb-4 h-px bg-amber-300/90" />
               <div className="mb-2 text-center">
-                <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Quick Picks</h2>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Jump To Sections</p>
+                <h2>
+                  <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r from-[#0B3D6C] via-[#14558F] to-[#1B6CAA] px-4 py-1">
+                    <span
+                      className="inline-block skew-x-[10deg] text-xl font-semibold text-white sm:text-2xl"
+                      style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                    >
+                      Quick Picks
+                    </span>
+                  </span>
+                </h2>
+                <p className="mt-1 inline-block -skew-x-[10deg] rounded-[4px] bg-white/85 px-3 py-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
+                  <span className="inline-block skew-x-[10deg]">Jump To Sections</span>
+                </p>
               </div>
               <div
                 ref={quickPickTrackRef}
                 onScroll={handleQuickPickTrackScroll}
-                className="no-scrollbar flex snap-x snap-mandatory items-start gap-2 overflow-x-auto pb-1 pt-1 lg:justify-center lg:gap-5 lg:overflow-visible lg:pb-0"
+                className="no-scrollbar flex snap-x snap-mandatory items-start gap-2 overflow-x-auto pb-1 pt-1 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible lg:pb-0"
               >
                 {homeShortcutCircles.map((item) => (
                   <button
                     key={item.key}
                     type="button"
                     onClick={() => goToHomeShortcut(item.key)}
-                    className="group snap-start shrink-0 w-[166px] sm:w-auto sm:basis-[34%] lg:w-[208px] lg:basis-[208px]"
+                    className="group snap-start shrink-0 w-[182px] sm:w-auto sm:basis-[34%] lg:w-full lg:basis-auto"
                     aria-label={`Open ${item.title}`}
                     ref={(node) => {
                       quickPickItemRefs.current[homeShortcutCircles.findIndex((it) => it.key === item.key)] = node;
                     }}
                   >
-                    <span className="relative mx-auto inline-flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 shadow-sm transition group-hover:shadow-md sm:h-[108px] sm:w-[108px] lg:h-[208px] lg:w-[208px]">
+                    <span className="relative mx-auto inline-flex h-[108px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md sm:h-[120px] lg:h-[136px]">
                       <img
                         src={item.image}
                         alt={item.title}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       />
-                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/45 via-black/20 to-black/10 px-3 text-center text-[1rem] font-semibold leading-tight text-white sm:text-[0.95rem] lg:text-[1.05rem]">
-                        {item.title}
-                      </span>
                     </span>
                   </button>
                 ))}
@@ -1235,14 +1439,14 @@ const Home = ({ profile }) => {
           )}
 
           {activeBestSeller && (
-            <section data-home-reveal className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
-              <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
-                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Best Seller Picks</h2>
-                <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                  Most Loved This Week
-                </span>
-              </div>
+            <section data-home-reveal className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
+              <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+              <TopicTitleCard
+                className="mb-2"
+                title="Best Seller Picks"
+                subtitle="Most Loved This Week"
+                variant="sale-ribbon"
+              />
               <div className="relative mx-auto w-full">
                 <div
                   ref={bestSellerTrackRef}
@@ -1520,12 +1724,15 @@ const Home = ({ profile }) => {
             </section>
           )}
 
-          <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
-            <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-            <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
-              <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">New Arrivals</h2>
-              <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">Latest Picks</span>
-            </div>
+          <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
+            <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+            <TopicTitleCard
+              className="mb-2"
+              title="New Arrivals"
+              subtitle="Latest Picks"
+              variant="minimal-stripe"
+              tone="new-arrivals"
+            />
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {newArrivals.map((product) => {
                 const categorySlug = product?.subcategory?.category?.slug;
@@ -1548,16 +1755,16 @@ const Home = ({ profile }) => {
               data-home-reveal
               key={section.key}
               ref={section.key === "trending" ? trendingSectionRef : section.key === "under-100" ? underHundredSectionRef : null}
-              className="container mx-auto mt-5 px-4 pt-5 sm:px-6"
+              className="container mx-auto mt-5 px-4 pt-3 sm:px-6"
             >
-              <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="relative mb-3">
-                <div className="rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
-                  <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{section.title}</h2>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                    {section.subtitle}
-                  </span>
-                </div>
+              <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="relative mb-2">
+                <TopicTitleCard
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  variant="minimal-stripe"
+                  tone={section.key}
+                />
                 {section.key === "under-100" && (
                   <button
                     type="button"
@@ -1588,14 +1795,15 @@ const Home = ({ profile }) => {
           ))}
 
           {medicineAndFilterPicks.length > 0 && (
-            <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-5 sm:px-6">
-              <div className="home-progress-line mx-2 mb-5 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="mb-3 rounded-r-lg border-l-4 border-amber-400 bg-gradient-to-r from-amber-100/90 via-amber-50/70 to-transparent px-3 py-2 text-left">
-                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Aquarium Essentials</h2>
-                <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-                  Everyday Must-Haves
-                </span>
-              </div>
+            <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
+              <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+              <TopicTitleCard
+                className="mb-2"
+                title="Aquarium Essentials"
+                subtitle="Everyday Must-Haves"
+                variant="minimal-stripe"
+                tone="essentials"
+              />
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {medicineAndFilterPicks.map((product) => (
                   <CategoryCard

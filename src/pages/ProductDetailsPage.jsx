@@ -137,7 +137,7 @@ const ProductDetailsPage = () => {
 
   if (isResolvingProduct) {
     return (
-      <main className="min-h-screen bg-white py-8">
+      <main className="min-h-screen bg-white/50 py-8">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg">
             <p className="text-lg font-semibold text-slate-900">Loading product details...</p>
@@ -149,7 +149,7 @@ const ProductDetailsPage = () => {
 
   if (!product) {
     return (
-      <main className="min-h-screen bg-white py-8">
+      <main className="min-h-screen bg-white/50 py-8">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg">
             <p className="text-lg font-semibold text-slate-900">Product not available.</p>
@@ -166,7 +166,7 @@ const ProductDetailsPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-white py-6 sm:py-8">
+    <main className="min-h-screen bg-white/50 py-6 sm:py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-slate-600">
           <Link to="/" className="text-slate-600 hover:text-blue-700">Home</Link>
