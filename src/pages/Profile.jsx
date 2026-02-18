@@ -54,6 +54,25 @@ const Profile = () => {
 
   const isBusy = loadingAddresses || savingAddress;
 
+  const dismissActiveKeyboardInput = () => {
+    if (typeof document === "undefined") return;
+    const active = document.activeElement;
+    if (!active) return;
+    const tag = active.tagName?.toLowerCase();
+    const isTextInput =
+      tag === "input" ||
+      tag === "textarea" ||
+      active.getAttribute?.("contenteditable") === "true";
+    if (isTextInput && typeof active.blur === "function") {
+      active.blur();
+    }
+  };
+
+  const scrollProfileToTop = (behavior = "smooth") => {
+    dismissActiveKeyboardInput();
+    window.scrollTo({ top: 0, behavior });
+  };
+
   const showToast = (message, type = "success") => {
     setToast({ show: true, type, message });
     setTimeout(() => setToast({ show: false, type: "", message: "" }), 2500);
@@ -107,6 +126,7 @@ const Profile = () => {
       setShowForm(false);
       setEditing(null);
       setFormResetKey((k) => k + 1);
+      scrollProfileToTop();
     } finally {
       setSavingAddress(false);
     }
@@ -136,6 +156,7 @@ const Profile = () => {
       setEditing(null);
       setShowForm(false);
       setFormResetKey((k) => k + 1);
+      scrollProfileToTop();
     } finally {
       setSavingAddress(false);
     }
@@ -192,6 +213,26 @@ const Profile = () => {
       firstField?.focus?.({ preventScroll: true });
     });
   }, [editing, activeTab]);
+
+  useEffect(() => {
+    const formVisible = showForm || !!editing;
+    const isMobileViewport =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 768px)").matches;
+    if (!formVisible || !isMobileViewport) return;
+
+    const handleScrollDismiss = () => {
+      dismissActiveKeyboardInput();
+    };
+
+    window.addEventListener("scroll", handleScrollDismiss, { passive: true });
+    window.addEventListener("touchmove", handleScrollDismiss, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollDismiss);
+      window.removeEventListener("touchmove", handleScrollDismiss);
+    };
+  }, [showForm, editing]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">
@@ -550,6 +591,7 @@ const Profile = () => {
                 initialValue={activeFormValue}
                 onCancel={() => {
                   if (isBusy) return;
+                  scrollProfileToTop();
                   setShowForm(false);
                   setEditing(null);
                   setError("");

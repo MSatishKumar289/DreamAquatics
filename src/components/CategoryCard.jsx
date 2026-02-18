@@ -267,10 +267,10 @@ const CartControls = ({
 
 const SubcategoryFooter = ({ title }) => {
   return (
-    <div className="flex flex-col items-center gap-1 px-1 pt-0.5 text-center">
-      <span className="inline-block w-full -skew-x-[10deg] rounded-[5px] bg-[#0A66D9] px-2 py-1 shadow-[0_8px_18px_rgba(15,23,42,0.24)]">
+    <div className="-mt-0.5 flex flex-col items-center gap-0 px-2 pb-1 pt-0 text-center sm:px-2.5 sm:pb-1.5">
+      <span className="inline-block w-full -skew-x-[10deg] rounded-[6px] bg-[#0A66D9] px-2 py-1.5 shadow-[0_8px_18px_rgba(15,23,42,0.24)]">
         <p
-          className="line-clamp-2 w-full skew-x-[10deg] text-left text-[0.52rem] font-semibold uppercase leading-tight tracking-[0.08em] text-white sm:text-[0.68rem]"
+          className="min-h-[1.5rem] w-full skew-x-[10deg] text-justify [text-align-last:center] text-[0.64rem] font-semibold uppercase leading-[1.08] tracking-[0.06em] text-white sm:min-h-[1.7rem] sm:text-[0.74rem]"
           style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
         >
           {title}

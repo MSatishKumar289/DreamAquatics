@@ -51,15 +51,6 @@ const UserOrdersDrawer = ({
     };
   }, [isOpen, onClose]);
 
-  const lastRefreshedLabel = useMemo(() => {
-    if (!lastRefreshedAt) return "Never";
-    const diffMs = Date.now() - lastRefreshedAt;
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin <= 0) return "Just now";
-    if (diffMin === 1) return "1 min ago";
-    return `${diffMin} min ago`;
-  }, [lastRefreshedAt]);
-
   const latestOrderStates = useMemo(() => {
     return orders
       .slice(0, 6)
@@ -90,7 +81,9 @@ const UserOrdersDrawer = ({
       >
         <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">DreamAquatics</p>
+            <p className="inline-flex -skew-x-[10deg] rounded-[5px] bg-[#0A66D9] px-2.5 py-1 text-xs uppercase tracking-[0.2em] text-white shadow-sm">
+              <span className="skew-x-[10deg]">DreamAquatics</span>
+            </p>
             <h2 className="mt-1 text-lg font-semibold text-slate-900">Order Updates</h2>
           </div>
           <button
@@ -104,11 +97,6 @@ const UserOrdersDrawer = ({
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col px-6 py-4">
-          <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
-            <span className="uppercase tracking-[0.2em]">Last refreshed</span>
-            <span className="font-semibold text-slate-700">{lastRefreshedLabel}</span>
-          </div>
-
           {notifications.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
               <p className="text-sm font-semibold text-slate-800">No new status updates</p>
