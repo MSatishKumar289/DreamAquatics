@@ -70,7 +70,7 @@ const Checkout = ({ user, onRequestLogin }) => {
   const ToastUI = toast.show ? (
     <div className="fixed top-5 left-1/2 z-[9999] -translate-x-1/2">
       <div
-        className={`rounded-xl px-5 py-3 text-sm font-semibold shadow-lg ring-1 whitespace-nowrap ${
+        className={`rounded-[8px] px-5 py-3 text-sm font-semibold shadow-lg ring-1 whitespace-nowrap ${
           toast.type === "success"
             ? "bg-emerald-600 text-white ring-emerald-200"
             : "bg-red-600 text-white ring-red-200"
@@ -448,10 +448,10 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
         {ToastUI}
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <section className="relative min-h-[calc(100dvh-1.5rem)] overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:min-h-0">
+          <section className="relative min-h-[calc(100dvh-1.5rem)] overflow-hidden rounded-[8px] bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:min-h-0">
             {isPlacingOrder && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-lg">
+                <div className="flex flex-col items-center gap-3 rounded-[8px] border border-slate-200 bg-white px-6 py-4 shadow-lg">
                   <Spinner size={28} />
                   <p className="text-sm font-semibold text-slate-800">Placing your order…</p>
                   <p className="text-xs text-slate-500">Please wait</p>
@@ -459,7 +459,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
               </div>
             )}
             {orderPlaced ? (
-              <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
+              <div className="rounded-[8px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
                 Your order has been placed successfully.
               </div>
             ) : (
@@ -477,13 +477,13 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
             {orderPlaced && isLoggedIn && (
               <div className="mt-4 flex flex-col items-center gap-3 text-center">
-                <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+                <div className="rounded-[8px] border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
                   View your order in Profile → Orders.
                 </div>
                 <div className="flex flex-col items-center gap-3 sm:flex-row">
                   <Link
                     to="/profile?tab=orders"
-                    className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    className="rounded-[8px] bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     Go to Profile
                   </Link>
@@ -492,7 +492,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                     onClick={() => {
                       window.location.href = "/";
                     }}
-                    className="rounded-xl border border-blue-200 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    className="rounded-[8px] border border-blue-200 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     Back to home
                   </button>
@@ -507,11 +507,11 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
             )}
 
             <div className="mt-6 space-y-4">
-              <div className="inline-flex w-full overflow-hidden rounded-full border border-gray-200 bg-gray-50 p-1">
+              <div className="inline-flex w-full overflow-hidden rounded-[8px] border border-gray-200 bg-gray-50 p-1">
                 <button
                   type="button"
                   onClick={() => setConfirmStep("summary")}
-                  className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  className={`flex-1 rounded-[8px] px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
                     confirmStep === "summary"
                       ? "bg-blue-600 text-white shadow"
                       : "text-slate-600 hover:text-slate-900"
@@ -522,7 +522,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                 <button
                   type="button"
                   onClick={() => setConfirmStep("items")}
-                  className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  className={`flex-1 rounded-[8px] px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
                     confirmStep === "items"
                       ? "bg-blue-600 text-white shadow"
                       : "text-slate-600 hover:text-slate-900"
@@ -534,13 +534,13 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
 
               {confirmStep === "summary" ? (
                 <div className="space-y-4">
-                  <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-900 shadow-[0_0_18px_rgba(37,99,235,0.35)]">
+                  <div className="rounded-[8px] border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-900 shadow-[0_0_18px_rgba(37,99,235,0.35)]">
                     {orderPlaced
                       ? "Our team will reach out shortly with payment and delivery details."
                       : "Payment details will be shared via WhatsApp after you confirm your order."}
                   </div>
 
-                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="rounded-[8px] border border-gray-100 bg-gray-50 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="text-lg font-semibold text-gray-900">
                         Delivery Address
@@ -597,7 +597,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                  <div className="rounded-[8px] border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
                     <div className="flex items-center justify-between">
                       <span>Subtotal</span>
                       <span className="font-semibold text-gray-900">
@@ -647,12 +647,12 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                         return (
                           <div
                             key={item.id}
-                            className="flex items-center gap-5 rounded-2xl border border-gray-100 bg-gray-50 p-4"
+                            className="flex items-center gap-5 rounded-[8px] border border-gray-100 bg-gray-50 p-4"
                           >
                             <img
                               src={imageSrc}
                               alt={itemTitle}
-                              className="h-20 w-20 rounded-xl object-cover"
+                              className="h-20 w-20 rounded-[8px] object-cover"
                             />
                             <div className="flex-1">
                               <p className="text-base font-semibold text-gray-900">
@@ -679,7 +679,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
       type="button"
       onClick={placeOrder}
       disabled={isPlacingOrder}
-      className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+      className="w-full max-w-xs rounded-[8px] bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
     >
       {isPlacingOrder ? "Placing order..." : "Confirm order"}
     </button>
@@ -714,10 +714,10 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
           <h1 className="text-3xl font-bold text-gray-900">Delivery Address</h1>
         </header>
 
-        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <section className="rounded-[8px] bg-white p-6 shadow-sm ring-1 ring-gray-100">
           {/* Spinner while fetching addresses */}
           {isFetchingAddressForCheckout && !editingFromReview ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
+            <div className="flex flex-col items-center justify-center gap-3 rounded-[8px] border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
               <Spinner size={26} />
               <p className="text-sm font-semibold text-slate-800">
                 Loading saved address...
@@ -730,17 +730,17 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
             <>
               {!isLoggedIn && (
                 <>
-                  <div className="mb-4 flex w-full flex-col items-center gap-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/60 px-5 py-4 text-center text-sm text-gray-700">
+                  <div className="mb-4 flex w-full flex-col items-center gap-3 rounded-[8px] border border-dashed border-blue-200 bg-blue-50/60 px-5 py-4 text-center text-sm text-gray-700">
                     <span>Already have an account? Log in to prefill details.</span>
                     <button
                       type="button"
                       onClick={onRequestLogin}
-                      className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                      className="w-full max-w-xs rounded-[8px] bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                     >
                       Login
                     </button>
                   </div>
-                  <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                  <div className="mb-6 rounded-[8px] border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
                     You are checking out as a guest. Your order updates will be sent
                     to the email and mobile number below.
                   </div>
@@ -755,7 +755,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                       type="text"
                       value={form.name}
                       onChange={handleChange("name")}
-                      className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     />
                     {errors.name && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -770,7 +770,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                       type="email"
                       value={form.email}
                       onChange={handleChange("email")}
-                      className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     />
                     {errors.email && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -786,7 +786,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                     type="text"
                     value={form.addressLine1}
                     onChange={handleChange("addressLine1")}
-                    className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
                   {errors.addressLine1 && (
                     <span className="mt-1 block text-xs text-red-600">
@@ -801,7 +801,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                     type="text"
                     value={form.addressLine2}
                     onChange={handleChange("addressLine2")}
-                    className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
                 </label>
 
@@ -812,7 +812,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                       type="text"
                       value={form.city}
                       onChange={handleChange("city")}
-                      className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     />
                     {errors.city && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -829,7 +829,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                       pattern="\d*"
                       value={form.pincode}
                       onChange={handleDigitsOnly("pincode", 6)}
-                      className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     />
                     {errors.pincode && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -846,7 +846,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                       pattern="\d*"
                       value={form.mobile}
                       onChange={handleDigitsOnly("mobile", 10)}
-                      className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     />
                     {errors.mobile && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -862,7 +862,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                     type="text"
                     value={form.landmark}
                     onChange={handleChange("landmark")}
-                    className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className="mt-2 w-full rounded-[8px] border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
                 </label>
 
@@ -871,7 +871,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                     type="button"
                     disabled={savingAddress}
                     onClick={handleReview}
-                    className="w-full max-w-xs rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    className="w-full max-w-xs rounded-[8px] bg-blue-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     {savingAddress ? "Saving..." : submitLabel}
                   </button>
@@ -884,7 +884,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                         setEditingFromReview(false);
                         window.scrollTo({ top: 0, behavior: "auto" });
                       }}
-                      className="w-full max-w-xs rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-900 shadow-sm transition hover:bg-gray-50"
+                      className="w-full max-w-xs rounded-[8px] border border-gray-200 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-900 shadow-sm transition hover:bg-gray-50"
                     >
                       Cancel
                     </button>

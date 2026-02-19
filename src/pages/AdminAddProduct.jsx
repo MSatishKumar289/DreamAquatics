@@ -442,7 +442,7 @@ const AdminAddProduct = ({
         }
         dataUrl = await readFileAsDataUrl(file);
       } else {
-        dataUrl = await prepareImageData(file);
+        dataUrl = await readFileAsDataUrl(file);
       }
 
       setHomeMediaDraft((prev) => ({

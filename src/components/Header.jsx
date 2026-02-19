@@ -177,7 +177,7 @@ const Header = ({
               {user && isProfileOpen && (
                   <div
                     data-profile-menu
-                    className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                    className="absolute right-0 top-12 z-40 w-64 rounded-[8px] border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
                   >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
@@ -398,7 +398,7 @@ const Header = ({
               {user && isProfileOpen && (
                 <div
                   data-profile-menu
-                  className="absolute left-1/2 top-11 z-40 w-60 max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                  className="absolute left-1/2 top-11 z-40 w-60 max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-[8px] border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
                 >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
@@ -574,7 +574,7 @@ const Header = ({
                 if (event.target === event.currentTarget) setLogoutConfirmOpen(false);
               }}
             >
-              <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <div className="w-full max-w-sm rounded-[8px] bg-white p-5 text-center shadow-xl">
                 <h3 className="text-lg font-semibold text-slate-900">
                   Confirm logout
                 </h3>

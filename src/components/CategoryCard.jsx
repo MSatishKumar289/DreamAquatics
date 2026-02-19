@@ -23,18 +23,18 @@ const ProductImageArea = ({
 }) => (
       <div
         className={`relative w-full overflow-hidden ${
-          isSubCategory ? "h-full rounded-2xl" : "rounded-t-2xl"
+          isSubCategory ? "h-full rounded-[6px]" : "rounded-t-[6px]"
         } ${
           whiteCard
             ? "bg-white"
             : isSubCategory
-              ? "bg-black"
+              ? "bg-white"
               : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
         }`}
       >
         <div
           className={`relative w-full overflow-hidden ${
-            isSubCategory ? "h-full rounded-2xl" : "border-b border-slate-200/60 rounded-t-2xl"
+            isSubCategory ? "h-full rounded-[6px]" : "border-b border-slate-200/60 rounded-t-[6px]"
           } ${
             isSubCategory ? "" : compact ? "aspect-[1/1]" : "aspect-[4/3.1] sm:aspect-[4/3.2]"
           }`}
@@ -54,7 +54,7 @@ const ProductImageArea = ({
               alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
               className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
                 isSubCategory
-                  ? "bg-black"
+                  ? "bg-white"
                   : whiteCard
                   ? "bg-white"
                   : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
@@ -68,17 +68,25 @@ const ProductImageArea = ({
               }}
             />
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[20%] bg-gradient-to-t from-black via-black/85 to-transparent backdrop-blur-[1.5px]" />
-          <div className="pointer-events-none absolute inset-x-2 bottom-2 z-30 flex justify-center">
-            <p
-              className="line-clamp-2 max-w-[92%] text-center text-[0.62rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.72rem]"
-              style={{
-                fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif",
-                textShadow: "0 1px 2px rgba(0,0,0,0.95), 0 0 1px rgba(0,0,0,0.9)",
-              }}
-            >
-              {productTitle}
-            </p>
+          <div
+            className="pointer-events-none absolute inset-0 z-10"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 100%)",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30">
+            <div className="w-full bg-black/45 px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px]">
+              <p
+                className="mx-auto line-clamp-2 max-w-[92%] text-center text-[0.68rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.8rem]"
+                style={{
+                  fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.95), 0 0 1px rgba(0,0,0,0.9)",
+                }}
+              >
+                {productTitle}
+              </p>
+            </div>
           </div>
         </>
       ) : (
@@ -233,7 +241,7 @@ const CartControls = ({
         <button
           type="button"
           disabled
-          className="inline-flex h-9 w-full min-w-0 items-center justify-center rounded-lg bg-slate-200 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm"
+          className="inline-flex h-9 w-full min-w-0 items-center justify-center rounded-[5px] bg-slate-200 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm"
         >
           Out of stock
         </button>
@@ -347,6 +355,7 @@ const CategoryCard = ({
   borderless = false,
   itemDetailGoldenBorder = false,
   whiteCard = false,
+  className = "",
 }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -543,15 +552,15 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
+      className={`group relative rounded-[6px] bg-white shadow-sm transition-shadow duration-300 ${
         isSubCategory ? "overflow-hidden" : "overflow-visible"
       } ${
         whiteCard
           ? isSubCategory
-            ? "cursor-pointer aspect-[25/27] bg-black opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
+            ? "cursor-pointer aspect-[25/27] bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
             : "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
           : isSubCategory
-            ? "cursor-pointer aspect-[25/27] bg-black opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
+            ? "cursor-pointer aspect-[25/27] bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
             : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
       } ${
         itemDetailGoldenBorder && !isSubCategory
@@ -559,7 +568,7 @@ const CategoryCard = ({
           : borderless
             ? "border-0"
             : "border border-slate-300"
-      } ${compact ? "h-full" : ""}`}
+      } ${compact ? "h-full" : ""} ${className}`}
       tabIndex="0"
       role="button"
       aria-label={

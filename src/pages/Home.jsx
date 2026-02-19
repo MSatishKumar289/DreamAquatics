@@ -717,8 +717,8 @@ const Home = ({ profile }) => {
 
   const TopicTitleCard = ({ title, subtitle, className = "", onViewAll }) => {
     return (
-      <div className={`text-center ${className}`}>
-        <div className="relative mx-auto max-w-[980px] overflow-hidden bg-gradient-to-r from-[#4EA3E6]/72 via-[#86C0EC]/48 to-[#C2E1F7]/30 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
+      <div className={`w-full ${className}`}>
+        <div className="relative w-full overflow-hidden bg-gradient-to-r from-[#4EA3E6]/72 via-[#86C0EC]/48 to-[#C2E1F7]/30 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
           <div className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-[#F2C94C]" />
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -759,7 +759,7 @@ const Home = ({ profile }) => {
             className={`relative mt-[5px] mb-[10px] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:flex sm:items-center sm:justify-between sm:gap-4 ${
               isSearchCollapsed
                 ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0"
-                : "translate-x-0 h-[65px] rounded-2xl border border-slate-200 bg-white/95 px-3 pt-2 pb-0 shadow-sm ring-1 ring-slate-100 sm:h-auto sm:px-4 sm:py-3"
+                : "translate-x-0 h-[65px] rounded-[8px] border border-slate-200 bg-white/95 px-3 pt-2 pb-0 shadow-sm ring-1 ring-slate-100 sm:h-auto sm:px-4 sm:py-3"
             }`}
           >
             <div
@@ -901,7 +901,7 @@ const Home = ({ profile }) => {
         </div>
 
         <div className="relative mx-auto grid w-full max-w-[1600px] gap-4 px-2 text-white sm:px-3 lg:grid-cols-[1.15fr_0.85fr] lg:px-6">
-          <div className="relative flex flex-col gap-6 overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-r from-[#04162E]/84 via-[#0B2E57]/78 to-[#0C3D73]/70 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.5)] backdrop-blur lg:px-10">
+          <div className="relative flex flex-col gap-6 overflow-hidden rounded-[8px] border border-white/20 bg-gradient-to-r from-[#04162E]/84 via-[#0B2E57]/78 to-[#0C3D73]/70 px-6 py-8 shadow-[0_25px_80px_rgba(15,23,42,0.5)] backdrop-blur lg:px-10">
             <div className="pointer-events-none absolute -right-12 -top-8 h-36 w-36 rotate-12 rounded-2xl bg-sky-300/18" />
             <div className="pointer-events-none absolute -left-10 bottom-0 h-24 w-28 -skew-x-[24deg] bg-blue-300/12" />
             <div className="space-y-3 text-center">
@@ -910,13 +910,13 @@ const Home = ({ profile }) => {
                   <span className="inline-block skew-x-[10deg] text-white">Exclusive and Exotics</span>
                 </span>
               </h1>
-              <p className="mx-auto max-w-4xl rounded-xl bg-white/10 px-4 py-2 text-base font-semibold text-white shadow-inner shadow-sky-900/20">
+              <p className="mx-auto max-w-4xl rounded-[8px] bg-white/10 px-4 py-2 text-base font-semibold text-white shadow-inner shadow-sky-900/20">
                 Welcome to the wonderful world of fish keeping. Your trusted source for exotic aquarium fishes with expert advice and nationwide shipping.
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl bg-gradient-to-br from-[#0B2B4E]/35 to-[#114373]/25 p-4 text-center shadow-[0_10px_22px_rgba(15,23,42,0.24)] backdrop-blur">
+              <div className="rounded-[8px] bg-gradient-to-br from-[#0B2B4E]/35 to-[#114373]/25 p-4 text-center shadow-[0_10px_22px_rgba(15,23,42,0.24)] backdrop-blur">
                 <p className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/90 px-2 py-0.5 text-[16px] font-semibold uppercase tracking-[0.06em] text-[#0D2F5A] sm:px-3 sm:text-sm sm:tracking-[0.16em]">
                   <span className="inline-block skew-x-[10deg]">
                   Custom-built aquariums
@@ -926,7 +926,7 @@ const Home = ({ profile }) => {
                  An elegant custom aquarium with a timeless aesthetic, tailored to your space and style, creating a stunning aquatic centerpiece. 
                 </p>
               </div>
-              <div className="rounded-2xl bg-gradient-to-br from-[#0B2B4E]/35 to-[#114373]/25 p-4 text-center shadow-[0_10px_22px_rgba(15,23,42,0.24)] backdrop-blur">
+              <div className="rounded-[8px] bg-gradient-to-br from-[#0B2B4E]/35 to-[#114373]/25 p-4 text-center shadow-[0_10px_22px_rgba(15,23,42,0.24)] backdrop-blur">
                 <p className="inline-block -skew-x-[10deg] whitespace-nowrap rounded-[4px] bg-white/90 px-2 py-0.5 text-[16px] font-semibold uppercase tracking-[0.06em] text-[#0D2F5A] sm:px-3 sm:text-sm sm:tracking-[0.16em]">
                   <span className="inline-block skew-x-[10deg]">
                   Professional maintenance
@@ -965,7 +965,7 @@ const Home = ({ profile }) => {
             </div>
           </div>
 
-          <div className="relative hidden flex-col gap-4 overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.42)] backdrop-blur lg:flex">
+          <div className="relative hidden flex-col gap-4 overflow-hidden rounded-[8px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-6 text-center shadow-[0_25px_80px_rgba(15,23,42,0.42)] backdrop-blur lg:flex">
             <div className="pointer-events-none absolute right-0 top-0 h-24 w-32 -skew-x-[22deg] bg-blue-200/18" />
             <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-32 -skew-x-[24deg] bg-sky-200/14" />
             <div className="space-y-1">
@@ -979,10 +979,10 @@ const Home = ({ profile }) => {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_22px_rgba(15,23,42,0.28)]">
+              <div className="col-span-2 h-40 overflow-hidden rounded-[8px] border border-white/20 shadow-[0_8px_22px_rgba(15,23,42,0.28)]">
                 <video
                   src={highlightVideoSrc}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain bg-black"
                   autoPlay
                   loop
                   muted
@@ -993,7 +993,7 @@ const Home = ({ profile }) => {
               </div>
               <button
                 type="button"
-                className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
+                className="relative h-32 overflow-hidden rounded-[8px] border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
                 onClick={() => setActiveHighlight(highlightImageOne)}
                 aria-label="Enlarge highlight image"
               >
@@ -1001,7 +1001,7 @@ const Home = ({ profile }) => {
               </button>
               <button
                 type="button"
-                className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
+                className="relative h-32 overflow-hidden rounded-[8px] border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
                 onClick={() => setActiveHighlight(highlightImageTwo)}
                 aria-label="Enlarge highlight image"
               >
@@ -1045,7 +1045,7 @@ const Home = ({ profile }) => {
 
       {isSearching && (
         <section className="container mx-auto px-4 pt-24 sm:px-6 md:pt-28">
-          <div className="rounded-3xl bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
+          <div className="rounded-[8px] bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
@@ -1088,6 +1088,7 @@ const Home = ({ profile }) => {
                         }
                         product={product}
                         relatedProducts={getRelatedProductsFor(product)}
+                        className="da-home-item-card"
                         showStockBadge
                       />
                     </div>
@@ -1126,7 +1127,7 @@ const Home = ({ profile }) => {
                 return (
                   <article
                     key={card.id}
-                    className="group relative h-[162px] cursor-pointer overflow-hidden rounded-2xl border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-auto lg:aspect-[3/4] lg:rounded-[24px]"
+                    className="group relative h-[162px] cursor-pointer overflow-hidden rounded-[6px] border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-auto lg:aspect-[3/4] lg:rounded-[6px]"
                     role="button"
                     tabIndex={0}
                     aria-label={`Open ${card.title}`}
@@ -1228,7 +1229,7 @@ const Home = ({ profile }) => {
           </section>
 
           <section data-home-reveal className="container mx-auto mt-4 px-4 sm:px-6 lg:hidden">
-            <div className="relative flex flex-col gap-4 overflow-hidden rounded-[24px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-4 text-center shadow-[0_16px_40px_rgba(15,23,42,0.34)] backdrop-blur">
+            <div className="relative flex flex-col gap-4 overflow-hidden rounded-[8px] border border-white/20 bg-gradient-to-tl from-[#061A35]/82 via-[#123B69]/74 to-[#1D4C82]/68 p-4 text-center shadow-[0_16px_40px_rgba(15,23,42,0.34)] backdrop-blur">
               <div className="pointer-events-none absolute right-0 top-0 h-24 w-32 -skew-x-[22deg] bg-blue-200/18" />
               <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-32 -skew-x-[24deg] bg-sky-200/14" />
               <div className="space-y-1">
@@ -1242,10 +1243,10 @@ const Home = ({ profile }) => {
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 h-40 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_22px_rgba(15,23,42,0.28)]">
+                <div className="col-span-2 h-40 overflow-hidden rounded-[8px] border border-white/20 shadow-[0_8px_22px_rgba(15,23,42,0.28)]">
                   <video
                     src={highlightVideoSrc}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain bg-black"
                     autoPlay
                     loop
                     muted
@@ -1256,7 +1257,7 @@ const Home = ({ profile }) => {
                 </div>
                 <button
                   type="button"
-                  className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
+                  className="relative h-32 overflow-hidden rounded-[8px] border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
                   onClick={() => setActiveHighlight(highlightImageOne)}
                   aria-label="Enlarge highlight image"
                 >
@@ -1264,7 +1265,7 @@ const Home = ({ profile }) => {
                 </button>
                 <button
                   type="button"
-                  className="relative h-32 overflow-hidden rounded-2xl border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
+                  className="relative h-32 overflow-hidden rounded-[8px] border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.25)] focus:outline-none"
                   onClick={() => setActiveHighlight(highlightImageTwo)}
                   aria-label="Enlarge highlight image"
                 >
@@ -1306,7 +1307,7 @@ const Home = ({ profile }) => {
 
           {activeBestSeller && (
             <section data-home-reveal className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-              <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
               <TopicTitleCard
                 className="mb-2"
                 title="Best Selling and Trending"
@@ -1366,12 +1367,12 @@ const Home = ({ profile }) => {
                             openProductDetails();
                           }
                         }}
-                        className={`relative h-[314px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                        className={`da-home-item-card relative h-[314px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[5px] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
                         <div className="flex h-full flex-col">
-                          <div className="relative aspect-[4/3.1] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/3.2]">
+                          <div className="relative aspect-[4/3.1] w-full overflow-hidden rounded-t-[5px] border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/3.2]">
                             {savings > 0 && (
                               <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
                                 Save {"\u20B9"}
@@ -1411,7 +1412,6 @@ const Home = ({ profile }) => {
                             />
                           </div>
                           <div className="flex flex-1 flex-col px-3 py-2 text-left sm:px-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Selling and Trending</p>
                             <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
                             </h2>
@@ -1453,7 +1453,7 @@ const Home = ({ profile }) => {
                                 <button
                                   type="button"
                                   disabled
-                                  className="inline-flex min-w-[150px] items-center justify-center self-center whitespace-nowrap rounded-xl bg-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                  className="inline-flex min-w-[150px] items-center justify-center self-center whitespace-nowrap rounded-[5px] bg-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
                                 >
                                   Out of Stock
                                 </button>
@@ -1499,7 +1499,7 @@ const Home = ({ profile }) => {
                                     setBestFishAddedHintIndex(index);
                                   }}
                                   disabled={soldOut}
-                                  className="da-add-cart-btn min-w-[150px] self-center whitespace-nowrap rounded-xl px-4 py-2 text-xs tracking-[0.14em] shadow-lg sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                  className="da-add-cart-btn min-w-[150px] self-center whitespace-nowrap px-4 py-2 text-[11px] tracking-[0.14em] shadow-lg sm:min-w-0 sm:w-fit sm:px-5 sm:text-[13px]"
                                 >
                                   <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                                     <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
@@ -1590,7 +1590,7 @@ const Home = ({ profile }) => {
           )}
 
           <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-            <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+            <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
             <TopicTitleCard
               className="mb-2"
               title="New Arrivals"
@@ -1608,6 +1608,7 @@ const Home = ({ profile }) => {
                     categoryName={categoryKey}
                     product={product}
                     relatedProducts={getRelatedProductsFor(product)}
+                    className="da-home-item-card"
                         showStockBadge
                       />
                 );
@@ -1622,7 +1623,7 @@ const Home = ({ profile }) => {
               ref={section.key === "trending" ? trendingSectionRef : section.key === "under-100" ? underHundredSectionRef : null}
               className="container mx-auto mt-5 px-4 pt-3 sm:px-6"
             >
-              <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
               <div className="mb-2">
                 <TopicTitleCard
                   title={section.title}
@@ -1646,6 +1647,7 @@ const Home = ({ profile }) => {
                       categoryName={categoryKey}
                       product={product}
                       relatedProducts={getRelatedProductsFor(product)}
+                      className="da-home-item-card"
                       showStockBadge
                     />
                   );
@@ -1656,7 +1658,7 @@ const Home = ({ profile }) => {
 
           {medicineAndFilterPicks.length > 0 && (
             <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-              <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
               <TopicTitleCard
                 className="mb-2"
                 title="Aquarium Essentials"
@@ -1671,6 +1673,7 @@ const Home = ({ profile }) => {
                     categoryName="accessories"
                     product={product}
                     relatedProducts={getRelatedProductsFor(product)}
+                    className="da-home-item-card"
                     showStockBadge
                   />
                 ))}

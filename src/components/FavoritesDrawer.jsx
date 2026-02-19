@@ -180,7 +180,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
                           addToCart(item, 1);
                         }}
                         disabled={isSoldOut}
-                        className="da-add-cart-btn rounded-full px-3 py-1.5 text-xs"
+                        className="da-add-cart-btn rounded-[5px] px-3 py-1.5 text-xs"
                         aria-label={`Add ${item.title} to cart`}
                       >
                         Add to Cart

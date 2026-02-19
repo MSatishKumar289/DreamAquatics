@@ -64,7 +64,7 @@ const LiveUpdatePanel = ({
           {homeMediaDraft.videoUrl ? (
             <video
               src={homeMediaDraft.videoUrl}
-              className="h-36 w-full rounded-md object-cover"
+              className="h-36 w-full rounded-md object-contain bg-black"
               muted
               controls
             />
@@ -81,7 +81,7 @@ const LiveUpdatePanel = ({
             <img
               src={homeMediaDraft.imageOneUrl}
               alt="Highlight one preview"
-              className="h-28 w-full rounded-md object-cover"
+              className="h-28 w-full rounded-md object-contain bg-white"
             />
           ) : (
             <div className="flex h-28 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
@@ -96,7 +96,7 @@ const LiveUpdatePanel = ({
             <img
               src={homeMediaDraft.imageTwoUrl}
               alt="Highlight two preview"
-              className="h-28 w-full rounded-md object-cover"
+              className="h-28 w-full rounded-md object-contain bg-white"
             />
           ) : (
             <div className="flex h-28 items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">

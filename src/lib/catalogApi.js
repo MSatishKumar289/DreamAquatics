@@ -102,6 +102,7 @@ export async function fetchAllProductsWithCategories() {
   }
 }
 
+
 /**
  * Fetch single product by id with category + subcategory
  * (Used for direct-open product details URLs)
@@ -537,9 +538,5 @@ export async function deleteProductImageById({ imageId, path }) {
     return { error };
   }
 }
-
-
-
-
 
 

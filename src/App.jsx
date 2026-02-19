@@ -499,7 +499,7 @@ function AppContent() {
               if (e.target === e.currentTarget) closeLoginModal();
             }}
           >
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl relative">
+            <div className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-2xl relative">
               <button
                 type="button"
                 onClick={closeLoginModal}
