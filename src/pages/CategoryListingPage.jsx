@@ -331,8 +331,14 @@ const CategoryListingPage = () => {
   // Keep enquiry CTA only for accessories flows; fishes/plants/fish-food use floating WhatsApp.
   const showSubcategoryEnquiryCta =
     !isSearching &&
+    !isSubcategoryMode &&
     !showCustomTankRequestCta &&
     normalizedCategorySlug === "accessories";
+  const useTankTwoCardFeaturedLayout =
+    !isSearching &&
+    !isSubcategoryMode &&
+    normalizedCategorySlug === "tanks" &&
+    listForGrid.length === 2;
   const listingHeaderTheme = useMemo(() => {
     const toneMap = {
       fishes: {
@@ -350,18 +356,18 @@ const CategoryListingPage = () => {
         dot: "bg-[#F5F5F5]",
       },
       accessories: {
-        panel: "from-[#8452C9] via-[#9564D8] to-[#AF8AF0]",
-        ribbon: "from-[#5B2DA8] via-[#4D2496] to-[#3F1D7E]",
+        panel: "from-[#F6CF49] via-[#F3C435] to-[#EAB308]",
+        ribbon: "from-[#B7791F] via-[#9A6C18] to-[#7C5A12]",
         ribbonText: "text-white",
-        accent: "bg-[#A855F7]/80",
-        dot: "bg-[#FFE45A]",
+        accent: "bg-[#FACC15]/80",
+        dot: "bg-[#FFE9A3]",
       },
       tanks: {
-        panel: "from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2]",
-        ribbon: "from-[#1E5CB7] via-[#1B4F9D] to-[#163F7C]",
+        panel: "from-[#F6CF49] via-[#F3C435] to-[#EAB308]",
+        ribbon: "from-[#B7791F] via-[#9A6C18] to-[#7C5A12]",
         ribbonText: "text-white",
-        accent: "bg-[#1E40AF]/75",
-        dot: "bg-[#EAF6FF]",
+        accent: "bg-[#FACC15]/80",
+        dot: "bg-[#FFE9A3]",
       },
       default: {
         panel: "from-[#4C8FE2] via-[#62A0EB] to-[#7BB3F5]",
@@ -428,7 +434,7 @@ const CategoryListingPage = () => {
             searchInputRef.current?.focus();
           }, 80);
         }}
-        className={`relative mt-[5px] mb-[10px] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:flex sm:items-center sm:justify-between sm:gap-4 ${
+        className={`relative mt-[3px] mb-[6px] w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:flex sm:items-center sm:justify-between sm:gap-4 ${
           isSearchCollapsed
             ? "translate-x-2 rounded-full bg-transparent px-0 py-0 shadow-none ring-0 cursor-pointer"
             : "translate-x-0 h-[56px] rounded-xl border border-slate-200 bg-white/95 px-2 py-2 shadow-sm ring-1 ring-slate-100 sm:h-auto sm:px-4 sm:py-3"
@@ -536,8 +542,8 @@ const CategoryListingPage = () => {
       <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
         {searchBar}
       </section>
-      <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
-      <div className="container mx-auto px-1 pt-6 sm:px-6 lg:px-8">
+      <div className="h-[66px] md:h-[72px]" aria-hidden="true" />
+      <div className="container mx-auto px-1 pt-3 sm:px-6 lg:px-8">
         {!isSearching && (
           <section
             className="relative overflow-hidden rounded-[8px] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-300/25 sm:p-7"
@@ -545,8 +551,8 @@ const CategoryListingPage = () => {
           <div className="pointer-events-none absolute -left-8 bottom-0 h-20 w-28 -skew-x-[26deg] bg-slate-100/80" />
           <div className={`pointer-events-none absolute -right-10 -top-8 h-28 w-28 rotate-12 rounded-2xl ${listingHeaderTheme.accent}`} />
           <div className="pointer-events-none absolute right-0 bottom-0 h-24 w-40 -skew-x-[28deg] bg-slate-100/80" />
-          <div className={`pointer-events-none absolute left-4 top-[11px] h-2.5 w-2.5 rounded-full ${listingHeaderTheme.dot}`} />
-          <div className={`pointer-events-none absolute left-8 top-[19px] h-1.5 w-1.5 rounded-full ${listingHeaderTheme.dot}`} />
+          <div className={`pointer-events-none absolute left-4 top-[11px] h-2.5 w-2.5 rounded-full ${listingHeaderTheme.accent}`} />
+          <div className={`pointer-events-none absolute left-8 top-[19px] h-1.5 w-1.5 rounded-full ${listingHeaderTheme.accent}`} />
           <nav
             className="relative z-10 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
             aria-label="Breadcrumb"
@@ -629,7 +635,7 @@ const CategoryListingPage = () => {
               )}
               <div className="mt-2 flex justify-center">
                 <p className="rounded-md bg-white px-3 py-1 text-center text-xs text-sky-700/90 shadow-sm">
-                  Images are for reference. Actual product appearance may vary.
+                  * Images are for reference. Actual product appearance may vary. *
                 </p>
               </div>
             </div>
@@ -694,7 +700,7 @@ const CategoryListingPage = () => {
                       {filteredList.length} items found
                     </h2>
                     <p className="mt-2 text-center text-xs text-sky-600/80">
-                      Images are for reference. Actual product appearance may vary.
+                      * Images are for reference. Actual product appearance may vary. *
                     </p>
                   </div>
                 </div>
@@ -724,7 +730,13 @@ const CategoryListingPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className={`grid ${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"}`}>
+                <div
+                  className={`grid ${
+                    useTankTwoCardFeaturedLayout
+                      ? "mx-auto max-w-[760px] grid-cols-2 gap-2 sm:gap-3"
+                      : `${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"}`
+                  }`}
+                >
                   {filteredList.map((item) => (
                     <CategoryCard
                       key={item.id}

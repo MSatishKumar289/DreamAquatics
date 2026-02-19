@@ -465,6 +465,16 @@ function AppContent() {
       return next;
     });
   }, [userNotificationsStorageKey]);
+  const handleUserNotificationOpen = useCallback((notificationId) => {
+    if (!notificationId) return;
+    setUserOrderNotifications((prev) => {
+      const next = prev.filter((item) => item.id !== notificationId);
+      if (userNotificationsStorageKey) {
+        localStorage.setItem(userNotificationsStorageKey, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [userNotificationsStorageKey]);
   const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
@@ -540,6 +550,7 @@ function AppContent() {
             notifications={userOrderNotifications}
             orders={userOrders}
             lastRefreshedAt={userOrdersLastRefreshedAt}
+            onNotificationOpen={handleUserNotificationOpen}
           />
         )}
 

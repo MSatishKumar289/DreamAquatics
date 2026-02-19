@@ -81,8 +81,16 @@ const ProductDetailsPage = () => {
   }, [location.state?.relatedProducts, product]);
 
   const title = product?.name || product?.title || "Product";
-  const categorySlug = product?.subcategory?.category?.slug || "fishes";
+  const rawCategorySlug = product?.subcategory?.category?.slug || "fishes";
+  const categorySlug = rawCategorySlug === "tanks" ? "tank" : rawCategorySlug;
   const subCategorySlug = product?.subcategory?.slug || "";
+  const categoryDisplayNameMap = {
+    accessories: "Tanks & Accessories",
+    tanks: "Fish Food & Medicines",
+  };
+  const categoryDisplayName =
+    categoryDisplayNameMap[rawCategorySlug] ||
+    (product?.subcategory?.category?.name || "Category");
   const imageFromDb = product?.product_images?.[0]?.url || product?.image || "";
   const imageSrc = useMemo(() => {
     if (!imageFromDb) return getImageWithFallback("", title);
@@ -137,9 +145,9 @@ const ProductDetailsPage = () => {
 
   if (isResolvingProduct) {
     return (
-      <main className="min-h-screen bg-white/50 py-8">
+      <main className="min-h-screen bg-transparent py-8">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg">
+          <div className="rounded-[8px] bg-white px-6 py-10 text-center shadow-lg">
             <p className="text-lg font-semibold text-slate-900">Loading product details...</p>
           </div>
         </div>
@@ -149,9 +157,9 @@ const ProductDetailsPage = () => {
 
   if (!product) {
     return (
-      <main className="min-h-screen bg-white/50 py-8">
+      <main className="min-h-screen bg-transparent py-8">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="rounded-2xl bg-white px-6 py-10 text-center shadow-lg">
+          <div className="rounded-[8px] bg-white px-6 py-10 text-center shadow-lg">
             <p className="text-lg font-semibold text-slate-900">Product not available.</p>
             <p className="mt-2 text-sm text-slate-600">
               {resolveError || "This product may be inactive or removed."}
@@ -166,13 +174,13 @@ const ProductDetailsPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-white/50 py-6 sm:py-8">
+    <main className="min-h-screen bg-transparent py-6 sm:py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-slate-600">
           <Link to="/" className="text-slate-600 hover:text-blue-700">Home</Link>
           <span className="mx-2">/</span>
           <Link to={`/category/${categorySlug}`} className="text-slate-600 hover:text-blue-700">
-            {product?.subcategory?.category?.name || "Category"}
+            {categoryDisplayName}
           </Link>
           {subCategorySlug ? (
             <>
@@ -184,13 +192,13 @@ const ProductDetailsPage = () => {
           ) : null}
         </div>
 
-        <section className="rounded-3xl bg-transparent p-4 sm:p-6">
+        <section className="rounded-[8px] bg-transparent p-4 sm:p-6">
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
-            <div className="h-[240px] overflow-hidden rounded-2xl bg-transparent sm:h-[288px] lg:h-[352px]">
+            <div className="h-[240px] overflow-hidden rounded-[8px] bg-transparent sm:h-[288px] lg:h-[352px]">
               <img src={imageSrc} alt={title} className="h-full w-full object-contain" />
             </div>
 
-            <div className="relative rounded-2xl border-0 bg-transparent p-4 text-left sm:p-5">
+            <div className="relative rounded-[8px] border-0 bg-transparent p-4 text-left sm:p-5">
               <button
                 type="button"
                 onClick={() => toggleFavorite(product)}
@@ -304,7 +312,7 @@ const ProductDetailsPage = () => {
             </div>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-amber-200/80 bg-white/55 p-4 sm:p-5">
+          <div className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5">
             <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Product Description</h2>
             <div className="mt-3 text-base leading-relaxed text-slate-700">
               {product?.description ? (
@@ -316,7 +324,7 @@ const ProductDetailsPage = () => {
           </div>
 
           {relatedProducts.length > 0 && (
-            <div className="mt-5 rounded-2xl border border-amber-200/80 bg-white/55 p-4 sm:p-5">
+            <div className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5">
               <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Other Products</h2>
               <div className="relative mt-4">
                 <button
@@ -360,12 +368,12 @@ const ProductDetailsPage = () => {
                           state: { product: item, relatedProducts: relatedProducts.concat(product) },
                         })
                       }
-                      className="relative snap-start min-w-[150px] rounded-2xl border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 text-left shadow-sm transition hover:shadow-md"
+                      className="relative snap-start min-w-[150px] rounded-[8px] border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 text-left shadow-sm transition hover:shadow-md"
                     >
                       <p className="line-clamp-3 min-h-[3rem] px-1 text-xs font-semibold tracking-wide text-[#102A43]">
                         {itemTitle}
                       </p>
-                      <div className="h-28 overflow-hidden rounded-xl bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
+                      <div className="h-28 overflow-hidden rounded-[8px] bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
                         <img src={itemImageSrc} alt={itemTitle} className="h-full w-full object-contain" />
                       </div>
                       <div className="relative mt-2 w-full">
@@ -394,7 +402,7 @@ const ProductDetailsPage = () => {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+          <div className="w-full max-w-sm rounded-[8px] bg-white p-5 text-center shadow-xl">
             <h3 className="text-lg font-semibold text-slate-900">Remove item?</h3>
             <p className="mt-2 text-sm text-slate-600">
               Remove {title} from your cart?

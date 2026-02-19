@@ -989,7 +989,7 @@ const AdminAddProduct = ({
         handleConfirmDelete={handleConfirmDelete}
       />
 
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-transparent">
         <header className="border-b border-slate-200 bg-white">
           <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div>

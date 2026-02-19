@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import AddressForm from "../components/AddressForm";
 import { useProfile } from "../context/ProfileContext";
 import edit_ic from "../assets/Icons/edit_ic.png";
@@ -38,6 +39,8 @@ const Profile = () => {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [activeTab, setActiveTab] = useState("addresses");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [pendingOrderId, setPendingOrderId] = useState("");
+  const location = useLocation();
 
   const [toast, setToast] = useState({
     show: false,
@@ -179,7 +182,12 @@ const Profile = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
+    const orderId = params.get("order");
     if (tab === "orders") {
+      setActiveTab("orders");
+    }
+    if (orderId) {
+      setPendingOrderId(orderId);
       setActiveTab("orders");
     }
   }, [location.search]);
@@ -189,6 +197,22 @@ const Profile = () => {
     if (activeTab !== "orders") return;
     loadMyOrders();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "orders" || ordersLoading || !pendingOrderId) return;
+    const targetOrder = orders.find(
+      (order) =>
+        String(order.id) === String(pendingOrderId) ||
+        String(order.order_number) === String(pendingOrderId)
+    );
+    if (!targetOrder) return;
+    setSelectedOrder(targetOrder);
+    const targetCard = document.getElementById(`profile-order-${targetOrder.id}`);
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    setPendingOrderId("");
+  }, [activeTab, ordersLoading, orders, pendingOrderId]);
 
   useEffect(() => {
     if (activeTab === "addresses") return;
@@ -235,7 +259,7 @@ const Profile = () => {
   }, [showForm, editing]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">
+    <main className="min-h-screen bg-transparent py-10">
       {/* Toast */}
       {toast.show && (
         <div className="fixed top-5 left-1/2 z-[9999] -translate-x-1/2">
@@ -535,6 +559,7 @@ const Profile = () => {
                 return (
                   <button
                     key={order.id}
+                    id={`profile-order-${order.id}`}
                     type="button"
                     disabled={isBusy}
                     onClick={() => setSelectedOrder(order)}

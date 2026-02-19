@@ -24,7 +24,7 @@ import { fetchHomeMedia } from '../lib/homeMediaApi';
 import fishCategoryVisual from '../assets/Images/Home/fish.png';
 import accessoriesCategoryVisual from '../assets/Images/Home/Accessories.png';
 import plantCategoryVisual from '../assets/Images/Home/plant.png';
-import tankCategoryVisual from '../assets/Images/Home/tank.png';
+import tankCategoryVisual from '../assets/Images/Home/foodandmedicine.png';
 
 const Home = ({ profile }) => {
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -77,6 +77,10 @@ const Home = ({ profile }) => {
     { value: 'accessories', label: 'Tanks & Accessories' },
     { value: 'tank', label: 'Fish Food & Medicines' }
   ];
+  // object-fit mode for home category cards: "fill" -> cover, "fit" -> contain
+  const homeCategoryCardImageMode = 'fill';
+  const homeCategoryCardImageClass =
+    homeCategoryCardImageMode === 'fit' ? 'object-contain' : 'object-cover';
 
   const renderCategoryIcon = (value) => {
     switch (value) {
@@ -1142,7 +1146,7 @@ const Home = ({ profile }) => {
                     <img
                       src={card.visualImage}
                       alt={card.title}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      className={`absolute inset-0 h-full w-full object-center transition-transform duration-500 group-hover:scale-[1.04] ${homeCategoryCardImageClass}`}
                     />
                     <div className="absolute inset-0 bg-[#06213D]/45" aria-hidden />
                     <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#9DD8FF]/35 via-[#9DD8FF]/10 to-transparent" aria-hidden />
@@ -1170,21 +1174,19 @@ const Home = ({ profile }) => {
                     {visualStyle === "ticket-strip" && (
                       <div className="relative z-10 flex h-full items-center justify-center p-4 sm:p-3">
                         <div className="relative w-[92%] max-w-[230px]">
-                          <div className="-skew-x-[11deg] rounded-md bg-[#18D26E]/92 px-3.5 py-2 shadow-[0_8px_18px_rgba(22,163,74,0.35)]">
-                            <h3
-                              className="skew-x-[11deg] text-center text-[0.96rem] font-semibold uppercase leading-tight text-white sm:text-[0.85rem] lg:text-[1.23rem]"
-                              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-                            >
-                              {card.id === "tank" ? (
-                                <>
-                                  <span className="block whitespace-nowrap">Fish Food &</span>
-                                  <span className="block">Medicine</span>
-                                </>
-                              ) : (
-                                card.title
-                              )}
-                            </h3>
-                          </div>
+                          <h3
+                            className="px-2 text-center text-[0.96rem] font-semibold uppercase leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)] sm:text-[0.85rem] lg:text-[1.23rem]"
+                            style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                          >
+                            {card.id === "tank" ? (
+                              <>
+                                <span className="block whitespace-nowrap">Fish Food &</span>
+                                <span className="block">Medicine</span>
+                              </>
+                            ) : (
+                              card.title
+                            )}
+                          </h3>
                         </div>
                       </div>
                     )}
@@ -1307,7 +1309,7 @@ const Home = ({ profile }) => {
 
           {activeBestSeller && (
             <section data-home-reveal className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-              <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
               <TopicTitleCard
                 className="mb-2"
                 title="Best Selling and Trending"
@@ -1385,7 +1387,7 @@ const Home = ({ profile }) => {
                                 event.stopPropagation();
                                 toggleFavorite(product);
                               }}
-                              className={`absolute right-2 top-2 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
+                              className={`absolute bottom-2 right-2 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
                                 favoriteSelected
                                   ? "border-rose-200 bg-rose-50 text-rose-600"
                                   : "border-slate-200 bg-white/95 text-slate-600 hover:text-rose-600"
@@ -1590,7 +1592,7 @@ const Home = ({ profile }) => {
           )}
 
           <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-            <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
+            <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
             <TopicTitleCard
               className="mb-2"
               title="New Arrivals"
@@ -1623,7 +1625,7 @@ const Home = ({ profile }) => {
               ref={section.key === "trending" ? trendingSectionRef : section.key === "under-100" ? underHundredSectionRef : null}
               className="container mx-auto mt-5 px-4 pt-3 sm:px-6"
             >
-              <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
               <div className="mb-2">
                 <TopicTitleCard
                   title={section.title}
@@ -1658,7 +1660,7 @@ const Home = ({ profile }) => {
 
           {medicineAndFilterPicks.length > 0 && (
             <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-              <div className="home-progress-line mx-2 mb-3 sm:mx-0" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
               <TopicTitleCard
                 className="mb-2"
                 title="Aquarium Essentials"

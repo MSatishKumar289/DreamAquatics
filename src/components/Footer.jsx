@@ -184,7 +184,7 @@ const Footer = () => {
                   <p>
                     Address: AM Complex, Near to Veveham Kids School, Anna Nagar, Dharapuram Main Road, Dharapuram-638656, Tamil Nadu
                   </p>
-                  <p>Images are for reference. Actual product appearance may vary.</p>
+                  <p>* Images are for reference. Actual product appearance may vary. *</p>
                 </div>
               )}
             </div>

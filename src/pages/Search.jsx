@@ -129,7 +129,7 @@ const Search = () => {
     <main className="min-h-screen bg-transparent pb-12">
       <section className="fixed inset-x-0 top-16 z-40 px-4 pt-0 sm:px-6 md:top-20">
         <div className="container mx-auto flex justify-center">
-          <div className="relative mt-[5px] mb-[10px] w-full rounded-2xl border border-slate-200 bg-white/80 px-3 py-2 shadow-sm ring-1 ring-slate-100 sm:px-4 sm:py-3">
+          <div className="relative mt-[5px] mb-[10px] w-full rounded-[8px] border border-slate-200 bg-white/80 px-3 py-2 shadow-sm ring-1 ring-slate-100 sm:px-4 sm:py-3">
             <div className="flex w-full max-w-4xl items-center gap-2 mx-auto">
               <div className="relative flex h-9 w-12 items-center justify-center gap-0.8 rounded-xl border border-slate-200 bg-white sm:h-10 sm:w-14">
                 <span className="pointer-events-none text-slate-600">
@@ -226,7 +226,7 @@ const Search = () => {
       <div className="h-[78px] md:h-[84px]" aria-hidden="true" />
 
       <section className="container mx-auto px-4 pt-6 sm:px-6">
-        <div className="rounded-3xl bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
+        <div className="rounded-[8px] bg-white/80 px-4 py-6 shadow-inner ring-1 ring-sky-100/60 backdrop-blur sm:px-6 lg:px-10">
           {searchQuery.trim() && (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -237,7 +237,7 @@ const Search = () => {
                   {searchResults.length} items found
                 </h2>
                 <p className="mt-2 text-center text-xs text-sky-600/80">
-                  Images are for reference. Actual product appearance may vary.
+                  * Images are for reference. Actual product appearance may vary. *
                 </p>
               </div>
             </div>
@@ -247,7 +247,7 @@ const Search = () => {
             {loading ? (
               <div className="py-8 text-center text-sm text-slate-500">Loading products...</div>
             ) : searchQuery.trim() && searchResults.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+              <div className="rounded-[8px] border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
                 <p className="text-sm font-semibold text-slate-700">
                   Didn&apos;t find what you were looking for?
                 </p>
