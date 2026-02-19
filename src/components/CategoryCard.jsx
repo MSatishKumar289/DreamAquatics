@@ -32,7 +32,7 @@ const ProductImageArea = ({
       >
         <div
           className={`relative w-full border-b border-slate-200/60 rounded-t-2xl overflow-hidden ${
-            compact ? "aspect-[1/1]" : "aspect-[4/4.2] sm:aspect-[4/4.3]"
+            isSubCategory ? "aspect-[4/3]" : compact ? "aspect-[1/1]" : "aspect-[4/3.7] sm:aspect-[4/3.8]"
           }`}
         >
       {isSubCategory ? (
@@ -141,12 +141,12 @@ const ProductInfo = ({
   return (
     <div
       className={`text-left ${
-        isSubCategory ? "min-h-[32px]" : "min-h-[64px]"
+        isSubCategory ? "min-h-[32px]" : "min-h-[56px]"
       } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
       <div
         className={`${
-          isSubCategory ? "" : "flex min-h-[40px] items-center justify-start"
+          isSubCategory ? "" : "flex min-h-[34px] items-center justify-start"
         }`}
       >
         <h3
@@ -172,8 +172,8 @@ const ProductInfo = ({
         </div>
       )}
       {!isSubCategory && (
-        <div className="mt-1 flex min-h-[34px] w-full flex-col items-start justify-center">
-          <div className="flex h-[28px] w-full items-center justify-start">
+        <div className="mt-0.5 flex min-h-[30px] w-full flex-col items-start justify-center">
+          <div className="flex h-[24px] w-full items-center justify-start">
             <div className="inline-flex items-center justify-start gap-2 sm:gap-3">
               {currentPrice > 0 ? (
                 <p className="text-[12px] font-medium text-slate-400 line-through">
@@ -223,7 +223,7 @@ const CartControls = ({
         <button
           type="button"
           onClick={onAddToCart}
-          className="group inline-flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
+          className="da-add-cart-btn group h-9 w-full min-w-0 px-3 py-0 text-[10px]"
         >
           <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
             <img src={plusIcon} alt="" className="h-5 w-5" />
@@ -267,10 +267,10 @@ const CartControls = ({
 
 const SubcategoryFooter = ({ title }) => {
   return (
-    <div className="-mt-0.5 flex flex-col items-center gap-0 px-2 pb-1 pt-0 text-center sm:px-2.5 sm:pb-1.5">
-      <span className="inline-block w-full -skew-x-[10deg] rounded-[6px] bg-[#0A66D9] px-2 py-1.5 shadow-[0_8px_18px_rgba(15,23,42,0.24)]">
+    <div className="-mt-0.5 flex flex-col items-center gap-0 px-2 pb-0.5 pt-0 text-center sm:px-2.5 sm:pb-1">
+      <span className="inline-block w-full -skew-x-[10deg] rounded-[6px] px-2 py-0.5 sm:py-1">
         <p
-          className="min-h-[1.5rem] w-full skew-x-[10deg] text-justify [text-align-last:center] text-[0.64rem] font-semibold uppercase leading-[1.08] tracking-[0.06em] text-white sm:min-h-[1.7rem] sm:text-[0.74rem]"
+          className="line-clamp-2 w-full skew-x-[10deg] break-words text-center text-[0.62rem] font-semibold uppercase leading-[1.08] tracking-[0.01em] text-[#0D2F5A] sm:text-[0.74rem]"
           style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
         >
           {title}
@@ -593,8 +593,8 @@ const CategoryCard = ({
             : isMasonry
               ? "flex flex-1 flex-col gap-1 sm:gap-1.5"
               : compact
-                ? "flex min-h-[111px] flex-1 flex-col gap-1 sm:gap-1.5"
-                : "flex min-h-[108px] flex-1 flex-col gap-1 sm:min-h-[120px] sm:gap-1.5"
+                ? "flex min-h-[98px] flex-1 flex-col gap-1 sm:gap-1.5"
+                : "flex min-h-[92px] flex-1 flex-col gap-1 sm:min-h-[104px] sm:gap-1.5"
         }`}
       >
         {!isSubCategory && (

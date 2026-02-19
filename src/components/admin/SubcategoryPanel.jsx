@@ -10,12 +10,20 @@ const SubcategoryPanel = ({
   requestDeleteSubcategory,
   editIcon,
   deleteIcon
-}) => (
+}) => {
+  const displayCategoryName =
+    selectedCategory === "Accessories"
+      ? "Tanks & Accessories"
+      : selectedCategory === "Tanks"
+        ? "Fish Food & Medicines"
+        : selectedCategory;
+
+  return (
   <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div className="flex items-center justify-between">
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Subcategories</p>
-        <h2 className="text-lg font-semibold text-slate-900">{selectedCategory}</h2>
+        <h2 className="text-lg font-semibold text-slate-900">{displayCategoryName}</h2>
       </div>
       <button
         type="button"
@@ -92,6 +100,7 @@ const SubcategoryPanel = ({
       )}
     </div>
   </section>
-);
+  );
+};
 
 export default SubcategoryPanel;

@@ -23,8 +23,8 @@ const Search = () => {
     { value: "all", label: "All categories" },
     { value: "fishes", label: "Fishes" },
     { value: "live-plants", label: "Live Plants" },
-    { value: "accessories", label: "Accessories" },
-    { value: "tank", label: "Tank" },
+    { value: "accessories", label: "Tanks & Accessories" },
+    { value: "tank", label: "Fish Food & Medicines" },
   ];
 
   const renderCategoryIcon = (value) => {

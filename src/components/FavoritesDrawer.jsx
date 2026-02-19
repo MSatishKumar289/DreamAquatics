@@ -61,13 +61,13 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
       }}
     >
       <aside
-        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] shadow-2xl transition-transform duration-300 ease-out ${
+        className={`da-drawer-panel ${
           isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
+        <header className="da-drawer-header">
           <div>
-            <p className="inline-flex -skew-x-[10deg] rounded-[5px] bg-[#0A66D9] px-2.5 py-1 text-xs uppercase tracking-[0.2em] text-white shadow-sm">
+            <p className="da-drawer-brand">
               <span className="skew-x-[10deg]">DreamAquatics</span>
             </p>
             <h2 className="mt-1 text-lg font-semibold text-slate-900">
@@ -77,7 +77,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            className="da-drawer-close"
             aria-label="Close favorites"
           >
             Close
@@ -96,7 +96,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
               <Link
                 to="/"
                 onClick={onClose}
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-950 shadow-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+                className="da-cta-amber da-cta-amber-pill mt-4 px-4 text-xs tracking-wide"
               >
                 Browse products
               </Link>
@@ -180,7 +180,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
                           addToCart(item, 1);
                         }}
                         disabled={isSoldOut}
-                        className="rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-amber-950 shadow-sm transition hover:brightness-105 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700"
+                        className="da-add-cart-btn rounded-full px-3 py-1.5 text-xs"
                         aria-label={`Add ${item.title} to cart`}
                       >
                         Add to Cart
@@ -218,7 +218,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
         </div>
 
         {favoriteItems.length > 0 && (
-          <footer className="flex-none border-t border-blue-100 bg-blue-50 px-6 py-4">
+          <footer className="da-drawer-footer">
             <p className="text-center text-xs text-slate-600">
               {favoriteCount} item{favoriteCount === 1 ? '' : 's'} saved
             </p>
@@ -227,7 +227,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
 
         {favoriteToast && (
           <div className="pointer-events-none absolute inset-x-4 bottom-16 z-10 flex justify-center">
-            <div className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-lg">
+            <div className="da-toast-info">
               {favoriteToast}
             </div>
           </div>

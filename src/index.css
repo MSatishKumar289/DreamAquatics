@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --da-primary: #0a66d9;
+  --da-primary-dark: #0d2f5a;
+  --da-accent: #f5b100;
+  --da-accent-2: #f59e0b;
+  --da-success: #16a34a;
+  --da-bg: #eaf4ff;
+  --da-surface: #fff9e6;
+  --da-border: #d9e5f3;
+  --da-text: #102a43;
+  --da-text-soft: #486581;
+}
+
 @font-face {
   font-family: 'Trajan Pro';
   src: url('../src/assets/Font/Trajan\ Pro\ Regular.otf') format('opentype');
@@ -50,8 +63,8 @@
 
   body {
     font-family: 'Trajan Pro', 'Times New Roman', serif;
-    color: #111827;
-    background-color: #f3f8fe;
+    color: var(--da-text);
+    background-color: var(--da-bg);
     background-image: linear-gradient(
       180deg,
       #5eaeea 0%,
@@ -65,6 +78,86 @@
 
   main {
     flex: 1;
+  }
+}
+
+@layer components {
+  .da-drawer-panel {
+    @apply absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col shadow-2xl transition-transform duration-300 ease-out;
+    background-image: linear-gradient(180deg, #5eaeea 0%, #9dcdf0 52%, #d7eaf8 100%);
+  }
+
+  .da-drawer-header {
+    @apply flex flex-none items-center justify-between border-b px-6 py-4;
+    border-color: var(--da-border);
+  }
+
+  .da-drawer-brand {
+    @apply inline-flex -skew-x-[10deg] rounded-[5px] px-2.5 py-1 text-xs uppercase tracking-[0.2em] text-white shadow-sm;
+    background-color: var(--da-primary);
+  }
+
+  .da-drawer-close {
+    @apply rounded-full border px-3 py-2 text-sm font-semibold shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .da-drawer-footer {
+    @apply flex-none border-t px-6 py-4;
+    border-color: var(--da-border);
+    background-color: #eff6ff;
+  }
+
+  .da-section-label {
+    @apply inline-block rounded-[4px] bg-white px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.24em] sm:text-xs;
+    color: #0e4d7a;
+  }
+
+  .da-section-ribbon {
+    @apply inline-block -skew-x-[10deg] rounded-[5px] px-4 py-1 text-white;
+    background-color: var(--da-primary);
+  }
+
+  .da-section-ribbon-text {
+    @apply inline-block skew-x-[10deg] text-xl font-semibold text-white sm:text-2xl;
+    font-family: 'Trajan Pro', 'Times New Roman', serif;
+  }
+
+  .da-cta-amber {
+    @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:px-3.5;
+    background-image: linear-gradient(90deg, var(--da-accent-2), var(--da-accent), var(--da-accent-2));
+  }
+
+  .da-cta-amber-pill {
+    @apply rounded-full;
+  }
+
+  .da-add-cart-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold uppercase text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    letter-spacing: 0.08em;
+    background-color: var(--da-primary);
+    color: #ffffff;
+  }
+
+  .da-add-cart-btn:hover {
+    background-color: var(--da-primary-dark);
+  }
+
+  .da-view-all-btn {
+    @apply inline-flex min-w-[150px] items-center justify-center rounded-2xl border bg-white/70 px-6 py-2 text-lg font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2;
+    border-color: var(--da-success);
+    color: #065f46;
+  }
+
+  .da-view-all-btn:hover {
+    background-color: #ecfdf5;
+  }
+
+  .da-toast-info {
+    @apply rounded-lg px-3 py-2 text-xs font-semibold text-white shadow-lg;
+    background-color: var(--da-primary);
   }
 }
 

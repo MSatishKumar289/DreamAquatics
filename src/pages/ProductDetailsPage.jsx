@@ -276,7 +276,7 @@ const ProductDetailsPage = () => {
                         addToCart?.(product, 1);
                         setShowAddedHint(true);
                       }}
-                      className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-[#1f4f8a] bg-[#2b6cb0] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#245c97]"
+                      className="da-add-cart-btn h-11 w-full px-4 text-sm"
                     >
                       Add to Cart
                     </button>

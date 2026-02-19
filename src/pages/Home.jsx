@@ -7,10 +7,6 @@ import Spinner from '../components/Spinner';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
 import BgImage from '../assets/Images/homebgnew.png';
-import quickPickNewArrivals from '../assets/QuickPicks/new-arrivals-card.svg';
-import quickPickUnder100 from '../assets/QuickPicks/under-100-card.svg';
-import quickPickTrending from '../assets/QuickPicks/trending-card.svg';
-import quickPickEssentials from '../assets/QuickPicks/essentials-card.svg';
 import CallIcon from '../assets/Icons/phone.png';
 import WhatsIcon from '../assets/Icons/whatsapp.png';
 import HighlightOne from '../assets/Images/go.jpg';
@@ -57,9 +53,6 @@ const Home = ({ profile }) => {
   const [bestSellerArrowHintSide, setBestSellerArrowHintSide] = useState(null);
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
-  const [quickPickIndex, setQuickPickIndex] = useState(0);
-  const [quickPickScrollProgress, setQuickPickScrollProgress] = useState(0);
-  const [quickPickVisibleCount, setQuickPickVisibleCount] = useState(1);
   const [showFloatingWhatsApp, setShowFloatingWhatsApp] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
@@ -71,10 +64,6 @@ const Home = ({ profile }) => {
   const bestSellerTrackRef = useRef(null);
   const bestSellerScrollRafRef = useRef(null);
   const bestSellerProgrammaticUntilRef = useRef(0);
-  const quickPickTrackRef = useRef(null);
-  const quickPickItemRefs = useRef([]);
-  const quickPickScrollRafRef = useRef(null);
-  const quickPickInitRef = useRef(false);
   const newArrivalsSectionRef = useRef(null);
   const trendingSectionRef = useRef(null);
   const underHundredSectionRef = useRef(null);
@@ -85,8 +74,8 @@ const Home = ({ profile }) => {
     { value: 'all', label: 'All categories' },
     { value: 'fishes', label: 'Fishes' },
     { value: 'live-plants', label: 'Live Plants' },
-    { value: 'accessories', label: 'Accessories' },
-    { value: 'tank', label: 'Tank' }
+    { value: 'accessories', label: 'Tanks & Accessories' },
+    { value: 'tank', label: 'Fish Food & Medicines' }
   ];
 
   const renderCategoryIcon = (value) => {
@@ -501,9 +490,6 @@ const Home = ({ profile }) => {
       if (bestSellerScrollRafRef.current) {
         window.cancelAnimationFrame(bestSellerScrollRafRef.current);
       }
-      if (quickPickScrollRafRef.current) {
-        window.cancelAnimationFrame(quickPickScrollRafRef.current);
-      }
     };
   }, []);
 
@@ -562,36 +548,6 @@ const Home = ({ profile }) => {
       });
     }
     setBestSellerIndex(clampedIndex);
-  };
-
-  const handleQuickPickTrackScroll = () => {
-    if (quickPickScrollRafRef.current) return;
-    quickPickScrollRafRef.current = window.requestAnimationFrame(() => {
-      quickPickScrollRafRef.current = null;
-      const track = quickPickTrackRef.current;
-      if (!track) return;
-      const maxScroll = Math.max(1, track.scrollWidth - track.clientWidth);
-      const progress = Math.max(0, Math.min(1, track.scrollLeft / maxScroll));
-      setQuickPickScrollProgress((prev) => (Math.abs(prev - progress) < 0.005 ? prev : progress));
-      const trackRect = track.getBoundingClientRect();
-      const trackCenter = trackRect.left + trackRect.width / 2;
-
-      let closestIndex = 0;
-      let closestDistance = Number.POSITIVE_INFINITY;
-
-      quickPickItemRefs.current.forEach((card, index) => {
-        if (!card) return;
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.left + rect.width / 2;
-        const distance = Math.abs(cardCenter - trackCenter);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
-
-      setQuickPickIndex((prev) => (prev === closestIndex ? prev : closestIndex));
-    });
   };
 
   const purposeCollections = useMemo(() => {
@@ -722,8 +678,8 @@ const Home = ({ profile }) => {
     const titleMap = {
       fishes: 'Fishes',
       'live-plants': 'Live Plants',
-      accessories: 'Accessories',
-      tank: 'Tanks & Bowls',
+      accessories: 'Tanks & Accessories',
+      tank: 'Fish Food & Medicines',
     };
     const visualMap = {
       fishes: fishCategoryVisual,
@@ -766,187 +722,19 @@ const Home = ({ profile }) => {
     });
   }, [allProducts, categories, subcategoryCounts, CATEGORY_SLUG_MAP]);
 
-  const homeShortcutCircles = useMemo(() => {
-    return [
-      {
-        key: "new-arrivals",
-        title: "New Arrivals",
-        image: quickPickNewArrivals,
-      },
-      {
-        key: "under-100",
-        title: "Under \u20B9100",
-        image: quickPickUnder100,
-      },
-      {
-        key: "trending",
-        title: "Trending",
-        image: quickPickTrending,
-      },
-      {
-        key: "essentials",
-        title: "Essentials",
-        image: quickPickEssentials,
-      },
-    ].filter((item) => Boolean(item.image));
-  }, []);
-
-  useEffect(() => {
-    const measureQuickPickVisibleCount = () => {
-      const track = quickPickTrackRef.current;
-      const firstCard = quickPickItemRefs.current.find(Boolean);
-      if (!track || !firstCard) {
-        setQuickPickVisibleCount((prev) => (prev === 1 ? prev : 1));
-        return;
-      }
-      const visible = Math.max(1, Math.round(track.clientWidth / firstCard.clientWidth));
-      setQuickPickVisibleCount((prev) => (prev === visible ? prev : visible));
-    };
-
-    const raf = window.requestAnimationFrame(measureQuickPickVisibleCount);
-    window.addEventListener('resize', measureQuickPickVisibleCount);
-    return () => {
-      window.cancelAnimationFrame(raf);
-      window.removeEventListener('resize', measureQuickPickVisibleCount);
-    };
-  }, [homeShortcutCircles]);
-
-  useEffect(() => {
-    if (!homeShortcutCircles.length) {
-      setQuickPickIndex(0);
-      setQuickPickScrollProgress(0);
-      quickPickInitRef.current = false;
-      return;
-    }
-    const useCompactIndicatorMode =
-      homeShortcutCircles.length >= 4 && quickPickVisibleCount >= 3 && quickPickVisibleCount <= 4;
-    if (!quickPickInitRef.current) {
-      setQuickPickIndex(useCompactIndicatorMode ? 1 : 0);
-      quickPickInitRef.current = true;
-      return;
-    }
-    if (quickPickIndex >= homeShortcutCircles.length) {
-      setQuickPickIndex(useCompactIndicatorMode ? 1 : 0);
-    }
-  }, [homeShortcutCircles, quickPickIndex, quickPickVisibleCount]);
-
-  const goToHomeShortcut = (key) => {
-    const scrollWithOffset = (element) => {
-      if (!element) return;
-      const stickyOffset = window.innerWidth >= 768 ? 150 : 120;
-      const top = element.getBoundingClientRect().top + window.scrollY - stickyOffset;
-      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-    };
-    const targets = {
-      "new-arrivals": newArrivalsSectionRef.current,
-      "under-100": underHundredSectionRef.current,
-      trending: trendingSectionRef.current,
-      essentials: essentialsSectionRef.current,
-    };
-    scrollWithOffset(targets[key]);
-  };
-
-  const TopicTitleCard = ({ title, subtitle, className = "", variant = "sale-ribbon", tone = "default" }) => {
-    const hexToRgb = (hex) => {
-      const clean = String(hex || "").replace("#", "");
-      if (clean.length !== 6) return { r: 10, g: 61, b: 108 };
-      const value = parseInt(clean, 16);
-      return {
-        r: (value >> 16) & 255,
-        g: (value >> 8) & 255,
-        b: value & 255,
-      };
-    };
-    const toRgba = (hex, alpha) => {
-      const { r, g, b } = hexToRgb(hex);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
-    // Keep strong color until ~20px after the yellow title box, then fade.
-    const holdPx = Math.min(560, 24 + title.length * 20 + 20);
-    const fadePx = holdPx + 110;
-
-    if (variant === "minimal-stripe") {
-      const toneMap = {
-        "new-arrivals": {
-          strong: "#FF005C",
-          ribbon: "from-[#FFE600] via-[#FFDE00] to-[#FFD400]",
-        },
-        "under-100": {
-          strong: "#00A84F",
-          ribbon: "from-[#00A84F] via-[#009748] to-[#00843F]",
-          text: "text-white",
-        },
-        trending: {
-          strong: "#6B1DD2",
-          ribbon: "from-[#FFB100] to-[#FFC62B]",
-        },
-        essentials: {
-          strong: "#EF6A00",
-          ribbon: "from-[#FFE35A] to-[#FFD74A]",
-        },
-        default: {
-          strong: "#0A3D6C",
-          ribbon: "from-[#FFD74D] via-[#FFCD38] to-[#FFB31A]",
-        },
-      };
-      const selectedTone = toneMap[tone] || toneMap.default;
-      return (
-        <div
-          className={`relative overflow-hidden rounded-2xl border-l-[8px] border-l-[#D4AF37] bg-gradient-to-r from-white via-[#FFFDF5] to-[#F4F8FF] px-3 py-1 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] sm:px-4 sm:py-1.5 ${className}`}
-        >
-          <div className="pointer-events-none absolute -right-8 -top-7 h-24 w-24 rotate-12 bg-white/0" />
-          <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-24 -skew-x-[24deg] bg-white/0" />
-          <h2 className="relative text-lg font-semibold sm:text-xl">
-            <span className={`inline-block -skew-x-[10deg] rounded-[3px] bg-gradient-to-r ${selectedTone.ribbon} px-3 py-0.5`}>
-              <span
-                className={`inline-block skew-x-[10deg] ${selectedTone.text || "text-[#0D2F5A]"}`}
-                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-              >
-                {title}
-              </span>
-            </span>
-          </h2>
-          <span className="relative mt-0.5 block text-xs font-semibold uppercase tracking-[0.16em]">
-            <span className="inline-block -skew-x-[10deg] rounded-[3px] bg-white px-2 py-0.5">
-              <span
-                className="inline-block skew-x-[10deg] text-[#0D2F5A]"
-                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-              >
-                {subtitle}
-              </span>
-            </span>
-          </span>
-        </div>
-      );
-    }
-
+  const TopicTitleCard = ({ title, subtitle, className = "" }) => {
     return (
-      <div
-        className={`relative overflow-hidden rounded-2xl border-l-[8px] border-l-[#D4AF37] bg-gradient-to-r from-white via-[#FFFDF5] to-[#F4F8FF] px-3 py-1 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] sm:px-4 sm:py-1.5 ${className}`}
-      >
-        <div className="pointer-events-none absolute -right-12 -top-8 h-32 w-32 rotate-12 bg-fuchsia-300/0" />
-        <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-24 -skew-x-[26deg] bg-cyan-300/0" />
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-transparent" />
-        <h2 className="relative text-lg font-semibold sm:text-xl">
-          <span className="inline-block -skew-x-[12deg] rounded-[3px] bg-gradient-to-r from-[#FFD74D] via-[#FFCD38] to-[#FFB31A] px-2 py-0.5">
-            <span
-              className="inline-block skew-x-[12deg] text-[#0D2F5A]"
-              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-            >
+      <div className={`text-center ${className}`}>
+        <p className="da-section-label">
+          {subtitle}
+        </p>
+        <h2 className="mt-1">
+          <span className="da-section-ribbon">
+            <span className="da-section-ribbon-text">
               {title}
             </span>
           </span>
         </h2>
-        <span className="relative mt-0.5 block text-xs font-semibold uppercase tracking-[0.16em]">
-          <span className="inline-block -skew-x-[12deg] rounded-[3px] bg-white px-2 py-0.5">
-            <span
-              className="inline-block skew-x-[12deg] text-[#0D2F5A]"
-              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-            >
-              {subtitle}
-            </span>
-          </span>
-        </span>
       </div>
     );
   };
@@ -1321,10 +1109,6 @@ const Home = ({ profile }) => {
             </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {categoryShowcaseCards.map((card) => {
-                const startsFromText =
-                  card.startFrom !== null
-                    ? `Starts from \u20B9${card.startFrom.toLocaleString("en-IN")}`
-                    : "Starts from \u20B9-";
                 const visualStyle = "ticket-strip";
 
                 return (
@@ -1375,16 +1159,18 @@ const Home = ({ profile }) => {
                         <div className="relative w-[92%] max-w-[230px]">
                           <div className="-skew-x-[11deg] rounded-md bg-[#18D26E]/92 px-3.5 py-2 shadow-[0_8px_18px_rgba(22,163,74,0.35)]">
                             <h3
-                              className="skew-x-[11deg] text-center text-[0.96rem] font-semibold uppercase leading-tight text-white sm:text-[0.76rem] lg:text-[1.12rem]"
+                              className="skew-x-[11deg] text-center text-[0.96rem] font-semibold uppercase leading-tight text-white sm:text-[0.85rem] lg:text-[1.23rem]"
                               style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
                             >
-                              {card.title}
+                              {card.id === "tank" ? (
+                                <>
+                                  <span className="block whitespace-nowrap">Fish Food &</span>
+                                  <span className="block">Medicine</span>
+                                </>
+                              ) : (
+                                card.title
+                              )}
                             </h3>
-                          </div>
-                          <div className="mt-2 translate-x-2.5 -skew-x-[11deg] rounded-md bg-white/95 px-3 py-1.5 shadow-[0_8px_16px_rgba(15,23,42,0.28)]">
-                            <p className="skew-x-[11deg] text-center text-[0.64rem] font-semibold uppercase tracking-[0.08em] text-[#B8860B] sm:text-[0.5rem] lg:text-[0.66rem]">
-                              {startsFromText}
-                            </p>
                           </div>
                         </div>
                       </div>
@@ -1506,67 +1292,6 @@ const Home = ({ profile }) => {
             </div>
           </section>
 
-          {homeShortcutCircles.length > 0 && (
-            <section data-home-reveal className="container mx-auto mt-4 px-4 pt-1 sm:px-6">
-              <div className="home-progress-line mx-0 mb-4 h-px bg-amber-300/90" />
-              <div className="mb-2 text-center">
-                <h2>
-                  <span className="inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r from-[#0B3D6C] via-[#14558F] to-[#1B6CAA] px-4 py-1">
-                    <span
-                      className="inline-block skew-x-[10deg] text-xl font-semibold text-white sm:text-2xl"
-                      style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-                    >
-                      Quick Picks
-                    </span>
-                  </span>
-                </h2>
-                <p className="mt-1 inline-block -skew-x-[10deg] rounded-[4px] bg-white/85 px-3 py-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
-                  <span className="inline-block skew-x-[10deg]">Jump To Sections</span>
-                </p>
-              </div>
-              <div
-                ref={quickPickTrackRef}
-                onScroll={handleQuickPickTrackScroll}
-                className="no-scrollbar flex snap-x snap-mandatory items-start gap-2 overflow-x-auto pb-1 pt-1 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible lg:pb-0"
-              >
-                {homeShortcutCircles.map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => goToHomeShortcut(item.key)}
-                    className="group snap-start shrink-0 basis-[70%] w-[70%] sm:w-auto sm:basis-[34%] lg:w-full lg:basis-auto"
-                    aria-label={`Open ${item.title}`}
-                    ref={(node) => {
-                      quickPickItemRefs.current[homeShortcutCircles.findIndex((it) => it.key === item.key)] = node;
-                    }}
-                  >
-                    <span className="relative mx-auto inline-flex h-[116px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md sm:h-[120px] lg:h-[136px]">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {homeShortcutCircles.length > 1 && (
-                <div className="mt-2 flex items-center justify-center gap-1.5 lg:hidden">
-                  <span className="text-xs font-semibold text-slate-500" aria-hidden="true">&lt;</span>
-                  <span className="relative h-1.5 w-14 overflow-hidden rounded-full bg-slate-300" aria-hidden="true">
-                    <span
-                      className="absolute top-0 h-1.5 w-6 rounded-full bg-slate-600 transition-all duration-300"
-                      style={{
-                        left: `${quickPickScrollProgress * (56 - 24)}px`,
-                      }}
-                    />
-                  </span>
-                  <span className="text-xs font-semibold text-slate-500" aria-hidden="true">&gt;</span>
-                </div>
-              )}
-            </section>
-          )}
-
           {activeBestSeller && (
             <section data-home-reveal className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
               <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
@@ -1629,12 +1354,12 @@ const Home = ({ profile }) => {
                             openProductDetails();
                           }
                         }}
-                        className={`relative h-[430px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                        className={`relative h-[392px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
                         <div className="flex h-full flex-col">
-                          <div className="relative aspect-[4/4.2] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/4.3]">
+                          <div className="relative aspect-[4/3.7] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/3.8]">
                             {savings > 0 && (
                               <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
                                 Save {"\u20B9"}
@@ -1673,7 +1398,7 @@ const Home = ({ profile }) => {
                               className="h-full w-full object-cover bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
                             />
                           </div>
-                          <div className="flex flex-1 flex-col px-3 py-3 text-left sm:px-4">
+                          <div className="flex flex-1 flex-col px-3 py-2.5 text-left sm:px-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
                             <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
@@ -1688,7 +1413,7 @@ const Home = ({ profile }) => {
                                 </span>
                               </span>
                             </div>
-                            <div className="relative mt-4">
+                            <div className="relative mt-2.5">
                               <div className="flex items-end justify-start gap-3 text-left">
                                 <p className="text-sm font-medium text-slate-400 line-through">
                                   {"\u20B9"}
@@ -1706,7 +1431,7 @@ const Home = ({ profile }) => {
                                 className="pointer-events-none absolute -right-[10px] top-[calc(50%-10px)] h-[74px] w-[74px] -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-[86px] sm:w-[86px]"
                               />
                             </div>
-                            <div className="relative mt-auto flex flex-col items-center gap-2 pt-4">
+                            <div className="relative mt-auto flex flex-col items-center gap-2 pt-2.5">
                               {bestFishAddedHintIndex === index && (
                                 <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                                   1 item added
@@ -1716,7 +1441,7 @@ const Home = ({ profile }) => {
                                 <button
                                   type="button"
                                   disabled
-                                  className="inline-flex min-w-[150px] items-center justify-center self-center whitespace-nowrap rounded-xl bg-slate-200 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                  className="inline-flex min-w-[150px] items-center justify-center self-center whitespace-nowrap rounded-xl bg-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
                                 >
                                   Out of Stock
                                 </button>
@@ -1762,7 +1487,7 @@ const Home = ({ profile }) => {
                                     setBestFishAddedHintIndex(index);
                                   }}
                                   disabled={soldOut}
-                                  className="inline-flex min-w-[150px] items-center justify-center gap-2 self-center whitespace-nowrap rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-amber-900/20 transition hover:brightness-105 disabled:cursor-not-allowed disabled:from-amber-200 disabled:via-amber-200 disabled:to-amber-300 disabled:text-amber-700 sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
+                                  className="da-add-cart-btn min-w-[150px] self-center whitespace-nowrap rounded-xl px-4 py-2 text-xs tracking-[0.14em] shadow-lg sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
                                 >
                                   <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                                     <img src={plusIcon} alt="" className="h-5 w-5" aria-hidden="true" />
@@ -1892,23 +1617,13 @@ const Home = ({ profile }) => {
               className="container mx-auto mt-5 px-4 pt-3 sm:px-6"
             >
               <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
-              <div className="relative mb-2">
+              <div className="mb-2">
                 <TopicTitleCard
                   title={section.title}
                   subtitle={section.subtitle}
                   variant="minimal-stripe"
                   tone={section.key}
                 />
-                {section.key === "under-100" && (
-                  <button
-                    type="button"
-                    onClick={() => navigate("/under-100")}
-                    className="absolute right-0 top-1/2 inline-flex -translate-y-1/2 shrink-0 items-center gap-1.5 rounded-xl bg-transparent px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-amber-600 transition hover:text-amber-700 lg:text-[14px]"
-                  >
-                    View All
-                    <img src={arrowIcon} alt="" className="h-[21px] w-[21px] object-contain" aria-hidden="true" />
-                  </button>
-                )}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {section.items.map((product) => {
@@ -1925,6 +1640,17 @@ const Home = ({ profile }) => {
                   );
                 })}
               </div>
+              {section.key === "under-100" && (
+                <div className="mt-4 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/under-100")}
+                    className="da-view-all-btn focus:ring-emerald-300"
+                  >
+                    View all
+                  </button>
+                </div>
+              )}
             </section>
           ))}
 

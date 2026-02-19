@@ -152,7 +152,7 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
               {qty === 0 ? (
                 <button
                   onClick={handleAddToCart}
-                  className="group inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-amber-950 shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2"
+                  className="da-add-cart-btn group h-11 w-full max-w-[180px] min-w-[180px] px-4 py-0 text-sm"
                   aria-label={`Add ${title} to cart`}
                 >
                   <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">

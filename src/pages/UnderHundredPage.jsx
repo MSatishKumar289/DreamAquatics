@@ -57,8 +57,8 @@ const UnderHundredPage = () => {
       const labelBySlug = {
         fishes: "Fishes",
         "live-plants": "Live Plants",
-        accessories: "Accessories",
-        tank: "Tanks",
+        accessories: "Tanks & Accessories",
+        tank: "Fish Food & Medicines",
       };
       options.push({
         value: slug,

@@ -44,8 +44,8 @@ const Footer = () => {
             <div className="mt-4 space-y-2 text-sm">
               <Link to="/category/fishes" className="block text-sky-100/85 hover:text-white">Fishes</Link>
               <Link to="/category/live-plants" className="block text-sky-100/85 hover:text-white">Live Plants</Link>
-              <Link to="/category/accessories" className="block text-sky-100/85 hover:text-white">Accessories</Link>
-              <Link to="/category/tank" className="block text-sky-100/85 hover:text-white">Tank</Link>
+              <Link to="/category/accessories" className="block text-sky-100/85 hover:text-white">Tanks & Accessories</Link>
+              <Link to="/category/tank" className="block text-sky-100/85 hover:text-white">Fish Food & Medicines</Link>
             </div>
           </div>
 
@@ -131,8 +131,8 @@ const Footer = () => {
                 <div className="space-y-1 pb-3 text-sm">
                   <Link to="/category/fishes" className="block text-sky-100/85 hover:text-white">Fishes</Link>
                   <Link to="/category/live-plants" className="block text-sky-100/85 hover:text-white">Live Plants</Link>
-                  <Link to="/category/accessories" className="block text-sky-100/85 hover:text-white">Accessories</Link>
-                  <Link to="/category/tank" className="block text-sky-100/85 hover:text-white">Tank</Link>
+                  <Link to="/category/accessories" className="block text-sky-100/85 hover:text-white">Tanks & Accessories</Link>
+                  <Link to="/category/tank" className="block text-sky-100/85 hover:text-white">Fish Food & Medicines</Link>
                 </div>
               )}
 

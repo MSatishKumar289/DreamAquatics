@@ -34,8 +34,8 @@ const Header = ({
   const categories = [
     { label: 'Fishes', value: 'fishes' },
     { label: 'Live Plants', value: 'live-plants' },
-    { label: 'Accessories', value: 'accessories' },
-    { label: 'Tank', value: 'tank' }
+    { label: 'Tanks & Accessories', value: 'accessories' },
+    { label: 'Fish Food & Medicines', value: 'tank' }
   ];
 
   useEffect(() => {
@@ -83,12 +83,12 @@ const Header = ({
   return (
     <>
     <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
-      <nav className="container mx-auto px-3 sm:px-6 lg:px-8" aria-label="Main navigation">
+      <nav className="container mx-auto px-[10px] sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex items-center justify-between gap-2 h-16 md:h-20">
           {/* Brand Title */}
           <Link
             to="/"
-            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
+            className="flex min-w-0 flex-none items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
             aria-label="DreamAquatics home"
           >
             <div className="flex items-baseline leading-none">
@@ -100,7 +100,7 @@ const Header = ({
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden xl:flex items-center space-x-6 xl:space-x-8">
+          <div className="hidden xl:flex items-center space-x-3 xl:space-x-4">
             {categories.map((category) => (
               <Link
                 key={category.value}
@@ -318,7 +318,7 @@ const Header = ({
                   aria-label={`Shopping cart with ${cartCount} items`}
                   data-cart-target="cart"
                 >
-                  <img src={cart_ic} alt="Cart" />
+                  <img src={cart_ic} alt="Cart" className="h-6 w-6 object-contain" />
                   {cartCount > 0 && (
                     <span
                       className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
@@ -333,7 +333,7 @@ const Header = ({
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex xl:hidden items-center space-x-2.5 flex-shrink-0">
+          <div className="ml-auto flex xl:hidden items-center space-x-2.5 flex-shrink-0">
             <div className="relative flex items-center gap-1.5">
               {user ? (
                 <div className="flex items-center gap-1.5">
@@ -538,7 +538,7 @@ const Header = ({
                   aria-label={`Shopping cart with ${cartCount} items`}
                   data-cart-target="cart"
                 >
-                  <img src={mobile_cart_ic} alt="Cart" />
+                  <img src={mobile_cart_ic} alt="Cart" className="h-5 w-5 object-contain" />
                   {cartCount > 0 && (
                     <span
                       className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"

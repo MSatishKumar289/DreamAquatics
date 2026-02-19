@@ -75,13 +75,13 @@ const UserOrdersDrawer = ({
       }}
     >
       <aside
-        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] shadow-2xl transition-transform duration-300 ease-out ${
+        className={`da-drawer-panel ${
           isVisible ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
+        <header className="da-drawer-header">
           <div>
-            <p className="inline-flex -skew-x-[10deg] rounded-[5px] bg-[#0A66D9] px-2.5 py-1 text-xs uppercase tracking-[0.2em] text-white shadow-sm">
+            <p className="da-drawer-brand">
               <span className="skew-x-[10deg]">DreamAquatics</span>
             </p>
             <h2 className="mt-1 text-lg font-semibold text-slate-900">Order Updates</h2>
@@ -89,7 +89,7 @@ const UserOrdersDrawer = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            className="da-drawer-close"
             aria-label="Close notifications"
           >
             Close
@@ -170,7 +170,7 @@ const UserOrdersDrawer = ({
                 navigate("/profile?tab=orders");
                 onClose?.();
               }}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2 text-sm font-semibold text-amber-950 transition hover:brightness-105"
+              className="da-cta-amber mt-3 inline-flex w-full rounded-xl px-4 py-2 text-sm"
             >
               View all orders
             </button>

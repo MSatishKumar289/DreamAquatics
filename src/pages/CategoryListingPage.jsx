@@ -22,7 +22,10 @@ const CategoryListingPage = () => {
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
   const [hasLongDescription, setHasLongDescription] = useState(false);
+  const [showCustomTankRequestModal, setShowCustomTankRequestModal] = useState(false);
+  const [showSubcategoryEnquiryModal, setShowSubcategoryEnquiryModal] = useState(false);
   const [customTankRequest, setCustomTankRequest] = useState("");
+  const [subcategoryEnquiry, setSubcategoryEnquiry] = useState("");
   const searchInputRef = useRef(null);
   const descriptionRef = useRef(null);
   const openingSearchRef = useRef(false);
@@ -79,10 +82,10 @@ const CategoryListingPage = () => {
   const categoryLabel = {
     fishes: "Fishes",
     "live-plants": "Live Plants",
-    accessories: "Accessories",
-    tank: "Tank",
+    accessories: "Tanks & Accessories",
+    tank: "Fish Food & Medicines",
     plants: "Live Plants",
-    tanks: "Tank",
+    tanks: "Fish Food & Medicines",
   };
 
   const slugToTitle = (slug) => {
@@ -140,6 +143,8 @@ const CategoryListingPage = () => {
     subCategoryTitle ||
     categoryLabel[categorySlug] ||
     slugToTitle(categorySlug);
+  const parentCategoryDisplayName =
+    categoryLabel[categorySlug] || slugToTitle(categorySlug);
 
   const categoryIconKey = useMemo(() => {
     if (categorySlug === "plants") return "live-plants";
@@ -267,7 +272,6 @@ const CategoryListingPage = () => {
 
   // ✅ decide which list to render
   const isSubcategoryMode = !!subCategorySlug;
-  const isTankCategoryLanding = normalizedCategorySlug === "tanks" && !isSubcategoryMode;
   const listForGrid = isSubcategoryMode ? productsForIteration : subcategoryCards;
   const filteredList = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -303,8 +307,18 @@ const CategoryListingPage = () => {
   ]);
   const descriptionText = subcategoryDescription
     ? subcategoryDescription
-    : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
+    : normalizedCategorySlug === "tanks"
+      ? "Explore trusted fish foods and medicines curated to keep your aquarium healthy, balanced, and stress-free."
+      : normalizedCategorySlug === "accessories"
+        ? "Explore essential aquarium accessories and reach out for custom setup guidance tailored to your space."
+        : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
   const isSearching = searchQuery.trim().length > 0;
+  const showCustomTankRequestCta =
+    !isSearching &&
+    !isSubcategoryMode &&
+    normalizedCategorySlug === "accessories";
+  // Show general enquiry CTA across listing pages, except where the custom tank CTA is already shown.
+  const showSubcategoryEnquiryCta = !isSearching && !showCustomTankRequestCta;
   const listingHeaderTheme = useMemo(() => {
     const toneMap = {
       fishes: {
@@ -374,6 +388,16 @@ const CategoryListingPage = () => {
       ? `Hi Dream Aquatics, I need a custom aquarium tank.\n\nMy requirement:\n${customTankRequest.trim()}`
       : "Hi Dream Aquatics, I need a custom aquarium tank. Please contact me for consultation.";
     window.open(`https://wa.me/918667418965?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    setShowCustomTankRequestModal(false);
+  };
+
+  const handleSendSubcategoryEnquiry = () => {
+    const baseMessage = `Hi Dream Aquatics, I am interested in ${titleOfListingPage}. Please share expert recommendations and custom options.`;
+    const message = subcategoryEnquiry.trim()
+      ? `${baseMessage}\n\nMy requirement:\n${subcategoryEnquiry.trim()}`
+      : baseMessage;
+    window.open(`https://wa.me/918667418965?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    setShowSubcategoryEnquiryModal(false);
   };
 
   const searchBar = (
@@ -502,37 +526,37 @@ const CategoryListingPage = () => {
       <div className="container mx-auto px-1 pt-6 sm:px-6 lg:px-8">
         {!isSearching && (
           <section
-            className={`relative overflow-hidden rounded-3xl border border-white/40 bg-gradient-to-r ${listingHeaderTheme.panel} p-6 shadow-xl shadow-slate-900/20 sm:p-7`}
+            className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-300/25 sm:p-7"
           >
-          <div className="pointer-events-none absolute -left-8 bottom-0 h-20 w-28 -skew-x-[26deg] bg-white/15" />
+          <div className="pointer-events-none absolute -left-8 bottom-0 h-20 w-28 -skew-x-[26deg] bg-slate-100/80" />
           <div className={`pointer-events-none absolute -right-10 -top-8 h-28 w-28 rotate-12 rounded-2xl ${listingHeaderTheme.accent}`} />
-          <div className="pointer-events-none absolute right-0 bottom-0 h-24 w-40 -skew-x-[28deg] bg-white/10" />
+          <div className="pointer-events-none absolute right-0 bottom-0 h-24 w-40 -skew-x-[28deg] bg-slate-100/80" />
           <div className={`pointer-events-none absolute left-4 top-[11px] h-2.5 w-2.5 rounded-full ${listingHeaderTheme.dot}`} />
           <div className={`pointer-events-none absolute left-8 top-[19px] h-1.5 w-1.5 rounded-full ${listingHeaderTheme.dot}`} />
           <nav
-            className="relative z-10 text-xs font-semibold uppercase tracking-[0.3em] text-white/80"
+            className="relative z-10 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
             aria-label="Breadcrumb"
           >
             <Link
               to="/"
-              className="text-white/80 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 rounded px-1"
+              className="rounded px-1 text-slate-600 transition hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2"
             >
               Home
             </Link>
-            <span className="mx-2 text-white/60">/</span>
+            <span className="mx-2 text-slate-400">/</span>
 
-            {!subCategorySlug && <span className="text-white">{categorySlug}</span>}
+            {!subCategorySlug && <span className="text-slate-900">{parentCategoryDisplayName}</span>}
 
             {subCategorySlug && (
               <>
                 <Link
                   to={`/category/${categorySlug}`}
-                  className="text-white/80 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 rounded px-1"
+                  className="rounded px-1 text-slate-600 transition hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2"
                 >
-                  {categorySlug}
+                  {parentCategoryDisplayName}
                 </Link>
-                <span className="mx-2 text-white/60">/</span>
-                <span className="text-white">{subCategoryTitle}</span>
+                <span className="mx-2 text-slate-400">/</span>
+                <span className="text-slate-900">{subCategoryTitle}</span>
               </>
             )}
           </nav>
@@ -546,7 +570,9 @@ const CategoryListingPage = () => {
                   </span>
                 </p>
                 <h1 className="mt-2 text-xl font-bold text-slate-900 sm:text-4xl">
-                  <span className={`inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r ${listingHeaderTheme.ribbon} px-4 py-1 shadow-[0_10px_25px_rgba(15,23,42,0.2)]`}>
+                  <span
+                    className={`inline-block -skew-x-[10deg] rounded-[5px] bg-gradient-to-r ${listingHeaderTheme.ribbon} px-4 py-1 shadow-[0_10px_25px_rgba(15,23,42,0.2)]`}
+                  >
                     <span
                       className={`inline-block skew-x-[10deg] ${listingHeaderTheme.ribbonText || ""}`}
                       style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
@@ -557,7 +583,7 @@ const CategoryListingPage = () => {
                 </h1>
               </div>
 
-              <div className="flex flex-none gap-3">
+              <div className="flex flex-none flex-col items-end gap-2">
                 <div className="rounded-2xl border border-white/70 bg-gradient-to-b from-white to-[#F2F7FF] px-3 py-2 text-center shadow-[0_10px_24px_rgba(15,23,42,0.16)]">
                   <p className="inline-block -skew-x-[10deg] rounded-[4px] bg-[#0D2F5A] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.26em] text-white">
                     <span className="inline-block skew-x-[10deg]">Listings</span>
@@ -572,7 +598,7 @@ const CategoryListingPage = () => {
             <div>
               <div
                 ref={descriptionRef}
-                className="max-w-none max-h-[4.8em] overflow-hidden rounded-lg border border-white/25 bg-slate-900/16 px-3 py-2 text-base leading-[1.6] text-white"
+                className="max-w-none max-h-[4.8em] overflow-hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-base leading-[1.6] text-slate-700"
               >
                 {renderFormattedDescription(descriptionText)}
               </div>
@@ -597,57 +623,36 @@ const CategoryListingPage = () => {
           </section>
         )}
 
-        {!isSearching && isTankCategoryLanding && (
-          <section className="mt-6 rounded-3xl border border-white/40 bg-gradient-to-r from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2] p-5 shadow-lg shadow-slate-900/20">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-slate-900 sm:text-2xl">
-                <span className="inline-block -skew-x-[10deg] rounded-[6px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-4 py-1 shadow-[0_10px_20px_rgba(15,23,42,0.16)]">
-                  <span className="inline-block skew-x-[10deg] text-white">
-                    Custom Tank Enquiry
-                  </span>
-                </span>
-              </h2>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
-                <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white px-3 py-1 shadow-sm">
-                  <span className="inline-block skew-x-[10deg] text-[#0A66D9]">
-                    Tell Us Your Size, Budget, And Preferred Setup
-                  </span>
-                </span>
-              </p>
-            </div>
+        {showCustomTankRequestCta && (
+          <div className="mt-3 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowCustomTankRequestModal(true)}
+              className="da-cta-amber gap-2 focus:ring-amber-300"
+              aria-label="Open custom tank request form"
+            >
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
+              </span>
+              <span>Build Your Dream Tank</span>
+            </button>
+          </div>
+        )}
 
-            <div className="mt-4 rounded-2xl border border-white/30 bg-[#2A7ED6]/45 p-3 sm:p-4">
-              <label htmlFor="tank-custom-request" className="mb-2 block text-sm font-semibold text-slate-800">
-                <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-3 py-0.5">
-                  <span className="inline-block skew-x-[10deg] text-white">
-                    Share your custom tank requirement
-                  </span>
-                </span>
-              </label>
-              <div className="flex items-center gap-2">
-                <textarea
-                  id="tank-custom-request"
-                  value={customTankRequest}
-                  onChange={(event) => setCustomTankRequest(event.target.value)}
-                  rows={3}
-                  placeholder="Example: 4ft planted tank with cabinet, low maintenance setup, budget under ₹35,000"
-                  className="min-h-[84px] w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                />
-                <button
-                  type="button"
-                  onClick={handleSendCustomTankRequest}
-                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md transition hover:brightness-105"
-                  aria-label="Send custom tank requirement"
-                  title="Send"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.1">
-                    <path d="M3 11.5 21 3l-8.5 18-2.2-7.3L3 11.5Z" />
-                    <path d="M10.4 13.7 21 3" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </section>
+        {showSubcategoryEnquiryCta && (
+          <div className="mt-3 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowSubcategoryEnquiryModal(true)}
+              className="da-cta-amber gap-2 focus:ring-amber-300"
+              aria-label="Open product enquiry form"
+            >
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
+              </span>
+              <span>Expert Product Enquiry</span>
+            </button>
+          </div>
         )}
 
         <section
@@ -749,6 +754,110 @@ const CategoryListingPage = () => {
           )}
         </section>
       </div>
+
+      {showCustomTankRequestModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowCustomTankRequestModal(false);
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Curious?</p>
+                <h2 className="text-lg font-semibold text-slate-900">Let Us Design Your Dream Tank</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCustomTankRequestModal(false)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-300"
+                aria-label="Close custom tank form"
+              >
+                <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              <p className="mb-2 text-sm text-slate-600">
+                Share your idea and we will suggest the best size, setup, and budget options.
+              </p>
+              <textarea
+                value={customTankRequest}
+                onChange={(event) => setCustomTankRequest(event.target.value)}
+                rows={5}
+                placeholder="Example: 4ft planted tank with cabinet, low maintenance setup, budget under Rs.35,000"
+                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+              <button
+                type="button"
+                onClick={handleSendCustomTankRequest}
+                className="da-cta-amber mt-3 h-10 w-full gap-2 px-4 text-sm focus:ring-amber-300"
+              >
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                  <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
+                </span>
+                Get My Custom Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSubcategoryEnquiryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowSubcategoryEnquiryModal(false);
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Need Guidance?</p>
+                <h2 className="text-lg font-semibold text-slate-900">Discover Tailored Options</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSubcategoryEnquiryModal(false)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-300"
+                aria-label="Close enquiry form"
+              >
+                <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              <p className="mb-2 text-sm text-slate-600">
+                Tell us what you are looking for in <span className="font-semibold text-slate-800">{titleOfListingPage}</span>, and we will suggest suitable products and custom possibilities.
+              </p>
+              <textarea
+                value={subcategoryEnquiry}
+                onChange={(event) => setSubcategoryEnquiry(event.target.value)}
+                rows={5}
+                placeholder="Share your use case, preferred size/specs, and budget range."
+                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+              <button
+                type="button"
+                onClick={handleSendSubcategoryEnquiry}
+                className="da-cta-amber mt-3 h-10 w-full gap-2 px-4 text-sm focus:ring-amber-300"
+              >
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                  <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
+                </span>
+                Request Expert Suggestions
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showDescriptionModal && (
         <div

@@ -12,8 +12,8 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
   const categoryLabel = {
     'fishes': '🐠 Fishes',
     'live-plants': '🌿 Live Plants',
-    'accessories': '🧰 Accessories',
-    'tank': '🫧 Tank'
+    'accessories': '🧰 Tanks & Accessories',
+    'tank': '🫧 Fish Food & Medicines'
   };
 
   const displayName = categoryLabel[categoryName] || categoryName;
@@ -95,7 +95,7 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
       <div className="w-full px-0">
         <div className="px-0 py-4 sm:px-2">
           {/* Section Header */}
-          <div className="mb-4 flex flex-nowrap items-center justify-between gap-3">
+          <div className="mb-4">
             <div className="min-w-0">
               <h2
                 id={`category-${categoryName}`}
@@ -107,29 +107,6 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
                 Showing {showingCount} of {productCount}
               </p>
             </div>
-            <button
-              className="group relative inline-flex items-center gap-2 rounded-2xl border border-transparent bg-transparent px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-amber-600 transition hover:-translate-y-0.5 hover:text-amber-700 focus:outline-none sm:px-4 sm:text-[14px] sm:tracking-[0.3em] lg:text-[15px]"
-              aria-label={`View all ${displayName.toLowerCase()}`}
-              onClick={handleViewAll}
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-transparent text-amber-600">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-3.5 w-3.5"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <rect x="4" y="4" width="6" height="6" rx="1" />
-                  <rect x="14" y="4" width="6" height="6" rx="1" />
-                  <rect x="4" y="14" width="6" height="6" rx="1" />
-                  <rect x="14" y="14" width="6" height="6" rx="1" />
-                </svg>
-              </span>
-              <span>View All</span>
-              <span className="absolute -right-2 -top-2 inline-flex min-w-[22px] items-center justify-center rounded-full border border-amber-300 bg-transparent px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-amber-600">
-                {productCount}
-              </span>
-            </button>
           </div>
 
           {/* Single-row horizontal scroll for all breakpoints */}
@@ -186,6 +163,15 @@ const CategorySection = ({ categoryName, products, subcategoryCount = 0 }) => {
                 <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">Next</span>
               </div>
             </div>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              className="da-view-all-btn focus:ring-emerald-300"
+              aria-label={`View all ${displayName.toLowerCase()}`}
+              onClick={handleViewAll}
+            >
+              View all
+            </button>
           </div>
         </div>
       </div>
