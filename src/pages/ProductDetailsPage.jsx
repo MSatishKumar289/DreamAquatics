@@ -195,7 +195,7 @@ const ProductDetailsPage = () => {
         <section className="rounded-[8px] bg-transparent p-4 sm:p-6">
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
             <div className="h-[240px] overflow-hidden rounded-[8px] bg-transparent sm:h-[288px] lg:h-[352px]">
-              <img src={imageSrc} alt={title} className="h-full w-full object-contain" />
+              <img src={imageSrc} alt={title} className="h-full w-full object-contain object-center" />
             </div>
 
             <div className="relative rounded-[8px] border-0 bg-transparent p-4 text-left sm:p-5">
@@ -374,7 +374,7 @@ const ProductDetailsPage = () => {
                         {itemTitle}
                       </p>
                       <div className="h-28 overflow-hidden rounded-[8px] bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
-                        <img src={itemImageSrc} alt={itemTitle} className="h-full w-full object-contain" />
+                        <img src={itemImageSrc} alt={itemTitle} className="h-full w-full object-cover object-center" />
                       </div>
                       <div className="relative mt-2 w-full">
                         <p className="text-center text-lg font-semibold text-[#1D3A8A]">

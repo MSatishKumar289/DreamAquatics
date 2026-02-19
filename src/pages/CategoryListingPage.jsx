@@ -334,6 +334,10 @@ const CategoryListingPage = () => {
     !isSubcategoryMode &&
     !showCustomTankRequestCta &&
     normalizedCategorySlug === "accessories";
+  const useBlueEnquiryTheme = normalizedCategorySlug === "accessories";
+  const enquiryCtaButtonClass = useBlueEnquiryTheme
+    ? "inline-flex items-center justify-center rounded-[5px] bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 sm:px-3.5"
+    : "da-cta-amber focus:ring-amber-300";
   const useTankTwoCardFeaturedLayout =
     !isSearching &&
     !isSubcategoryMode &&
@@ -356,18 +360,18 @@ const CategoryListingPage = () => {
         dot: "bg-[#F5F5F5]",
       },
       accessories: {
-        panel: "from-[#F6CF49] via-[#F3C435] to-[#EAB308]",
-        ribbon: "from-[#B7791F] via-[#9A6C18] to-[#7C5A12]",
+        panel: "from-[#3D86D9] via-[#5A9EE6] to-[#77B6F2]",
+        ribbon: "from-[#1E5CB7] via-[#1B4F9D] to-[#163F7C]",
         ribbonText: "text-white",
-        accent: "bg-[#FACC15]/80",
-        dot: "bg-[#FFE9A3]",
+        accent: "bg-[#1E40AF]/75",
+        dot: "bg-[#EAF6FF]",
       },
       tanks: {
-        panel: "from-[#F6CF49] via-[#F3C435] to-[#EAB308]",
-        ribbon: "from-[#B7791F] via-[#9A6C18] to-[#7C5A12]",
+        panel: "from-[#FFE066] via-[#FFD43B] to-[#FFC107]",
+        ribbon: "from-[#F59E0B] via-[#D97706] to-[#B45309]",
         ribbonText: "text-white",
-        accent: "bg-[#FACC15]/80",
-        dot: "bg-[#FFE9A3]",
+        accent: "bg-[#FDE047]/85",
+        dot: "bg-[#FFF5C2]",
       },
       default: {
         panel: "from-[#4C8FE2] via-[#62A0EB] to-[#7BB3F5]",
@@ -648,7 +652,7 @@ const CategoryListingPage = () => {
             <button
               type="button"
               onClick={() => setShowCustomTankRequestModal(true)}
-              className="da-cta-amber gap-2 focus:ring-amber-300"
+              className={`${enquiryCtaButtonClass} gap-2`}
               aria-label="Open custom tank request form"
             >
               <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
@@ -664,7 +668,7 @@ const CategoryListingPage = () => {
             <button
               type="button"
               onClick={() => setShowSubcategoryEnquiryModal(true)}
-              className="da-cta-amber gap-2 focus:ring-amber-300"
+              className={`${enquiryCtaButtonClass} gap-2`}
               aria-label="Open product enquiry form"
             >
               <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
@@ -821,7 +825,7 @@ const CategoryListingPage = () => {
               <button
                 type="button"
                 onClick={handleSendCustomTankRequest}
-                className="da-cta-amber mt-3 h-10 w-full gap-2 px-4 text-sm focus:ring-amber-300"
+                className={`${enquiryCtaButtonClass} mt-3 h-10 w-full gap-2 px-4 text-sm`}
               >
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                   <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
@@ -873,7 +877,7 @@ const CategoryListingPage = () => {
               <button
                 type="button"
                 onClick={handleSendSubcategoryEnquiry}
-                className="da-cta-amber mt-3 h-10 w-full gap-2 px-4 text-sm focus:ring-amber-300"
+                className={`${enquiryCtaButtonClass} mt-3 h-10 w-full gap-2 px-4 text-sm`}
               >
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                   <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
