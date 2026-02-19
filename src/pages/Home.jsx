@@ -626,13 +626,6 @@ const Home = ({ profile }) => {
         },
         sort: (a, b) => (toNumber(a?.price) ?? Number.MAX_SAFE_INTEGER) - (toNumber(b?.price) ?? Number.MAX_SAFE_INTEGER),
       },
-      {
-        key: 'trending',
-        title: 'Trending Now',
-        subtitle: 'Popular Picks',
-        filter: (p) => isInStock(p),
-        sort: byNewest,
-      },
     ];
 
     return rules
@@ -722,19 +715,38 @@ const Home = ({ profile }) => {
     });
   }, [allProducts, categories, subcategoryCounts, CATEGORY_SLUG_MAP]);
 
-  const TopicTitleCard = ({ title, subtitle, className = "" }) => {
+  const TopicTitleCard = ({ title, subtitle, className = "", onViewAll }) => {
     return (
       <div className={`text-center ${className}`}>
-        <p className="da-section-label">
-          {subtitle}
-        </p>
-        <h2 className="mt-1">
-          <span className="da-section-ribbon">
-            <span className="da-section-ribbon-text">
-              {title}
-            </span>
-          </span>
-        </h2>
+        <div className="relative mx-auto max-w-[980px] overflow-hidden bg-gradient-to-r from-[#4EA3E6]/72 via-[#86C0EC]/48 to-[#C2E1F7]/30 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
+          <div className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-[#F2C94C]" />
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2
+                className="text-[1.18rem] font-semibold uppercase leading-tight text-[#1B2A40] sm:text-[1.34rem]"
+                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+              >
+                {title}
+              </h2>
+              <p
+                className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.2em] text-[#2563EB] sm:text-[0.9rem]"
+                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+              >
+                {subtitle}
+              </p>
+            </div>
+            {onViewAll && (
+              <button
+                type="button"
+                onClick={onViewAll}
+                className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-black transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2"
+              >
+                <span>View all</span>
+                <img src={arrowIcon} alt="" className="h-[19px] w-[19px] object-contain" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -997,12 +1009,12 @@ const Home = ({ profile }) => {
               </button>
             </div>
             <div className="mt-2 flex justify-center">
-              <div className="flex w-full max-w-[560px] flex-nowrap items-center justify-center gap-2 sm:gap-3">
+              <div className="flex w-fit flex-nowrap items-center justify-center gap-[3px]">
                 <a
                   href={instagramUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="relative inline-flex min-w-0 flex-1 items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-5"
+                  className="relative inline-flex items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-1 py-2 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-2"
                 >
                   <span className="relative z-10 inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#833AB4] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:text-sm">
                     <svg viewBox="0 0 24 24" className="h-4 w-4 skew-x-[10deg]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -1017,7 +1029,7 @@ const Home = ({ profile }) => {
                   href="https://chat.whatsapp.com/DiUn2Tr4sP8LuKAUoq1xpx"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 sm:px-5"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-1 py-2 transition hover:-translate-y-0.5 sm:px-2"
                 >
                   <span className="inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#25D366] to-[#128C7E] px-[18px] py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:px-[22px] sm:text-sm">
                     <img src={WhatsIcon} alt="" className="h-4 w-4 skew-x-[10deg] object-contain" aria-hidden />
@@ -1260,12 +1272,12 @@ const Home = ({ profile }) => {
                 </button>
               </div>
               <div className="mt-2 flex justify-center">
-                <div className="flex w-full max-w-[560px] flex-nowrap items-center justify-center gap-2 sm:gap-3">
+                <div className="flex w-fit flex-nowrap items-center justify-center gap-[3px]">
                   <a
                     href={instagramUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="relative inline-flex min-w-0 flex-1 items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-5"
+                    className="relative inline-flex items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-1 py-2 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-white sm:px-2"
                   >
                     <span className="relative z-10 inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#F56040] via-[#E1306C] to-[#833AB4] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:text-sm">
                       <svg viewBox="0 0 24 24" className="h-4 w-4 skew-x-[10deg]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -1280,7 +1292,7 @@ const Home = ({ profile }) => {
                     href="https://chat.whatsapp.com/DiUn2Tr4sP8LuKAUoq1xpx"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-xl px-2 py-2 transition hover:-translate-y-0.5 sm:px-5"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-xl px-1 py-2 transition hover:-translate-y-0.5 sm:px-2"
                   >
                     <span className="inline-flex -skew-x-[10deg] items-center gap-1.5 rounded-[4px] bg-gradient-to-r from-[#25D366] to-[#128C7E] px-[18px] py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-white sm:px-[22px] sm:text-sm">
                       <img src={WhatsIcon} alt="" className="h-4 w-4 skew-x-[10deg] object-contain" aria-hidden />
@@ -1297,7 +1309,7 @@ const Home = ({ profile }) => {
               <div className="home-progress-line mx-2 mb-3 h-px bg-amber-300/70 sm:mx-0" />
               <TopicTitleCard
                 className="mb-2"
-                title="Best Seller Picks"
+                title="Best Selling and Trending"
                 subtitle="Most Loved This Week"
                 variant="sale-ribbon"
               />
@@ -1354,12 +1366,12 @@ const Home = ({ profile }) => {
                             openProductDetails();
                           }
                         }}
-                        className={`relative h-[392px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                        className={`relative h-[314px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[20px] border border-amber-200/70 bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_10px_22px_rgba(146,117,34,0.14)] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
                         <div className="flex h-full flex-col">
-                          <div className="relative aspect-[4/3.7] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/3.8]">
+                          <div className="relative aspect-[4/3.1] w-full overflow-hidden rounded-t-2xl border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/3.2]">
                             {savings > 0 && (
                               <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
                                 Save {"\u20B9"}
@@ -1398,8 +1410,8 @@ const Home = ({ profile }) => {
                               className="h-full w-full object-cover bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
                             />
                           </div>
-                          <div className="flex flex-1 flex-col px-3 py-2.5 text-left sm:px-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Seller Picks</p>
+                          <div className="flex flex-1 flex-col px-3 py-2 text-left sm:px-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Best Selling and Trending</p>
                             <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
                             </h2>
@@ -1413,7 +1425,7 @@ const Home = ({ profile }) => {
                                 </span>
                               </span>
                             </div>
-                            <div className="relative mt-2.5">
+                            <div className={`relative ${productBadgeText ? "mt-[7px]" : "mt-2"}`}>
                               <div className="flex items-end justify-start gap-3 text-left">
                                 <p className="text-sm font-medium text-slate-400 line-through">
                                   {"\u20B9"}
@@ -1431,7 +1443,7 @@ const Home = ({ profile }) => {
                                 className="pointer-events-none absolute -right-[10px] top-[calc(50%-10px)] h-[74px] w-[74px] -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-[86px] sm:w-[86px]"
                               />
                             </div>
-                            <div className="relative mt-auto flex flex-col items-center gap-2 pt-2.5">
+                            <div className="relative mt-auto flex flex-col items-center gap-1.5 pt-2">
                               {bestFishAddedHintIndex === index && (
                                 <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                                   1 item added
@@ -1504,25 +1516,22 @@ const Home = ({ profile }) => {
                 </div>
                 {bestSellerPicks.length > 1 && (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setBestSellerArrowHintSide(null);
-                        goToBestSeller(bestSellerIndex - 1);
-                      }}
-                      disabled={bestSellerIndex === 0}
-                      className={`absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full shadow sm:h-9 sm:w-9 md:left-[5%] lg:-left-12 lg:h-11 lg:w-11 xl:-left-14 ${
-                        bestSellerIndex === 0
-                          ? "cursor-not-allowed bg-amber-100/75 text-amber-400"
-                          : "bg-amber-400 text-amber-950"
-                      }`}
-                      aria-label="Previous best seller"
-                    >
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M15 18l-6-6 6-6" />
-                      </svg>
-                    </button>
-                    {bestSellerArrowHintSide === "left" && (
+                    {bestSellerIndex > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBestSellerArrowHintSide(null);
+                          goToBestSeller(bestSellerIndex - 1);
+                        }}
+                        className="absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white shadow sm:h-9 sm:w-9 md:left-[5%] lg:-left-12 lg:h-11 lg:w-11 xl:-left-14"
+                        aria-label="Previous best seller"
+                      >
+                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                    )}
+                    {bestSellerIndex > 0 && bestSellerArrowHintSide === "left" && (
                       <div className="pointer-events-none absolute left-[-118px] top-[calc(50%+42px)] z-30 hidden lg:block">
                         <div className="relative rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shadow">
                           Tap here
@@ -1530,25 +1539,22 @@ const Home = ({ profile }) => {
                         </div>
                       </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setBestSellerArrowHintSide(null);
-                        goToBestSeller(bestSellerIndex + 1);
-                      }}
-                      disabled={bestSellerIndex === bestSellerPicks.length - 1}
-                      className={`absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full shadow sm:h-9 sm:w-9 md:right-[5%] lg:-right-12 lg:h-11 lg:w-11 xl:-right-14 ${
-                        bestSellerIndex === bestSellerPicks.length - 1
-                          ? "cursor-not-allowed bg-amber-100/75 text-amber-400"
-                          : "bg-amber-400 text-amber-950"
-                      }`}
-                      aria-label="Next best seller"
-                    >
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M9 6l6 6-6 6" />
-                      </svg>
-                    </button>
-                    {bestSellerArrowHintSide === "right" && (
+                    {bestSellerIndex < bestSellerPicks.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBestSellerArrowHintSide(null);
+                          goToBestSeller(bestSellerIndex + 1);
+                        }}
+                        className="absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white shadow sm:h-9 sm:w-9 md:right-[5%] lg:-right-12 lg:h-11 lg:w-11 xl:-right-14"
+                        aria-label="Next best seller"
+                      >
+                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 6l6 6-6 6" />
+                        </svg>
+                      </button>
+                    )}
+                    {bestSellerIndex < bestSellerPicks.length - 1 && bestSellerArrowHintSide === "right" && (
                       <div className="pointer-events-none absolute right-[-118px] top-[calc(50%+42px)] z-30 hidden lg:block">
                         <div className="relative rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shadow">
                           Tap here
@@ -1569,8 +1575,8 @@ const Home = ({ profile }) => {
                           onClick={() => goToBestSeller(index)}
                           className={`inline-flex items-center justify-center rounded-full transition ${
                             active
-                              ? "h-4 w-4 bg-amber-500 ring-2 ring-amber-200"
-                              : "h-3 w-3 bg-white/90 hover:bg-white"
+                              ? "h-2.5 w-2.5 bg-blue-600 ring-1 ring-blue-200"
+                              : "h-2 w-2 bg-white/90 hover:bg-white"
                           }`}
                           aria-label={`Go to best seller ${index + 1}`}
                           aria-current={active ? "true" : "false"}
@@ -1623,6 +1629,11 @@ const Home = ({ profile }) => {
                   subtitle={section.subtitle}
                   variant="minimal-stripe"
                   tone={section.key}
+                  onViewAll={
+                    section.key === "under-100"
+                      ? () => navigate("/under-100")
+                      : undefined
+                  }
                 />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -1640,17 +1651,6 @@ const Home = ({ profile }) => {
                   );
                 })}
               </div>
-              {section.key === "under-100" && (
-                <div className="mt-4 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => navigate("/under-100")}
-                    className="da-view-all-btn focus:ring-emerald-300"
-                  >
-                    View all
-                  </button>
-                </div>
-              )}
             </section>
           ))}
 

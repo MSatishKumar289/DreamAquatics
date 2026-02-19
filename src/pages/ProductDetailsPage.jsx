@@ -239,7 +239,7 @@ const ProductDetailsPage = () => {
               <div className="mt-5 flex w-full max-w-[410px] items-start gap-3">
                 <div className="relative w-[48%] min-w-0">
                   {showAddedHint && (
-                    <span className="pointer-events-none absolute -top-9 left-2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
+                    <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
                       Added 1 item
                     </span>
                   )}

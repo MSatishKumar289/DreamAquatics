@@ -22,17 +22,21 @@ const ProductImageArea = ({
   onImageClick,
 }) => (
       <div
-        className={`relative w-full overflow-hidden rounded-t-2xl ${
+        className={`relative w-full overflow-hidden ${
+          isSubCategory ? "h-full rounded-2xl" : "rounded-t-2xl"
+        } ${
           whiteCard
             ? "bg-white"
             : isSubCategory
-              ? "bg-gradient-to-br from-[#FFF9E6] via-[#FFF4CC] to-[#FFFDF3]"
+              ? "bg-black"
               : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
         }`}
       >
         <div
-          className={`relative w-full border-b border-slate-200/60 rounded-t-2xl overflow-hidden ${
-            isSubCategory ? "aspect-[4/3]" : compact ? "aspect-[1/1]" : "aspect-[4/3.7] sm:aspect-[4/3.8]"
+          className={`relative w-full overflow-hidden ${
+            isSubCategory ? "h-full rounded-2xl" : "border-b border-slate-200/60 rounded-t-2xl"
+          } ${
+            isSubCategory ? "" : compact ? "aspect-[1/1]" : "aspect-[4/3.1] sm:aspect-[4/3.2]"
           }`}
         >
       {isSubCategory ? (
@@ -49,7 +53,9 @@ const ProductImageArea = ({
               src={imageSrc}
               alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
               className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
-                whiteCard
+                isSubCategory
+                  ? "bg-black"
+                  : whiteCard
                   ? "bg-white"
                   : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
               } ${isSubCategory ? "brightness-[0.93] group-hover:brightness-100" : ""}`}
@@ -61,6 +67,18 @@ const ProductImageArea = ({
                   "%3C/text%3E%3C/svg%3E";
               }}
             />
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[20%] bg-gradient-to-t from-black via-black/85 to-transparent backdrop-blur-[1.5px]" />
+          <div className="pointer-events-none absolute inset-x-2 bottom-2 z-30 flex justify-center">
+            <p
+              className="line-clamp-2 max-w-[92%] text-center text-[0.62rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.72rem]"
+              style={{
+                fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif",
+                textShadow: "0 1px 2px rgba(0,0,0,0.95), 0 0 1px rgba(0,0,0,0.9)",
+              }}
+            >
+              {productTitle}
+            </p>
           </div>
         </>
       ) : (
@@ -95,7 +113,7 @@ const ProductImageArea = ({
               event.stopPropagation();
               onToggleFavorite?.();
             }}
-            className={`absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
+            className={`absolute bottom-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
               isFavorite
                 ? "border-rose-200 bg-rose-50 text-rose-600"
                 : "border-slate-200 bg-white/95 text-slate-600 hover:text-rose-600"
@@ -141,12 +159,12 @@ const ProductInfo = ({
   return (
     <div
       className={`text-left ${
-        isSubCategory ? "min-h-[32px]" : "min-h-[56px]"
+        isSubCategory ? "min-h-[32px]" : "min-h-[44px]"
       } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
       <div
         className={`${
-          isSubCategory ? "" : "flex min-h-[34px] items-center justify-start"
+          isSubCategory ? "" : "flex min-h-[28px] items-center justify-start"
         }`}
       >
         <h3
@@ -172,8 +190,8 @@ const ProductInfo = ({
         </div>
       )}
       {!isSubCategory && (
-        <div className="mt-0.5 flex min-h-[30px] w-full flex-col items-start justify-center">
-          <div className="flex h-[24px] w-full items-center justify-start">
+        <div className={`${productBadgeText ? "mt-[7px]" : "mt-0.5"} flex min-h-[24px] w-full flex-col items-start justify-center`}>
+          <div className="flex h-[20px] w-full items-center justify-start">
             <div className="inline-flex items-center justify-start gap-2 sm:gap-3">
               {currentPrice > 0 ? (
                 <p className="text-[12px] font-medium text-slate-400 line-through">
@@ -264,21 +282,6 @@ const CartControls = ({
     </div>
   </div>
 );
-
-const SubcategoryFooter = ({ title }) => {
-  return (
-    <div className="-mt-0.5 flex flex-col items-center gap-0 px-2 pb-0.5 pt-0 text-center sm:px-2.5 sm:pb-1">
-      <span className="inline-block w-full -skew-x-[10deg] rounded-[6px] px-2 py-0.5 sm:py-1">
-        <p
-          className="line-clamp-2 w-full skew-x-[10deg] break-words text-center text-[0.62rem] font-semibold uppercase leading-[1.08] tracking-[0.01em] text-[#0D2F5A] sm:text-[0.74rem]"
-          style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
-        >
-          {title}
-        </p>
-      </span>
-    </div>
-  );
-};
 
 const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
   if (!isOpen || typeof document === "undefined") return null;
@@ -540,13 +543,15 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative overflow-visible rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
+      className={`group relative rounded-2xl bg-white shadow-sm transition-shadow duration-300 ${
+        isSubCategory ? "overflow-hidden" : "overflow-visible"
+      } ${
         whiteCard
           ? isSubCategory
-            ? "cursor-pointer pb-2 sm:pb-2.5 bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
+            ? "cursor-pointer aspect-[25/27] bg-black opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
             : "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
           : isSubCategory
-            ? "cursor-pointer pb-2 sm:pb-2.5 bg-gradient-to-b from-[#FFF9E6] via-[#FFF4CD] to-[#FFFDF3] opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
+            ? "cursor-pointer aspect-[25/27] bg-black opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
             : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
       } ${
         itemDetailGoldenBorder && !isSubCategory
@@ -589,12 +594,12 @@ const CategoryCard = ({
       <div
         className={`${compact ? "px-2 pb-2 pt-1.5" : "px-2 pb-2 pt-1.5 sm:px-3 sm:pb-3 sm:pt-2"} ${
           isSubCategory
-            ? "flex flex-col gap-0.5 pb-1 sm:gap-1 sm:pb-1.5"
+            ? "hidden"
             : isMasonry
               ? "flex flex-1 flex-col gap-1 sm:gap-1.5"
               : compact
-                ? "flex min-h-[98px] flex-1 flex-col gap-1 sm:gap-1.5"
-                : "flex min-h-[92px] flex-1 flex-col gap-1 sm:min-h-[104px] sm:gap-1.5"
+                ? "flex min-h-[78px] flex-1 flex-col gap-0.5 sm:gap-1"
+                : "flex min-h-[74px] flex-1 flex-col gap-0.5 sm:min-h-[84px] sm:gap-1"
         }`}
       >
         {!isSubCategory && (
@@ -630,10 +635,6 @@ const CategoryCard = ({
           />
         )}
       </div>
-
-      {isSubCategory && (
-        <SubcategoryFooter title={productTitle} />
-      )}
 
       <RemoveConfirmModal
         isOpen={pendingRemove}

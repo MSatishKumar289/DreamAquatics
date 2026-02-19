@@ -21,11 +21,13 @@ const CategoryListingPage = () => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [hasSearchOpened, setHasSearchOpened] = useState(false);
   const [showSearchHint, setShowSearchHint] = useState(false);
+  const [showWhatsAppHint, setShowWhatsAppHint] = useState(false);
   const [hasLongDescription, setHasLongDescription] = useState(false);
   const [showCustomTankRequestModal, setShowCustomTankRequestModal] = useState(false);
   const [showSubcategoryEnquiryModal, setShowSubcategoryEnquiryModal] = useState(false);
   const [customTankRequest, setCustomTankRequest] = useState("");
   const [subcategoryEnquiry, setSubcategoryEnquiry] = useState("");
+  const isSearching = searchQuery.trim().length > 0;
   const searchInputRef = useRef(null);
   const descriptionRef = useRef(null);
   const openingSearchRef = useRef(false);
@@ -51,6 +53,16 @@ const CategoryListingPage = () => {
     const timer = setTimeout(() => setShowSearchHint(false), 4000);
     return () => clearTimeout(timer);
   }, [hasSearchOpened, isMobileView]);
+
+  useEffect(() => {
+    if (!isMobileView || isSearching) {
+      setShowWhatsAppHint(false);
+      return;
+    }
+    setShowWhatsAppHint(true);
+    const timer = setTimeout(() => setShowWhatsAppHint(false), 4200);
+    return () => clearTimeout(timer);
+  }, [isMobileView, isSearching, categorySlug, subCategorySlug]);
 
   useEffect(() => {
     setSearchQuery("");
@@ -312,13 +324,15 @@ const CategoryListingPage = () => {
       : normalizedCategorySlug === "accessories"
         ? "Explore essential aquarium accessories and reach out for custom setup guidance tailored to your space."
         : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
-  const isSearching = searchQuery.trim().length > 0;
   const showCustomTankRequestCta =
     !isSearching &&
     !isSubcategoryMode &&
     normalizedCategorySlug === "accessories";
-  // Show general enquiry CTA across listing pages, except where the custom tank CTA is already shown.
-  const showSubcategoryEnquiryCta = !isSearching && !showCustomTankRequestCta;
+  // Keep enquiry CTA only for accessories flows; fishes/plants/fish-food use floating WhatsApp.
+  const showSubcategoryEnquiryCta =
+    !isSearching &&
+    !showCustomTankRequestCta &&
+    normalizedCategorySlug === "accessories";
   const listingHeaderTheme = useMemo(() => {
     const toneMap = {
       fishes: {
@@ -893,6 +907,30 @@ const CategoryListingPage = () => {
               {renderFormattedDescription(descriptionText)}
             </div>
           </div>
+        </div>
+      )}
+
+      {!isSearching && (
+        <div className="fixed bottom-5 right-5 z-40">
+          <a
+            href={`https://wa.me/918667418965?text=${encodeURIComponent(
+              `Hi Dream Aquatics, I am interested in ${titleOfListingPage}. Please share details and recommendations.`
+            )}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setShowWhatsAppHint(false)}
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/80 bg-transparent p-1.5 shadow-lg shadow-emerald-500/35 transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            aria-label="Chat on WhatsApp"
+          >
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+            <img src={WhatsIcon} alt="" className="h-full w-full object-contain" aria-hidden="true" />
+          </a>
+          {showWhatsAppHint && (
+            <div className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-emerald-600/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+              <span className="absolute -bottom-1 right-4 h-2 w-2 rotate-45 bg-emerald-600/90" aria-hidden="true" />
+              Tap to enquire
+            </div>
+          )}
         </div>
       )}
 
