@@ -396,32 +396,39 @@ const Home = ({ profile }) => {
     const picks = [];
     const usedIds = new Set();
 
-    // Prefer one latest item per category (up to 4).
-    categories.forEach((categoryKey) => {
-      const dbSlug = CATEGORY_SLUG_MAP[categoryKey];
-      const match = sorted.find(
-        (product) =>
-          !usedIds.has(product?.id) &&
-          product?.subcategory?.category?.slug === dbSlug
+    const pickLatest = (matcher) => {
+      const primary = sorted.find(
+        (product) => !usedIds.has(product?.id) && matcher(product)
       );
-      if (match) {
-        picks.push(match);
-        usedIds.add(match.id);
+      if (primary) {
+        picks.push(primary);
+        usedIds.add(primary.id);
       }
-    });
+    };
 
-    // If fewer than 4, fill with next latest items from available categories.
-    if (picks.length < 4) {
-      for (const product of sorted) {
-        if (picks.length >= 4) break;
-        if (usedIds.has(product?.id)) continue;
-        picks.push(product);
-        usedIds.add(product.id);
-      }
-    }
+    const isFish = (product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.fishes;
+    const isPlant = (product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP["live-plants"];
+    const isAccessories = (product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.accessories;
+    const isFoodAndMeds = (product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.tank;
+    const getSubName = (product) => String(product?.subcategory?.name || "").toLowerCase();
 
-    return picks.slice(0, 4);
-  }, [allProducts, categories, CATEGORY_SLUG_MAP]);
+    // 1) Latest fish
+    pickLatest((product) => isFish(product));
+    // 2) Latest plant
+    pickLatest((product) => isPlant(product));
+
+    // 3) Tanks & Accessories: one from "tank" subcategory
+    pickLatest((product) => isAccessories(product) && /tank/.test(getSubName(product)));
+    // 4) Tanks & Accessories: one from remaining accessories
+    pickLatest((product) => isAccessories(product) && !/tank/.test(getSubName(product)));
+
+    // 5) Fish Food & Medicines: one food item
+    pickLatest((product) => isFoodAndMeds(product) && /food/.test(getSubName(product)));
+    // 6) Fish Food & Medicines: one medicine item
+    pickLatest((product) => isFoodAndMeds(product) && /med|medicine/.test(getSubName(product)));
+
+    return picks;
+  }, [allProducts, CATEGORY_SLUG_MAP]);
 
   const bestSellerPicks = useMemo(() => {
     const sorted = [...allProducts].sort(
@@ -1602,7 +1609,7 @@ const Home = ({ profile }) => {
               variant="minimal-stripe"
               tone="new-arrivals"
             />
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
               {newArrivals.map((product) => {
                 const categorySlug = product?.subcategory?.category?.slug;
                 const categoryKey = categoryBySlug[categorySlug] || "fishes";
@@ -1613,6 +1620,7 @@ const Home = ({ profile }) => {
                       product={product}
                       relatedProducts={getRelatedProductsFor(product)}
                       className="da-home-item-card"
+                      compact
                       showStockBadge
                     />
                   </div>

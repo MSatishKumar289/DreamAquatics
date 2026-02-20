@@ -152,6 +152,7 @@ const ProductImageArea = ({
 const ProductInfo = ({
   isSubCategory,
   isMasonry,
+  compact,
   productTitle,
   productBadgeText,
   price,
@@ -181,7 +182,9 @@ const ProductInfo = ({
           className={`px-1 font-semibold text-[#102A43] ${
             isSubCategory
               ? "text-[0.72rem] sm:text-[0.82rem] line-clamp-2"
-              : "text-[0.82rem] sm:text-[0.92rem] leading-tight line-clamp-2"
+              : compact
+                ? "text-[0.72rem] leading-tight line-clamp-2"
+                : "text-[0.82rem] sm:text-[0.92rem] leading-tight line-clamp-2"
           }`}
         >
           {productTitle}
@@ -211,7 +214,7 @@ const ProductInfo = ({
               ) : (
                 <span />
               )}
-              <p className="text-[1.05rem] font-semibold text-[#1D3A8A]">
+              <p className={`${compact ? "text-[0.95rem]" : "text-[1.05rem]"} font-semibold text-[#1D3A8A]`}>
                 {"\u20B9"}
                 {formattedCurrentPrice}
               </p>
@@ -226,6 +229,7 @@ const ProductInfo = ({
 const CartControls = ({
   currentQty,
   isSoldOut,
+  compact,
   onAddToCart,
   onDecrease,
   onIncrease,
@@ -243,7 +247,7 @@ const CartControls = ({
         <button
           type="button"
           disabled
-          className="inline-flex h-9 w-full min-w-0 items-center justify-center rounded-[5px] bg-slate-200 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm"
+          className={`inline-flex ${compact ? "h-8 text-[9px]" : "h-9 text-[10px]"} w-full min-w-0 items-center justify-center rounded-[5px] bg-slate-200 px-3 py-0 font-semibold uppercase tracking-wide text-slate-600 shadow-sm`}
         >
           Back Soon !
         </button>
@@ -251,17 +255,17 @@ const CartControls = ({
         <button
           type="button"
           onClick={onAddToCart}
-          className="da-add-cart-btn group h-9 w-full min-w-0 px-3 py-0 text-[10px]"
+          className={`da-add-cart-btn group ${compact ? "h-9 gap-1 whitespace-nowrap text-[8px] tracking-[0.03em]" : "h-9 text-[10px]"} w-full min-w-0 px-3 py-0`}
         >
-          <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
-            <img src={plusIcon} alt="" className="h-5 w-5" />
+          <span className={`grid shrink-0 ${compact ? "h-4 w-4" : "h-5 w-5"} aspect-square place-items-center rounded-full bg-white/20`}>
+            <img src={plusIcon} alt="" className={`${compact ? "h-4 w-4" : "h-5 w-5"} object-contain`} />
           </span>
           Add to cart
         </button>
       ) : (
         <div className="w-full min-w-0">
           <div
-            className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm"
+            className={`inline-flex ${compact ? "h-8" : "h-9"} w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm`}
             onClick={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
           >
@@ -269,22 +273,22 @@ const CartControls = ({
               type="button"
               onClick={onDecrease}
               disabled={isSoldOut}
-              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
+              className={`${compact ? "h-6 w-6" : "h-7 w-7"} rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300`}
               aria-label={`Decrease quantity for ${productTitle}`}
             >
-              <img src={incMinusIcon} alt="" className="h-7 w-7" />
+              <img src={incMinusIcon} alt="" className={`${compact ? "h-6 w-6" : "h-7 w-7"}`} />
             </button>
-            <span className="text-sm font-semibold text-[#1D3A8A]">
+            <span className={`${compact ? "text-[12px]" : "text-sm"} font-semibold text-[#1D3A8A]`}>
               {currentQty}
             </span>
             <button
               type="button"
               onClick={onIncrease}
               disabled={isSoldOut}
-              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300"
+              className={`${compact ? "h-6 w-6" : "h-7 w-7"} rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300`}
               aria-label={`Increase quantity for ${productTitle}`}
             >
-              <img src={incPlusIcon} alt="" className="h-7 w-7" />
+              <img src={incPlusIcon} alt="" className={`${compact ? "h-6 w-6" : "h-7 w-7"}`} />
             </button>
           </div>
         </div>
@@ -617,6 +621,7 @@ const CategoryCard = ({
           <ProductInfo
             isSubCategory={isSubCategory}
             isMasonry={isMasonry}
+            compact={compact}
             productTitle={productTitle}
             productBadgeText={productBadgeText}
             price={product?.price}
@@ -628,6 +633,7 @@ const CategoryCard = ({
           <CartControls
             currentQty={currentQty}
             isSoldOut={isSoldOut}
+            compact={compact}
             onAddToCart={handleAddToCart}
             onDecrease={(event) => {
               event.stopPropagation();
