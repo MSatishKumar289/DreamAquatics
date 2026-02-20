@@ -16,6 +16,7 @@ const Search = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("all");
+  const [priceSortOrder, setPriceSortOrder] = useState("default");
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -81,6 +82,22 @@ const Search = () => {
       return matchCategory && title.includes(query);
     });
   }, [allProducts, searchCategory, searchQuery, CATEGORY_SLUG_MAP]);
+  const sortedSearchResults = useMemo(() => {
+    if (priceSortOrder === "default") return searchResults;
+
+    const toSortablePrice = (item) => {
+      const value = Number(item?.price);
+      if (Number.isFinite(value)) return value;
+      return priceSortOrder === "low_to_high" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+    };
+
+    return [...searchResults].sort((a, b) => {
+      if (priceSortOrder === "low_to_high") {
+        return toSortablePrice(a) - toSortablePrice(b);
+      }
+      return toSortablePrice(b) - toSortablePrice(a);
+    });
+  }, [priceSortOrder, searchResults]);
 
   const getRelatedProductsFor = (baseProduct) => {
     const subcategoryId = baseProduct?.subcategory?.id;
@@ -234,19 +251,31 @@ const Search = () => {
                   Search results
                 </p>
                 <h2 className="text-xl font-semibold text-slate-900">
-                  {searchResults.length} items found
+                  {sortedSearchResults.length} items found
                 </h2>
                 <p className="mt-2 text-center text-xs text-sky-600/80">
                   * Images are for reference. Actual product appearance may vary. *
                 </p>
               </div>
+              <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+                Sort by
+                <select
+                  value={priceSortOrder}
+                  onChange={(event) => setPriceSortOrder(event.target.value)}
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold normal-case tracking-normal text-slate-700 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="default">Default</option>
+                  <option value="low_to_high">Price: Low to High</option>
+                  <option value="high_to_low">Price: High to Low</option>
+                </select>
+              </label>
             </div>
           )}
 
           <div className="mt-5">
             {loading ? (
               <div className="py-8 text-center text-sm text-slate-500">Loading products...</div>
-            ) : searchQuery.trim() && searchResults.length === 0 ? (
+            ) : searchQuery.trim() && sortedSearchResults.length === 0 ? (
               <div className="rounded-[8px] border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
                 <p className="text-sm font-semibold text-slate-700">
                   Didn&apos;t find what you were looking for?
@@ -266,7 +295,7 @@ const Search = () => {
               </div>
             ) : searchQuery.trim() ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {searchResults.map((product) => (
+                {sortedSearchResults.map((product) => (
                   <div key={product.id} className="h-full">
                     <CategoryCard
                       categoryName={
