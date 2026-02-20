@@ -317,8 +317,9 @@ const Home = ({ profile }) => {
     const sections = Array.from(document.querySelectorAll("[data-home-reveal]"));
     if (!sections.length) return undefined;
 
-    sections.forEach((section) => {
+    sections.forEach((section, index) => {
       section.classList.add("home-scroll-animate");
+      section.classList.add(index % 2 === 0 ? "home-scroll-from-left" : "home-scroll-from-right");
     });
 
     const observer = new IntersectionObserver(
@@ -326,16 +327,14 @@ const Home = ({ profile }) => {
         entries.forEach((entry) => {
           const element = entry.target;
           if (entry.isIntersecting) {
-            element.classList.remove("home-scroll-fade-in");
-            void element.offsetWidth;
-            element.classList.add("home-scroll-revealed", "home-scroll-fade-in");
+            element.classList.add("home-scroll-revealed");
             return;
           }
           const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
           const rect = entry.boundingClientRect;
           const isFullyOutOfView = rect.bottom <= 0 || rect.top >= viewportHeight;
           if (!isFullyOutOfView) return;
-          element.classList.remove("home-scroll-fade-in");
+          element.classList.remove("home-scroll-revealed");
         });
       },
       { threshold: 0.14, rootMargin: "0px 0px -6% 0px" }
@@ -1083,7 +1082,10 @@ const Home = ({ profile }) => {
               ) : (
                 <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
                   {searchResults.map((product) => (
-                    <div key={product.id} className="mb-4 break-inside-avoid">
+                    <div
+                      key={product.id}
+                      className="mb-4 break-inside-avoid"
+                    >
                       <CategoryCard
                         categoryName={
                           Object.keys(CATEGORY_SLUG_MAP).find(
@@ -1605,14 +1607,15 @@ const Home = ({ profile }) => {
                 const categorySlug = product?.subcategory?.category?.slug;
                 const categoryKey = categoryBySlug[categorySlug] || "fishes";
                 return (
-                  <CategoryCard
-                    key={`new-${product.id}`}
-                    categoryName={categoryKey}
-                    product={product}
-                    relatedProducts={getRelatedProductsFor(product)}
-                    className="da-home-item-card"
-                        showStockBadge
-                      />
+                  <div key={`new-${product.id}`} className="h-full">
+                    <CategoryCard
+                      categoryName={categoryKey}
+                      product={product}
+                      relatedProducts={getRelatedProductsFor(product)}
+                      className="da-home-item-card"
+                      showStockBadge
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -1644,14 +1647,15 @@ const Home = ({ profile }) => {
                   const categorySlug = product?.subcategory?.category?.slug;
                   const categoryKey = categoryBySlug[categorySlug] || "fishes";
                   return (
-                    <CategoryCard
-                      key={`${section.key}-${product.id}`}
-                      categoryName={categoryKey}
-                      product={product}
-                      relatedProducts={getRelatedProductsFor(product)}
-                      className="da-home-item-card"
-                      showStockBadge
-                    />
+                    <div key={`${section.key}-${product.id}`} className="h-full">
+                      <CategoryCard
+                        categoryName={categoryKey}
+                        product={product}
+                        relatedProducts={getRelatedProductsFor(product)}
+                        className="da-home-item-card"
+                        showStockBadge
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -1670,14 +1674,15 @@ const Home = ({ profile }) => {
               />
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {medicineAndFilterPicks.map((product) => (
-                  <CategoryCard
-                    key={`med-filter-${product.id}`}
-                    categoryName="accessories"
-                    product={product}
-                    relatedProducts={getRelatedProductsFor(product)}
-                    className="da-home-item-card"
-                    showStockBadge
-                  />
+                  <div key={`med-filter-${product.id}`} className="h-full">
+                    <CategoryCard
+                      categoryName="accessories"
+                      product={product}
+                      relatedProducts={getRelatedProductsFor(product)}
+                      className="da-home-item-card"
+                      showStockBadge
+                    />
+                  </div>
                 ))}
               </div>
             </section>

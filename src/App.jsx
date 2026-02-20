@@ -64,6 +64,11 @@ function AppContent() {
   const { clearFavorites } = useFavorites();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
 
+  useEffect(() => {
+    if (!pathname.startsWith('/admin')) return;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [pathname, location.search]);
+
   /* ================= AUTH LISTENER (SESSION ONLY) ================= */
 
   useEffect(() => {

@@ -205,21 +205,23 @@
 }
 
 .home-scroll-animate {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: transform 680ms cubic-bezier(0.2, 0.82, 0.28, 1), opacity 680ms cubic-bezier(0.2, 0.82, 0.28, 1);
+  will-change: transform, opacity;
+}
+
+.home-scroll-animate.home-scroll-from-left {
+  transform: translateX(-36px);
+}
+
+.home-scroll-animate.home-scroll-from-right {
+  transform: translateX(36px);
+}
+
+.home-scroll-animate.home-scroll-revealed {
   opacity: 1;
-  will-change: opacity;
-}
-
-.home-scroll-fade-in {
-  animation: homeFadeIn 280ms ease-out both;
-}
-
-@keyframes homeFadeIn {
-  0% {
-    opacity: 0.58;
-  }
-  100% {
-    opacity: 1;
-  }
+  transform: translateX(0);
 }
 
 .home-progress-line {
@@ -246,10 +248,55 @@
   transform: scaleX(1);
 }
 
+@keyframes daCardReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+    filter: blur(4px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.015);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes daSkeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.da-card-reveal {
+  opacity: 0;
+  animation: daCardReveal 500ms cubic-bezier(0.2, 0.82, 0.28, 1) both;
+  animation-delay: var(--da-stagger, 0ms);
+  will-change: transform, opacity, filter;
+}
+
+.da-card-skeleton {
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: linear-gradient(90deg, #eef3f9 25%, #f7f9fc 50%, #eef3f9 75%);
+  background-size: 200% 100%;
+  animation: daSkeletonShimmer 1.25s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-scroll-animate,
-  .home-scroll-fade-in {
+  .home-scroll-animate.home-scroll-from-left,
+  .home-scroll-animate.home-scroll-from-right,
+  .home-scroll-animate.home-scroll-revealed {
     opacity: 1;
+    transform: none;
     animation: none;
     transition: none;
   }
@@ -258,5 +305,15 @@
   .home-scroll-revealed .home-progress-line::after {
     transform: scaleX(1);
     transition: none;
+  }
+
+  .da-card-reveal {
+    opacity: 1;
+    animation: none;
+  }
+
+  .da-card-skeleton {
+    animation: none;
+    background: #eef3f9;
   }
 }

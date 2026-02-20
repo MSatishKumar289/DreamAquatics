@@ -721,8 +721,26 @@ const CategoryListingPage = () => {
             </div>
           )}
           {loading ? (
-            <div className="py-12 text-center">
-              <p className="text-lg text-gray-600">Loading...</p>
+            <div
+              className={`grid ${
+                isSubcategoryMode ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-3 sm:grid-cols-2 lg:grid-cols-6"
+              } gap-2`}
+            >
+              {Array.from({ length: isSubcategoryMode ? 8 : 12 }).map((_, index) => (
+                <div
+                  key={`loading-card-${index}`}
+                  className="overflow-hidden rounded-[6px] border border-slate-200 bg-white/80"
+                >
+                  <div className={`da-card-skeleton ${isSubcategoryMode ? "aspect-[25/27]" : "aspect-[4/3.1]"}`} />
+                  {!isSubcategoryMode && (
+                    <div className="space-y-2 p-2">
+                      <div className="da-card-skeleton h-3 w-4/5" />
+                      <div className="da-card-skeleton h-3 w-2/5" />
+                      <div className="da-card-skeleton h-8 w-full rounded-[5px]" />
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           ) : sortedFilteredList.length > 0 ? (
             <div
@@ -756,8 +774,12 @@ const CategoryListingPage = () => {
                   }`}
                   onScroll={() => searchInputRef.current?.blur()}
                 >
-                  {sortedFilteredList.map((item) => (
-                    <div key={item.id} className="h-full">
+                  {sortedFilteredList.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="h-full da-card-reveal"
+                      style={{ "--da-stagger": `${Math.min(index, 14) * 19}ms` }}
+                    >
                       <CategoryCard
                         categoryName={categorySlug}
                         product={item}
@@ -779,18 +801,23 @@ const CategoryListingPage = () => {
                       : `${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"}`
                   }`}
                 >
-                  {sortedFilteredList.map((item) => (
-                    <CategoryCard
+                  {sortedFilteredList.map((item, index) => (
+                    <div
                       key={item.id}
-                      categoryName={categorySlug}
-                      product={item}
-                      relatedProducts={isSubcategoryMode ? productsForIteration : []}
-                      isSubCategory={!isSubcategoryMode}
-                      onAddToCart={handleAddToCart}
-                      showStockBadge={isSubcategoryMode}
-                      borderless
-                      itemDetailGoldenBorder={isSubcategoryMode}
-                    />
+                      className="h-full da-card-reveal"
+                      style={{ "--da-stagger": `${Math.min(index, 14) * 19}ms` }}
+                    >
+                      <CategoryCard
+                        categoryName={categorySlug}
+                        product={item}
+                        relatedProducts={isSubcategoryMode ? productsForIteration : []}
+                        isSubCategory={!isSubcategoryMode}
+                        onAddToCart={handleAddToCart}
+                        showStockBadge={isSubcategoryMode}
+                        borderless
+                        itemDetailGoldenBorder={isSubcategoryMode}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
@@ -993,4 +1020,3 @@ const CategoryListingPage = () => {
 };
 
 export default CategoryListingPage;
-

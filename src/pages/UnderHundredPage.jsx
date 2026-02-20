@@ -73,6 +73,7 @@ const UnderHundredPage = () => {
     return items.filter((product) => getRouteCategorySlug(product) === selectedCategory);
   }, [items, selectedCategory]);
 
+
   const getRelatedProductsFor = (baseProduct) => {
     const subcategoryId = baseProduct?.subcategory?.id;
     if (!subcategoryId) return [];
@@ -83,7 +84,7 @@ const UnderHundredPage = () => {
     <main className="min-h-screen bg-transparent px-4 pb-12 pt-8 sm:px-6 md:pt-10">
       <section className="container mx-auto">
         <div className="rounded-3xl bg-white/85 px-4 py-5 shadow-inner ring-1 ring-sky-100/60 sm:px-6">
-          <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="mb-4 flex items-center justify-start gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -103,36 +104,43 @@ const UnderHundredPage = () => {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </button>
-            <h1 className="text-right text-xl font-semibold text-slate-900 sm:text-2xl">{title}</h1>
+            <h1 className="text-left text-xl font-semibold text-slate-900 sm:text-2xl">{title}</h1>
           </div>
 
           {!loading && items.length > 0 && (
-            <div className="mb-4 rounded-2xl border border-sky-100/80 bg-gradient-to-r from-white/95 via-[#EEF6FF]/95 to-white/95 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
-              <div className="flex flex-wrap items-center gap-2">
-                {categoryFilterOptions.map((option) => {
-                  const active = option.value === selectedCategory;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setSelectedCategory(option.value)}
-                      className={`inline-flex items-center justify-center rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition sm:text-xs ${
-                        active
-                          ? "border-[#0A66D9] bg-gradient-to-r from-[#0A66D9] to-[#1D7BF0] text-white shadow-[0_8px_16px_rgba(10,102,217,0.35)]"
-                          : "border-slate-300/90 bg-white/90 text-slate-700 hover:border-slate-400 hover:bg-white"
-                      }`}
-                    >
+            <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+              <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+                Category
+                <select
+                  value={selectedCategory}
+                  onChange={(event) => setSelectedCategory(event.target.value)}
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold normal-case tracking-normal text-slate-700 focus:border-blue-500 focus:outline-none"
+                >
+                  {categoryFilterOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
                       {option.label}
-                    </button>
-                  );
-                })}
-              </div>
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           )}
 
           {loading ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-              Loading products...
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={`under-hundred-loading-${index}`}
+                  className="overflow-hidden rounded-[6px] border border-slate-200 bg-white/80"
+                >
+                  <div className="da-card-skeleton aspect-[4/3.1]" />
+                  <div className="space-y-2 p-2">
+                    <div className="da-card-skeleton h-3 w-4/5" />
+                    <div className="da-card-skeleton h-3 w-2/5" />
+                    <div className="da-card-skeleton h-8 w-full rounded-[5px]" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
@@ -144,16 +152,21 @@ const UnderHundredPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {filteredItems.map((product) => (
-                <CategoryCard
+              {filteredItems.map((product, index) => (
+                <div
                   key={product.id}
-                  categoryName={getRouteCategorySlug(product)}
-                  product={product}
-                  relatedProducts={getRelatedProductsFor(product)}
-                  showStockBadge
-                  borderless
-                  itemDetailGoldenBorder
-                />
+                  className="h-full da-card-reveal"
+                  style={{ "--da-stagger": `${Math.min(index, 12) * 18}ms` }}
+                >
+                  <CategoryCard
+                    categoryName={getRouteCategorySlug(product)}
+                    product={product}
+                    relatedProducts={getRelatedProductsFor(product)}
+                    showStockBadge
+                    borderless
+                    itemDetailGoldenBorder
+                  />
+                </div>
               ))}
             </div>
           )}

@@ -192,9 +192,12 @@ const ProductDetailsPage = () => {
           ) : null}
         </div>
 
-        <section className="rounded-[8px] bg-transparent p-4 sm:p-6">
+        <section key={`product-view-${product?.id || "default"}`} className="rounded-[8px] bg-transparent p-4 sm:p-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,440px)_1fr] lg:items-start lg:gap-8">
-            <div className="mx-auto w-full max-w-[440px] self-start overflow-hidden rounded-[8px] bg-transparent lg:mx-0">
+            <div
+              className="mx-auto w-full max-w-[440px] self-start overflow-hidden rounded-[8px] bg-transparent da-card-reveal lg:mx-0"
+              style={{ "--da-stagger": "40ms" }}
+            >
               <div className="w-full lg:aspect-[4/5]">
                 <img
                   src={imageSrc}
@@ -204,7 +207,10 @@ const ProductDetailsPage = () => {
               </div>
             </div>
 
-            <div className="relative rounded-[8px] border-0 bg-transparent p-2 text-left sm:p-3 md:p-4">
+            <div
+              className="relative rounded-[8px] border-0 bg-transparent p-2 text-left da-card-reveal sm:p-3 md:p-4"
+              style={{ "--da-stagger": "130ms" }}
+            >
               <button
                 type="button"
                 onClick={() => toggleFavorite(product)}
@@ -316,7 +322,7 @@ const ProductDetailsPage = () => {
                 )}
               </div>
 
-              <div className="mt-5 bg-transparent p-0">
+              <div className="mt-5 bg-transparent p-0 da-card-reveal" style={{ "--da-stagger": "220ms" }}>
                 <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Product Description</h2>
                 <div className="mt-3 text-base leading-relaxed text-slate-700">
                   {product?.description ? (
@@ -330,7 +336,7 @@ const ProductDetailsPage = () => {
           </div>
 
           {relatedProducts.length > 0 && (
-            <div className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5">
+            <div className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5 da-card-reveal" style={{ "--da-stagger": "280ms" }}>
               <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Other Products</h2>
               <div className="relative mt-4">
                 <button
@@ -356,7 +362,7 @@ const ProductDetailsPage = () => {
                   </svg>
                 </button>
                 <div ref={relatedTrackRef} className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-14 pb-2">
-                {relatedProducts.map((item) => {
+                {relatedProducts.map((item, index) => {
                   const itemTitle = item?.name || item?.title || "Product";
                   const itemImageRaw = item?.product_images?.[0]?.url || item?.image || "";
                   const itemImageSrc =
@@ -374,7 +380,8 @@ const ProductDetailsPage = () => {
                           state: { product: item, relatedProducts: relatedProducts.concat(product) },
                         })
                       }
-                      className="relative snap-start min-w-[150px] rounded-[8px] border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 text-left shadow-sm transition hover:shadow-md"
+                      className="relative snap-start min-w-[150px] rounded-[8px] border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 text-left shadow-sm transition hover:shadow-md da-card-reveal"
+                      style={{ "--da-stagger": `${320 + Math.min(index, 8) * 60}ms` }}
                     >
                       <p className="line-clamp-3 min-h-[3rem] px-1 text-xs font-semibold tracking-wide text-[#102A43]">
                         {itemTitle}

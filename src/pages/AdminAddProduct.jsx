@@ -576,6 +576,10 @@ const AdminAddProduct = ({
   }, [adminView]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [adminView, location.search]);
+
+  useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderId = params.get("orderId");
     if (!orderId) return;
