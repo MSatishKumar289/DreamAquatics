@@ -15,6 +15,7 @@ const Footer = () => {
   const mobileSections = [
     { id: 'about', title: 'About Us' },
     { id: 'shop', title: 'Shop' },
+    { id: 'terms', title: 'Terms & Conditions' },
     { id: 'care', title: 'Customer Care' },
     { id: 'touch', title: 'Get In Touch' },
     { id: 'feedback', title: 'Share Your Feedback' },
@@ -28,7 +29,7 @@ const Footer = () => {
           DreamAquatics
         </div>
 
-        <div className="mt-8 hidden gap-8 sm:grid-cols-2 lg:grid lg:grid-cols-5">
+        <div className="mt-8 hidden gap-8 sm:grid-cols-2 lg:grid lg:grid-cols-6">
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">About Us</h4>
             <div className="mt-4 space-y-2 text-sm text-sky-100/85">
@@ -52,13 +53,19 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Customer Care</h4>
             <div className="mt-4 space-y-2 text-sm">
-              <Link to="/terms" className="block text-sky-100/85 hover:text-white">Terms and Conditions</Link>
               <a href="https://wa.me/918667418965" target="_blank" rel="noopener noreferrer" className="block text-sky-100/85 hover:text-white">
                 WhatsApp Support
               </a>
               <a href="tel:+918667418965" className="block text-sky-100/85 hover:text-white">
                 Call Support
               </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Terms & Conditions</h4>
+            <div className="mt-4 space-y-2 text-sm">
+              <Link to="/terms" className="block text-sky-100 hover:text-white">Read Terms and Conditions</Link>
             </div>
           </div>
 
@@ -90,10 +97,9 @@ const Footer = () => {
                 href={feedbackHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-2 rounded-md border border-white/45 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="mt-3 inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/45 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 Share on WhatsApp
-                <span aria-hidden="true">-></span>
               </a>
             </div>
           </div>
@@ -138,13 +144,18 @@ const Footer = () => {
 
               {openMobileSection === section.id && section.id === 'care' && (
                 <div className="space-y-1 pb-3 text-sm">
-                  <Link to="/terms" className="block text-sky-100/85 hover:text-white">Terms and Conditions</Link>
                   <a href="https://wa.me/918667418965" target="_blank" rel="noopener noreferrer" className="block text-sky-100/85 hover:text-white">
                     WhatsApp Support
                   </a>
                   <a href="tel:+918667418965" className="block text-sky-100/85 hover:text-white">
                     Call Support
                   </a>
+                </div>
+              )}
+
+              {openMobileSection === section.id && section.id === 'terms' && (
+                <div className="space-y-1 pb-3 text-sm">
+                  <Link to="/terms" className="block text-sky-100 hover:text-white">Read Terms and Conditions</Link>
                 </div>
               )}
 
@@ -171,10 +182,9 @@ const Footer = () => {
                     href={feedbackHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-2 rounded-md border border-white/45 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="mt-2 inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/45 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     Share on WhatsApp
-                    <span aria-hidden="true">-></span>
                   </a>
                 </div>
               )}

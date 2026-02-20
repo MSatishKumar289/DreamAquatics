@@ -193,12 +193,18 @@ const ProductDetailsPage = () => {
         </div>
 
         <section className="rounded-[8px] bg-transparent p-4 sm:p-6">
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
-            <div className="h-[240px] overflow-hidden rounded-[8px] bg-transparent sm:h-[288px] lg:h-[352px]">
-              <img src={imageSrc} alt={title} className="h-full w-full object-contain object-center" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(280px,440px)_1fr] md:items-start lg:gap-8">
+            <div className="w-full max-w-[440px] self-start overflow-hidden rounded-[8px] bg-transparent md:mx-0">
+              <div className="w-full md:aspect-[4/5]">
+                <img
+                  src={imageSrc}
+                  alt={title}
+                  className="w-full h-auto object-top md:h-full md:w-full md:object-contain"
+                />
+              </div>
             </div>
 
-            <div className="relative rounded-[8px] border-0 bg-transparent p-4 text-left sm:p-5">
+            <div className="relative rounded-[8px] border-0 bg-transparent p-2 text-left sm:p-3 md:p-4">
               <button
                 type="button"
                 onClick={() => toggleFavorite(product)}
@@ -309,17 +315,17 @@ const ProductDetailsPage = () => {
                   </button>
                 )}
               </div>
-            </div>
-          </div>
 
-          <div className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5">
-            <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Product Description</h2>
-            <div className="mt-3 text-base leading-relaxed text-slate-700">
-              {product?.description ? (
-                renderFormattedDescription(product.description)
-              ) : (
-                <p>Product details will be available soon.</p>
-              )}
+              <div className="mt-5 bg-transparent p-0">
+                <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Product Description</h2>
+                <div className="mt-3 text-base leading-relaxed text-slate-700">
+                  {product?.description ? (
+                    renderFormattedDescription(product.description)
+                  ) : (
+                    <p>Product details will be available soon.</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 

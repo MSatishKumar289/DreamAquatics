@@ -9,6 +9,7 @@ import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 
 const ProductImageArea = ({
+  categoryName,
   isSubCategory,
   compact,
   whiteCard,
@@ -20,7 +21,11 @@ const ProductImageArea = ({
   isFavorite,
   onToggleFavorite,
   onImageClick,
-}) => (
+}) => {
+  const brightBlueTileCategories = new Set(["fishes", "tank", "accessories"]);
+  const useBrightBlueTileBg = isSubCategory && brightBlueTileCategories.has(String(categoryName || "").toLowerCase());
+
+  return (
       <div
         className={`relative w-full overflow-hidden ${
           isSubCategory ? "h-full rounded-[6px]" : "rounded-t-[6px]"
@@ -76,7 +81,11 @@ const ProductImageArea = ({
             }}
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30">
-            <div className="w-full bg-black/45 px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px]">
+            <div
+              className={`w-full px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px] ${
+                useBrightBlueTileBg ? "bg-blue-600/80" : "bg-black/45"
+              }`}
+            >
               <p
                 className="mx-auto line-clamp-2 max-w-[92%] text-center text-[0.68rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.8rem]"
                 style={{
@@ -146,6 +155,7 @@ const ProductImageArea = ({
     </div>
   </div>
 );
+};
 
 const ProductInfo = ({
   isSubCategory,
@@ -583,6 +593,7 @@ const CategoryCard = ({
       }}
     >
       <ProductImageArea
+        categoryName={categoryName}
         isSubCategory={isSubCategory}
         compact={compact}
         whiteCard={whiteCard}

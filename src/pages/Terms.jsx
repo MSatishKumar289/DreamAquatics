@@ -7,15 +7,32 @@ const Terms = () => {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white py-10">
+    <main className="min-h-screen bg-gradient-to-b from-[#5eaeea] via-[#9dcdf0] to-[#d7eaf8] py-10">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">DreamAquatics</p>
+        <header className="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-[#EAF4FF] via-[#DDEEFF] to-[#CEE5FF] p-6 shadow-sm">
+          <div className="pointer-events-none absolute -right-10 -top-8 h-24 w-24 rotate-12 rounded-2xl bg-blue-400/20" />
+          <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-20 -skew-x-[24deg] bg-blue-300/20" />
+          <p className="text-xs uppercase tracking-[0.4em] text-blue-700">
+            <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-0.5 shadow-sm">
+              <span className="inline-block skew-x-[10deg]">DreamAquatics</span>
+            </span>
+          </p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-            Terms and Conditions
+            <span className="inline-block -skew-x-[10deg] rounded-[6px] bg-gradient-to-r from-[#0B4FA1] via-[#0A66D9] to-[#3D8EFF] px-4 py-1 text-white shadow-[0_10px_20px_rgba(15,23,42,0.18)]">
+              <span
+                className="inline-block skew-x-[10deg]"
+                style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+              >
+                Terms and Conditions
+              </span>
+            </span>
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Please read these terms carefully before placing an order.
+          <p className="mt-2 text-sm text-blue-900">
+            <span className="inline-block -skew-x-[10deg] rounded-[4px] bg-white/95 px-3 py-1 shadow-sm">
+              <span className="inline-block skew-x-[10deg]">
+                Please read these terms carefully before placing an order.
+              </span>
+            </span>
           </p>
         </header>
 
