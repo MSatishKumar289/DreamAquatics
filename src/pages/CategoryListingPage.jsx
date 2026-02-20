@@ -27,6 +27,7 @@ const CategoryListingPage = () => {
   const [showSubcategoryEnquiryModal, setShowSubcategoryEnquiryModal] = useState(false);
   const [customTankRequest, setCustomTankRequest] = useState("");
   const [subcategoryEnquiry, setSubcategoryEnquiry] = useState("");
+  const [priceSortOrder, setPriceSortOrder] = useState("default");
   const isSearching = searchQuery.trim().length > 0;
   const searchInputRef = useRef(null);
   const descriptionRef = useRef(null);
@@ -66,6 +67,10 @@ const CategoryListingPage = () => {
 
   useEffect(() => {
     setSearchQuery("");
+  }, [categorySlug, subCategorySlug]);
+
+  useEffect(() => {
+    setPriceSortOrder("default");
   }, [categorySlug, subCategorySlug]);
 
   useEffect(() => {
@@ -295,6 +300,23 @@ const CategoryListingPage = () => {
       return title.toLowerCase().includes(query);
     });
   }, [isSubcategoryMode, listForGrid, searchQuery]);
+  const sortedFilteredList = useMemo(() => {
+    if (!isSubcategoryMode) return filteredList;
+    if (priceSortOrder === "default") return filteredList;
+
+    const toSortablePrice = (item) => {
+      const value = Number(item?.price);
+      if (Number.isFinite(value)) return value;
+      return priceSortOrder === "low_to_high" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+    };
+
+    return [...filteredList].sort((a, b) => {
+      if (priceSortOrder === "low_to_high") {
+        return toSortablePrice(a) - toSortablePrice(b);
+      }
+      return toSortablePrice(b) - toSortablePrice(a);
+    });
+  }, [filteredList, isSubcategoryMode, priceSortOrder]);
   const subcategoryDescription = useMemo(() => {
     if (!isSubcategoryMode) return "";
     const firstWithDescription = productsForIteration.find(
@@ -658,7 +680,7 @@ const CategoryListingPage = () => {
               <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
                 <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
               </span>
-              <span>Build Your Dream Tank</span>
+              <span>Tap here to Build Your Dream Tank</span>
             </button>
           </div>
         )}
@@ -682,11 +704,27 @@ const CategoryListingPage = () => {
         <section
           className={`${isSearching ? "mt-4" : "mt-8"} rounded-none border-0 bg-transparent p-0 shadow-none`}
         >
+          {isSubcategoryMode && !loading && (
+            <div className="mb-3 flex justify-end">
+              <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+                Sort by
+                <select
+                  value={priceSortOrder}
+                  onChange={(event) => setPriceSortOrder(event.target.value)}
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold normal-case tracking-normal text-slate-700 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="default">Default</option>
+                  <option value="low_to_high">Price: Low to High</option>
+                  <option value="high_to_low">Price: High to Low</option>
+                </select>
+              </label>
+            </div>
+          )}
           {loading ? (
             <div className="py-12 text-center">
               <p className="text-lg text-gray-600">Loading...</p>
             </div>
-          ) : filteredList.length > 0 ? (
+          ) : sortedFilteredList.length > 0 ? (
             <div
               className={`${
                 isSearching
@@ -701,7 +739,7 @@ const CategoryListingPage = () => {
                       Search results
                     </p>
                     <h2 className="text-xl font-semibold text-slate-900">
-                      {filteredList.length} items found
+                      {sortedFilteredList.length} items found
                     </h2>
                     <p className="mt-2 text-center text-xs text-sky-600/80">
                       * Images are for reference. Actual product appearance may vary. *
@@ -718,7 +756,7 @@ const CategoryListingPage = () => {
                   }`}
                   onScroll={() => searchInputRef.current?.blur()}
                 >
-                  {filteredList.map((item) => (
+                  {sortedFilteredList.map((item) => (
                     <div key={item.id} className="h-full">
                       <CategoryCard
                         categoryName={categorySlug}
@@ -741,7 +779,7 @@ const CategoryListingPage = () => {
                       : `${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"}`
                   }`}
                 >
-                  {filteredList.map((item) => (
+                  {sortedFilteredList.map((item) => (
                     <CategoryCard
                       key={item.id}
                       categoryName={categorySlug}

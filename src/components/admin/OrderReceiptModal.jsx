@@ -1,3 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
+
+const DEFAULT_UPI_ID = "thilakalpha@okaxis";
+
 const OrderReceiptModal = ({
   selectedAdminOrder,
   setSelectedAdminOrder,
@@ -7,6 +11,24 @@ const OrderReceiptModal = ({
   onSaveOrderStatus
 }) => {
   if (!selectedAdminOrder) return null;
+  const orderRef = selectedAdminOrder.order_number || selectedAdminOrder.id;
+  const baseOrderAmount = Number(selectedAdminOrder.total || 0);
+  const [upiAmountDraft, setUpiAmountDraft] = useState(
+    Number.isFinite(baseOrderAmount) ? String(baseOrderAmount) : ""
+  );
+  const envUpiId = import.meta.env.VITE_ADMIN_UPI_ID || import.meta.env.VITE_UPI_ID || "";
+  const [upiIdDraft, setUpiIdDraft] = useState(() => {
+    if (envUpiId) return envUpiId;
+    try {
+      return localStorage.getItem("admin_upi_id") || DEFAULT_UPI_ID;
+    } catch {
+      return DEFAULT_UPI_ID;
+    }
+  });
+
+  useEffect(() => {
+    setUpiAmountDraft(Number.isFinite(baseOrderAmount) ? String(baseOrderAmount) : "");
+  }, [selectedAdminOrder.id, baseOrderAmount]);
 
   const rawMobile = String(selectedAdminOrder.customer_mobile || "");
   const digitsOnly = rawMobile.replace(/\D/g, "");
@@ -23,8 +45,50 @@ const OrderReceiptModal = ({
   };
   const whatsappNumber = buildWhatsappNumber();
   const hasWhatsappNumber = digitsOnly.length > 0;
+  const parsedUpiAmount = Number.parseFloat(upiAmountDraft);
+  const hasValidUpiAmount = Number.isFinite(parsedUpiAmount) && parsedUpiAmount > 0;
+  useEffect(() => {
+    if (envUpiId) {
+      setUpiIdDraft(envUpiId);
+      return;
+    }
+    try {
+      localStorage.setItem("admin_upi_id", upiIdDraft.trim());
+    } catch {
+      // ignore localStorage failures in private browsing contexts
+    }
+  }, [envUpiId, upiIdDraft]);
+
+  const upiId = upiIdDraft.trim();
+  const payeeName = import.meta.env.VITE_ADMIN_UPI_PAYEE_NAME || "DreamAquatics";
+  const upiLink = useMemo(() => {
+    if (!upiId || !hasValidUpiAmount) return "";
+    const query = new URLSearchParams({
+      pa: upiId,
+      pn: payeeName,
+      am: parsedUpiAmount.toFixed(2),
+      cu: "INR",
+      tn: `Order ${orderRef}`
+    });
+    return `upi://pay?${query.toString()}`;
+  }, [upiId, payeeName, parsedUpiAmount, hasValidUpiAmount, orderRef]);
+  const upiQrImageUrl = useMemo(() => {
+    if (!upiLink) return "";
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+      upiLink
+    )}`;
+  }, [upiLink]);
+  const plainQrPath = useMemo(() => upiQrImageUrl.replace(/^https?:\/\//, ""), [upiQrImageUrl]);
   const whatsappMessage = encodeURIComponent(
-    `Hi ${selectedAdminOrder.customer_name || ""}, this is DreamAquatics regarding your order ${selectedAdminOrder.order_number || selectedAdminOrder.id}.`
+    `Hi ${selectedAdminOrder.customer_name || ""},\nThis is DreamAquatics regarding your order *${orderRef}*.${
+      hasValidUpiAmount ? `\n*Please pay Rs. ${parsedUpiAmount.toFixed(2)}.*` : ""
+    }${upiId ? `\n\nUPI ID: ${upiId}` : ""}${upiLink ? `\n\nUPI payment link: ${upiLink}` : ""}${
+      plainQrPath ? `\n\nQR code link: ${plainQrPath}` : ""
+    }${
+      plainQrPath
+        ? `\n\n*⚠️ Security warning:* Do not share OTP or UPI PIN, do not accept collect requests, and pay only after verifying the UPI ID and payee name.\n*Please share the screenshot of the payment once paid.*`
+        : ""
+    }`
   );
   const whatsappLink = hasWhatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
@@ -169,16 +233,60 @@ const OrderReceiptModal = ({
               {selectedAdminOrder.customer_email && <p>{selectedAdminOrder.customer_email}</p>}
               <div className="flex flex-wrap items-center gap-2">
                 <p>{selectedAdminOrder.customer_mobile}</p>
-                {whatsappLink && (
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
-                  >
-                    WhatsApp customer
-                  </a>
-                )}
+              </div>
+              <div className="mt-3 w-full rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                  WhatsApp UPI Payment
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <label className="text-xs text-slate-600" htmlFor="upi-id">
+                    UPI ID
+                  </label>
+                  <input
+                    id="upi-id"
+                    type="text"
+                    value={upiIdDraft}
+                    onChange={(event) => setUpiIdDraft(event.target.value)}
+                    placeholder="example@oksbi"
+                    className="w-44 rounded-md border border-emerald-200 bg-white px-2 py-1 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <label className="text-xs text-slate-600" htmlFor="upi-amount">
+                    Amount (Rs.)
+                  </label>
+                  <input
+                    id="upi-amount"
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={upiAmountDraft}
+                    onChange={(event) => setUpiAmountDraft(event.target.value)}
+                    className="w-36 rounded-md border border-emerald-200 bg-white px-2 py-1 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                  />
+                  {!upiLink && (
+                    <span className="text-xs text-amber-700">
+                      Enter UPI ID to generate payment link.
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {whatsappLink ? (
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Open WhatsApp
+                    </a>
+                  ) : (
+                    <span className="text-xs text-amber-700">
+                      Customer mobile number is required to open WhatsApp.
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  WhatsApp opens with this amount and link prefilled. Admin must tap send manually.
+                </p>
               </div>
               <p>{selectedAdminOrder.address_line1}</p>
               {selectedAdminOrder.address_line2 && <p>{selectedAdminOrder.address_line2}</p>}
