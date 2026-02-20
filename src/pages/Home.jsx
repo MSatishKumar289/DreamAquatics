@@ -1457,7 +1457,7 @@ const Home = ({ profile }) => {
                                   disabled
                                   className="inline-flex min-w-[150px] items-center justify-center self-center whitespace-nowrap rounded-[5px] bg-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-sm sm:min-w-0 sm:w-fit sm:px-5 sm:text-sm"
                                 >
-                                  Out of Stock
+                                  Back Soon !
                                 </button>
                               ) : qty > 0 ? (
                                 <div className="w-[160px] min-w-[160px]">

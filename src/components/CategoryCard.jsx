@@ -9,7 +9,6 @@ import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 
 const ProductImageArea = ({
-  categoryName,
   isSubCategory,
   compact,
   whiteCard,
@@ -22,9 +21,6 @@ const ProductImageArea = ({
   onToggleFavorite,
   onImageClick,
 }) => {
-  const brightBlueTileCategories = new Set(["fishes", "tank", "accessories"]);
-  const useBrightBlueTileBg = isSubCategory && brightBlueTileCategories.has(String(categoryName || "").toLowerCase());
-
   return (
       <div
         className={`relative w-full overflow-hidden ${
@@ -81,11 +77,7 @@ const ProductImageArea = ({
             }}
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30">
-            <div
-              className={`w-full px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px] ${
-                useBrightBlueTileBg ? "bg-blue-600/80" : "bg-black/45"
-              }`}
-            >
+            <div className="w-full bg-gradient-to-t from-black/70 via-black/45 to-black/20 px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px]">
               <p
                 className="mx-auto line-clamp-2 max-w-[92%] text-center text-[0.68rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.8rem]"
                 style={{
@@ -253,7 +245,7 @@ const CartControls = ({
           disabled
           className="inline-flex h-9 w-full min-w-0 items-center justify-center rounded-[5px] bg-slate-200 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm"
         >
-          Out of stock
+          Back Soon !
         </button>
       ) : currentQty === 0 ? (
         <button
@@ -593,7 +585,6 @@ const CategoryCard = ({
       }}
     >
       <ProductImageArea
-        categoryName={categoryName}
         isSubCategory={isSubCategory}
         compact={compact}
         whiteCard={whiteCard}

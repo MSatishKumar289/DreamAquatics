@@ -193,13 +193,13 @@ const ProductDetailsPage = () => {
         </div>
 
         <section className="rounded-[8px] bg-transparent p-4 sm:p-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(280px,440px)_1fr] md:items-start lg:gap-8">
-            <div className="w-full max-w-[440px] self-start overflow-hidden rounded-[8px] bg-transparent md:mx-0">
-              <div className="w-full md:aspect-[4/5]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,440px)_1fr] lg:items-start lg:gap-8">
+            <div className="mx-auto w-full max-w-[440px] self-start overflow-hidden rounded-[8px] bg-transparent lg:mx-0">
+              <div className="w-full lg:aspect-[4/5]">
                 <img
                   src={imageSrc}
                   alt={title}
-                  className="w-full h-auto object-top md:h-full md:w-full md:object-contain"
+                  className="w-full h-auto object-top lg:h-full lg:w-full lg:object-contain"
                 />
               </div>
             </div>
@@ -246,7 +246,7 @@ const ProductDetailsPage = () => {
               )}
               {isSoldOut && (
                 <p className="mt-2 inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-700">
-                  Out of Stock
+                  Back Soon !
                 </p>
               )}
 

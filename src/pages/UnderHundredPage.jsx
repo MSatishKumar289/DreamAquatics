@@ -107,24 +107,26 @@ const UnderHundredPage = () => {
           </div>
 
           {!loading && items.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              {categoryFilterOptions.map((option) => {
-                const active = option.value === selectedCategory;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setSelectedCategory(option.value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.06em] transition sm:text-sm ${
-                      active
-                        ? "border-[#0A66D9] bg-[#0A66D9] text-white"
-                        : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
+            <div className="mb-4 rounded-2xl border border-sky-100/80 bg-gradient-to-r from-white/95 via-[#EEF6FF]/95 to-white/95 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+              <div className="flex flex-wrap items-center gap-2">
+                {categoryFilterOptions.map((option) => {
+                  const active = option.value === selectedCategory;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setSelectedCategory(option.value)}
+                      className={`inline-flex items-center justify-center rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition sm:text-xs ${
+                        active
+                          ? "border-[#0A66D9] bg-gradient-to-r from-[#0A66D9] to-[#1D7BF0] text-white shadow-[0_8px_16px_rgba(10,102,217,0.35)]"
+                          : "border-slate-300/90 bg-white/90 text-slate-700 hover:border-slate-400 hover:bg-white"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
