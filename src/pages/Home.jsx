@@ -1450,7 +1450,7 @@ const Home = ({ profile }) => {
                 <div
                   ref={bestSellerTrackRef}
                   onScroll={handleBestSellerTrackScroll}
-                  className="no-scrollbar mx-10 flex snap-x snap-mandatory items-stretch gap-0 overflow-x-auto overscroll-x-contain sm:mx-12 sm:gap-1.5 lg:mx-0 lg:overflow-x-hidden"
+                  className="no-scrollbar mx-0 flex snap-x snap-mandatory items-stretch gap-0 overflow-x-auto overscroll-x-contain px-[10%] sm:mx-12 sm:gap-1.5 sm:px-0 lg:mx-0 lg:overflow-x-hidden"
                 >
                   {bestSellerPicks.map((product, index) => {
                     const isActive = index === bestSellerIndex;
@@ -1495,7 +1495,7 @@ const Home = ({ profile }) => {
                             openProductDetails();
                           }
                         }}
-                        className={`da-home-item-card relative h-[314px] snap-start shrink-0 basis-[80%] overflow-hidden rounded-[5px] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:h-[386px] lg:basis-[19%] ${
+                        className={`da-home-item-card relative h-[314px] snap-center shrink-0 basis-[80%] overflow-hidden rounded-[5px] transition-all duration-300 sm:snap-start sm:basis-[44%] md:basis-[31%] lg:h-[386px] lg:basis-[19%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
