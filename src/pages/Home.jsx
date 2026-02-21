@@ -22,6 +22,7 @@ import arrowIcon from '../assets/Icons/arrow.png';
 import bestSellerIcon from '../assets/Icons/BestSeller.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
 import { fetchBestsellingEntries } from '../lib/bestsellingApi';
+import { fetchEssentialEntries } from '../lib/essentialsApi';
 import { getProductPricing } from '../lib/pricing';
 import fishCategoryVisual from '../assets/Images/Home/fish.png';
 import accessoriesCategoryVisual from '../assets/Images/Home/Accessories.png';
@@ -56,6 +57,7 @@ const Home = ({ profile }) => {
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
   const [bestsellingEntries, setBestsellingEntries] = useState([]);
+  const [essentialEntries, setEssentialEntries] = useState([]);
   const [showFloatingWhatsApp, setShowFloatingWhatsApp] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
@@ -258,6 +260,25 @@ const Home = ({ profile }) => {
     return () => {
       active = false;
       window.clearTimeout(loadingGuardTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadEssentialEntries = async () => {
+      const { data, error } = await fetchEssentialEntries();
+      if (!active) return;
+      if (error) {
+        console.error("Failed to load essential entries", error);
+        setEssentialEntries([]);
+        return;
+      }
+      setEssentialEntries(data || []);
+    };
+
+    loadEssentialEntries();
+    return () => {
+      active = false;
     };
   }, []);
 
@@ -668,16 +689,14 @@ const Home = ({ profile }) => {
       .filter((pick) => pick.items.length > 0);
   }, [allProducts]);
 
-  const medicineAndFilterPicks = useMemo(() => {
-    const accessories = allProducts.filter(
-      (product) => product?.subcategory?.category?.slug === 'accessories'
-    );
-    const filterItems = accessories.filter((product) => {
-      const text = `${product?.name || ''} ${product?.subcategory?.name || ''}`.toLowerCase();
-      return text.includes('filter');
-    });
-    return (filterItems.length ? filterItems : accessories).slice(0, 4);
-  }, [allProducts]);
+  const essentialPicks = useMemo(() => {
+    if (!essentialEntries.length || !allProducts.length) return [];
+    const productsById = new Map(allProducts.map((product) => [product.id, product]));
+    return essentialEntries
+      .map((entry) => productsById.get(entry.product_id))
+      .filter(Boolean)
+      .slice(0, 20);
+  }, [essentialEntries, allProducts]);
 
   const smartSections = useMemo(() => {
     const now = Date.now();
@@ -799,7 +818,7 @@ const Home = ({ profile }) => {
   const TopicTitleCard = ({ title, subtitle, className = "", onViewAll }) => {
     return (
       <div className={`w-full ${className}`}>
-        <div className="relative w-full overflow-hidden bg-white/40 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
+        <div className="relative w-full overflow-hidden bg-white/80 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
           <div className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-[#F2C94C]" />
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -1410,12 +1429,11 @@ const Home = ({ profile }) => {
                       nonDiscountPrice: originalPrice,
                       savingsAmount: savings,
                     } = getProductPricing(product);
-                    const productBadgeTextRaw =
-                      product?.badge || product?.label || product?.tag || product?.badgeText || "";
+                    const productBadgeTextRaw = product?.badge_label || "";
                     const productBadgeText =
                       typeof productBadgeTextRaw === "string" && productBadgeTextRaw.trim()
-                        ? productBadgeTextRaw.trim()
-                        : "Top Pick";
+                        ? productBadgeTextRaw.trim().toUpperCase()
+                        : "";
                     const stockCount = Number.isFinite(Number(product?.stock_count))
                       ? Number(product?.stock_count)
                       : null;
@@ -1495,14 +1513,14 @@ const Home = ({ profile }) => {
                               {product?.name || "Top Pick"}
                             </h2>
                             <div className="mt-2 flex justify-start">
-                              <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+                              {productBadgeText && <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
                                 <span
                                   className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
                                   style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
                                 >
                                   {productBadgeText}
                                 </span>
-                              </span>
+                              </span>}
                             </div>
                             <div className={`relative ${productBadgeText ? "mt-[7px]" : "mt-2"}`}>
                               <div className="flex items-end justify-start gap-3 text-left">
@@ -1738,7 +1756,7 @@ const Home = ({ profile }) => {
             </section>
           ))}
 
-          {medicineAndFilterPicks.length > 0 && (
+          {essentialPicks.length > 0 && (
             <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
               <div className="home-progress-line mx-2 mb-3 sm:mx-auto lg:mb-[30px]" />
               <TopicTitleCard
@@ -1749,10 +1767,10 @@ const Home = ({ profile }) => {
                 tone="essentials"
               />
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {medicineAndFilterPicks.map((product) => (
-                  <div key={`med-filter-${product.id}`} className="h-full">
+                {essentialPicks.map((product) => (
+                  <div key={`essential-${product.id}`} className="h-full">
                     <CategoryCard
-                      categoryName="accessories"
+                      categoryName={categoryBySlug[product?.subcategory?.category?.slug] || "fishes"}
                       product={product}
                       relatedProducts={getRelatedProductsFor(product)}
                       className="da-home-item-card"

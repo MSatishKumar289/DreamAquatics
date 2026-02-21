@@ -40,6 +40,10 @@ import {
   fetchBestsellingEntriesWithProducts,
   updateBestsellerForProduct
 } from "../lib/bestsellingApi.js";
+import {
+  fetchEssentialEntries,
+  updateEssentialForProduct
+} from "../lib/essentialsApi.js";
 
 
 const MAX_IMAGE_BYTES = 300 * 1024;
@@ -50,11 +54,13 @@ const blankItemDraft = {
   name: "",
   price: "",
   nonDiscountPrice: "",
+  badgeLabel: "",
   description: "",
   availability: "in-stock",
   imageData: "",
   imageName: "",
-  isBestSeller: false
+  isBestSeller: false,
+  isEssential: false
 };
 
 const blankSubcategoryDraft = {
@@ -175,6 +181,7 @@ const AdminAddProduct = ({
   ========================= */
   const [itemsBySubcategory, setItemsBySubcategory] = useState({});
   const [bestsellingEntries, setBestsellingEntries] = useState([]);
+  const [essentialEntries, setEssentialEntries] = useState([]);
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [itemDraft, setItemDraft] = useState(blankItemDraft);
@@ -617,6 +624,25 @@ const AdminAddProduct = ({
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const loadEssentials = async () => {
+      const { data, error } = await fetchEssentialEntries();
+      if (!active) return;
+      if (error) {
+        console.error("Failed to load essential entries", error);
+        setEssentialEntries([]);
+      } else {
+        setEssentialEntries(data || []);
+      }
+    };
+
+    loadEssentials();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const bestsellingPreviewByCategory = useMemo(() => {
     const preview = {
       fishes: [],
@@ -646,6 +672,14 @@ const AdminAddProduct = ({
     });
     return ids;
   }, [bestsellingEntries]);
+
+  const essentialIdSet = useMemo(() => {
+    const ids = new Set();
+    (essentialEntries || []).forEach((entry) => {
+      if (entry?.product_id) ids.add(entry.product_id);
+    });
+    return ids;
+  }, [essentialEntries]);
 
   useEffect(() => {
     if (adminView !== "orders") return;
@@ -696,16 +730,21 @@ const AdminAddProduct = ({
     const isBestSeller = bestsellingEntries.some(
       (entry) => entry.product_id === item.id
     );
+    const isEssential = essentialEntries.some(
+      (entry) => entry.product_id === item.id
+    );
 
     setItemDraft({
       name: item.name || "",
       price: item.price || "",
       nonDiscountPrice: item.non_discount_price || "",
+      badgeLabel: item.badge_label || "",
       description: item.description || "",
       availability,
       imageData: item.imageData || "",
       imageName: item.imageName || "",
-      isBestSeller
+      isBestSeller,
+      isEssential
     });
 
     setItemError("");
@@ -731,6 +770,19 @@ const AdminAddProduct = ({
       return;
     }
 
+    const normalizedBadgeLabel = String(itemDraft.badgeLabel ?? "").trim();
+    const badgeWords = normalizedBadgeLabel ? normalizedBadgeLabel.split(/\s+/).filter(Boolean) : [];
+    if (badgeWords.length > 2) {
+      setItemError("Badge Label can have max 2 words.");
+      setIsSavingItem(false);
+      return;
+    }
+    if (normalizedBadgeLabel.length > 24) {
+      setItemError("Badge Label can be up to 24 characters.");
+      setIsSavingItem(false);
+      return;
+    }
+
     if (!selectedSubcategoryId) {
       setItemError("Subcategory not selected.");
       setIsSavingItem(false);
@@ -743,6 +795,7 @@ const AdminAddProduct = ({
     const stock_count = itemDraft.availability === "out-of-stock" ? 0 : 1;
     const normalizedNonDiscountPrice = String(itemDraft.nonDiscountPrice ?? "").trim();
     const non_discount_price = normalizedNonDiscountPrice ? normalizedNonDiscountPrice : null;
+    const badge_label = normalizedBadgeLabel ? normalizedBadgeLabel : null;
 
     let savedProductId = editingItemId || null;
 
@@ -751,6 +804,7 @@ const AdminAddProduct = ({
         name: itemDraft.name.trim(),
         price: itemDraft.price,
         non_discount_price,
+        badge_label,
         description: itemDraft.description,
         stock_count
       });
@@ -780,6 +834,7 @@ const AdminAddProduct = ({
         name: itemDraft.name.trim(),
         price: itemDraft.price,
         non_discount_price,
+        badge_label,
         description: itemDraft.description,
         subcategory_id: selectedSubcategoryId
       });
@@ -823,6 +878,19 @@ const AdminAddProduct = ({
         } else {
           setBestsellingEntries(updatedEntries || []);
         }
+      }
+
+      const { data: updatedEssentialEntries, error: essentialErr } =
+        await updateEssentialForProduct({
+          productId: savedProductId,
+          enabled: !!itemDraft.isEssential
+        });
+
+      if (essentialErr) {
+        console.error("Failed to update essentials list", essentialErr);
+        showToast("Essentials update failed", "error");
+      } else {
+        setEssentialEntries(updatedEssentialEntries || []);
       }
     }
 
@@ -1212,6 +1280,7 @@ const AdminAddProduct = ({
                 setItemSearch={setItemSearch}
                 filteredItems={filteredItems}
                 bestsellingIdSet={bestsellingIdSet}
+                essentialIdSet={essentialIdSet}
                 handleOpenEditItem={handleOpenEditItem}
                 requestDeleteItem={requestDeleteItem}
                 editIcon={edit_ic}

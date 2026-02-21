@@ -388,14 +388,11 @@ const CategoryCard = ({
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
     : product?.product_images?.[0]?.url || product?.image;
-  const productBadgeTextRaw =
-    product?.badge || product?.label || product?.tag || product?.badgeText || "";
+  const productBadgeTextRaw = product?.badge_label || "";
   const productBadgeTextValue = typeof productBadgeTextRaw === "string"
     ? productBadgeTextRaw.trim()
     : "";
-  const productBadgeText = !isSubCategory
-    ? productBadgeTextValue || "Top Pick"
-    : productBadgeTextValue;
+  const productBadgeText = productBadgeTextValue.toUpperCase();
 
   const availabilityText = String(
     product?.availability || product?.status || ""

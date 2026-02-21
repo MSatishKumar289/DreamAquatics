@@ -49,7 +49,6 @@ function AppContent() {
   const adminPollInFlightRef = useRef(false);
   const userPollTimerRef = useRef(null);
   const userPollInFlightRef = useRef(false);
-  const signOutRecoveryTimerRef = useRef(null);
   const userOrderStatusMapRef = useRef({});
   const userOrdersSeededRef = useRef(false);
   const location = useLocation();
@@ -63,6 +62,33 @@ function AppContent() {
   const { clearCart, lastAddedAt, lastAddedItem } = useCart();
   const { clearFavorites } = useFavorites();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
+  const clearCartRef = useRef(clearCart);
+  const clearFavoritesRef = useRef(clearFavorites);
+
+  useEffect(() => {
+    clearCartRef.current = clearCart;
+  }, [clearCart]);
+
+  useEffect(() => {
+    clearFavoritesRef.current = clearFavorites;
+  }, [clearFavorites]);
+
+  const resetSignedOutState = useCallback(() => {
+    setSessionUser(null);
+    setProfile(null);
+    setAuthLoading(false);
+    localStorage.removeItem('da_profile_hint_seen');
+    setUserOrders([]);
+    setUserOrdersLastRefreshedAt(null);
+    setUserOrderNotifications([]);
+    setIsUserOrdersOpen(false);
+    userOrderStatusMapRef.current = {};
+    userOrdersSeededRef.current = false;
+    clearUserPollTimer();
+    clearCartRef.current?.();
+    clearCartStorage();
+    clearFavoritesRef.current?.();
+  }, []);
 
   useEffect(() => {
     if (!pathname.startsWith('/admin')) return;
@@ -89,60 +115,26 @@ function AppContent() {
 
     const { data: { subscription } } =
       supabase.auth.onAuthStateChange((event, session) => {
-        console.log('AUTH EVENT:', event);
-
         if (event === 'SIGNED_OUT') {
-          if (signOutRecoveryTimerRef.current) {
-            clearTimeout(signOutRecoveryTimerRef.current);
-          }
-
-          signOutRecoveryTimerRef.current = setTimeout(async () => {
-            if (!active) return;
-            const { data, error } = await supabase.auth.getSession();
-            if (!active) return;
-
-            if (!error && data?.session?.user) {
-              setSessionUser(data.session.user);
-              setAuthLoading(false);
-              return;
-            }
-
-            setSessionUser(null);
-            setProfile(null);
-            setAuthLoading(false);
-            localStorage.removeItem('da_profile_hint_seen');
-            setUserOrders([]);
-            setUserOrdersLastRefreshedAt(null);
-            setUserOrderNotifications([]);
-            setIsUserOrdersOpen(false);
-            userOrderStatusMapRef.current = {};
-            userOrdersSeededRef.current = false;
-            clearUserPollTimer();
-            clearCart();
-            clearCartStorage();
-            clearFavorites();
-          }, 450);
-
+          resetSignedOutState();
           return;
         }
 
         if (session?.user) {
-          if (signOutRecoveryTimerRef.current) {
-            clearTimeout(signOutRecoveryTimerRef.current);
-          }
           setSessionUser(session.user);
           setAuthLoading(false);
+          return;
         }
+
+        // Treat null session from any auth event as signed out.
+        resetSignedOutState();
       });
 
     return () => {
       active = false;
-      if (signOutRecoveryTimerRef.current) {
-        clearTimeout(signOutRecoveryTimerRef.current);
-      }
       subscription.unsubscribe();
     };
-  }, [clearCart, clearFavorites]);
+  }, [resetSignedOutState]);
 
   /* ================= PROFILE FETCH + SAFE CREATION ================= */
 
@@ -451,10 +443,10 @@ function AppContent() {
   /* ================= LOGOUT ================= */
 
   const handleLogout = useCallback(async () => {
-    console.log('LOGOUT CLICKED');
     const res = await supabase.auth.signOut();
-    console.log('SIGNOUT RESULT:', res);
-  }, []);
+    if (res?.error) return;
+    resetSignedOutState();
+  }, [resetSignedOutState]);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
