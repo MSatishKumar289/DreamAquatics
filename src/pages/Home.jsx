@@ -1766,11 +1766,14 @@ const Home = ({ profile }) => {
                 />
               </div>
               <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
-                {section.items.map((product) => {
+                {section.items.map((product, index) => {
                   const categorySlug = product?.subcategory?.category?.slug;
                   const categoryKey = categoryBySlug[categorySlug] || "fishes";
                   return (
-                    <div key={`${section.key}-${product.id}`} className="h-full">
+                    <div
+                      key={`${section.key}-${product.id}`}
+                      className={`h-full ${section.key === "under-100" && index >= 4 ? "hidden lg:block" : ""}`}
+                    >
                       <CategoryCard
                         categoryName={categoryKey}
                         product={product}
@@ -1798,8 +1801,8 @@ const Home = ({ profile }) => {
                 onViewAll={() => navigate("/essentials")}
               />
               <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
-                {essentialPicks.map((product) => (
-                  <div key={`essential-${product.id}`} className="h-full">
+                {essentialPicks.map((product, index) => (
+                  <div key={`essential-${product.id}`} className={`h-full ${index >= 4 ? "hidden lg:block" : ""}`}>
                     <CategoryCard
                       categoryName={categoryBySlug[product?.subcategory?.category?.slug] || "fishes"}
                       product={product}
