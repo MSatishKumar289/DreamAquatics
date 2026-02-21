@@ -7,6 +7,7 @@ import incMinusIcon from "../assets/Icons/iminus.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
+import { getProductPricing } from "../lib/pricing";
 
 const ProductImageArea = ({
   isSubCategory,
@@ -154,6 +155,7 @@ const ProductInfo = ({
   productBadgeText,
   price,
   originalPrice,
+  savingsAmount,
 }) => {
   const currentPrice = Number(price ?? 0);
   const formattedCurrentPrice = currentPrice.toLocaleString("en-IN", {
@@ -215,6 +217,12 @@ const ProductInfo = ({
               </p>
             </div>
           </div>
+          {savingsAmount > 0 && (
+            <p className="mt-0.5 text-[10px] font-semibold text-emerald-600">
+              You Save {"\u20B9"}
+              {Math.round(savingsAmount).toLocaleString("en-IN")}
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -385,14 +393,8 @@ const CategoryCard = ({
   const availabilityText = String(
     product?.availability || product?.status || ""
   ).toLowerCase();
-  const currentPrice = Number(product?.price ?? 0);
-  const derivedOriginalPrice = Number(
-    product?.original_price ?? product?.mrp ?? Math.round(currentPrice * 1.15)
-  );
-  const priceForDisplay = Number.isFinite(derivedOriginalPrice) && derivedOriginalPrice > 0
-    ? derivedOriginalPrice
-    : Math.round(currentPrice * 1.15);
-  const savingsBadgeAmount = Math.max(0, Math.round(priceForDisplay - currentPrice));
+  const { nonDiscountPrice, savingsAmount } = getProductPricing(product);
+  const savingsBadgeAmount = Math.max(0, Math.round(savingsAmount));
   const parsedStockCount = Number.isFinite(Number(product?.stock_count))
     ? Number(product?.stock_count)
     : null;
@@ -618,7 +620,8 @@ const CategoryCard = ({
             productTitle={productTitle}
             productBadgeText={productBadgeText}
             price={product?.price}
-            originalPrice={priceForDisplay}
+            originalPrice={nonDiscountPrice}
+            savingsAmount={savingsAmount}
           />
         )}
 

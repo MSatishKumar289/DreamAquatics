@@ -633,8 +633,8 @@ const CategoryListingPage = () => {
                   </button>
                 </div>
               )}
-              <div className="mt-2 flex justify-center">
-                <p className="rounded-md bg-white px-3 py-1 text-center text-xs text-sky-700/90 shadow-sm">
+              <div className="mt-2 flex">
+                <p className="rounded-md py-1 text-xs text-sky-700/90">
                   * Images are for reference. Actual product appearance may vary. *
                 </p>
               </div>

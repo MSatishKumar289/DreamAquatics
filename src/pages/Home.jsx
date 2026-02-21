@@ -21,6 +21,8 @@ import mapIcon from '../assets/Icons/map.png';
 import arrowIcon from '../assets/Icons/arrow.png';
 import bestSellerIcon from '../assets/Icons/BestSeller.png';
 import { fetchHomeMedia } from '../lib/homeMediaApi';
+import { fetchBestsellingEntries } from '../lib/bestsellingApi';
+import { getProductPricing } from '../lib/pricing';
 import fishCategoryVisual from '../assets/Images/Home/fish.png';
 import accessoriesCategoryVisual from '../assets/Images/Home/Accessories.png';
 import plantCategoryVisual from '../assets/Images/Home/plant.png';
@@ -53,6 +55,7 @@ const Home = ({ profile }) => {
   const [bestSellerArrowHintSide, setBestSellerArrowHintSide] = useState(null);
   const [pendingBestFishRemove, setPendingBestFishRemove] = useState(null);
   const [bestSellerIndex, setBestSellerIndex] = useState(0);
+  const [bestsellingEntries, setBestsellingEntries] = useState([]);
   const [showFloatingWhatsApp, setShowFloatingWhatsApp] = useState(false);
   const [homeMedia, setHomeMedia] = useState({
     videoUrl: '',
@@ -259,6 +262,25 @@ const Home = ({ profile }) => {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const loadBestsellingEntries = async () => {
+      const { data, error } = await fetchBestsellingEntries();
+      if (!active) return;
+      if (error) {
+        console.error("Failed to load bestselling entries", error);
+        setBestsellingEntries([]);
+        return;
+      }
+      setBestsellingEntries(data || []);
+    };
+
+    loadBestsellingEntries();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const handleHomeMediaUpdated = (event) => {
       const detail = event.detail || {};
       setHomeMedia({
@@ -425,23 +447,76 @@ const Home = ({ profile }) => {
   }, [allProducts, categories, CATEGORY_SLUG_MAP]);
 
   const bestSellerPicks = useMemo(() => {
+    if (!allProducts.length) return [];
+
     const sorted = [...allProducts].sort(
       (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
     );
-    const fishes = sorted
-      .filter((product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.fishes)
-      .slice(0, 4);
-    const accessories = sorted
-      .filter((product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.accessories)
-      .slice(0, 4);
 
-    const primary = [...fishes, ...accessories];
-    const usedIds = new Set(primary.map((product) => product?.id));
-    if (primary.length >= 8) return primary.slice(0, 8);
+    if (!bestsellingEntries.length) {
+      const fishes = sorted
+        .filter((product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.fishes)
+        .slice(0, 4);
+      const accessories = sorted
+        .filter((product) => product?.subcategory?.category?.slug === CATEGORY_SLUG_MAP.accessories)
+        .slice(0, 4);
 
-    const fallback = sorted.filter((product) => !usedIds.has(product?.id));
-    return [...primary, ...fallback].slice(0, 8);
-  }, [allProducts, CATEGORY_SLUG_MAP]);
+      const primary = [...fishes, ...accessories];
+      const usedIds = new Set(primary.map((product) => product?.id));
+      if (primary.length >= 8) return primary.slice(0, 8);
+
+      const fallback = sorted.filter((product) => !usedIds.has(product?.id));
+      return [...primary, ...fallback].slice(0, 8);
+    }
+
+    const productsById = new Map(allProducts.map((product) => [product.id, product]));
+    const entriesByCategory = categories.reduce((acc, categoryKey) => {
+      acc[categoryKey] = [];
+      return acc;
+    }, {});
+
+    bestsellingEntries.forEach((entry) => {
+      if (!entriesByCategory[entry.category_key]) return;
+      entriesByCategory[entry.category_key].push(entry);
+    });
+
+    const picks = [];
+    const usedIds = new Set();
+
+    categories.forEach((categoryKey) => {
+      const categorySlug = CATEGORY_SLUG_MAP[categoryKey];
+      const categoryEntries = (entriesByCategory[categoryKey] || []).sort(
+        (a, b) => new Date(b?.added_at || 0) - new Date(a?.added_at || 0)
+      );
+      const categoryPicks = [];
+      categoryEntries
+        .map((entry) => productsById.get(entry.product_id))
+        .filter(Boolean)
+        .forEach((product) => {
+          if (usedIds.has(product.id)) return;
+          if (categoryPicks.length >= 2) return;
+          categoryPicks.push(product);
+          usedIds.add(product.id);
+        });
+
+      if (categoryPicks.length < 2) {
+        const fallback = sorted.filter(
+          (product) =>
+            product?.subcategory?.category?.slug === categorySlug &&
+            !usedIds.has(product.id)
+        );
+
+        fallback.slice(0, 2 - categoryPicks.length).forEach((product) => {
+          categoryPicks.push(product);
+          usedIds.add(product.id);
+        });
+      }
+
+      picks.push(...categoryPicks);
+    });
+
+    return picks;
+  }, [allProducts, bestsellingEntries, categories, CATEGORY_SLUG_MAP]);
 
   useEffect(() => {
     if (!bestSellerPicks.length) {
@@ -454,10 +529,6 @@ const Home = ({ profile }) => {
   }, [bestSellerPicks, bestSellerIndex]);
 
   const activeBestSeller = bestSellerPicks[bestSellerIndex] || null;
-  const bestFishCurrentPrice = Number(activeBestSeller?.price) || 0;
-  const bestFishOriginalPrice =
-    Number(activeBestSeller?.original_price ?? activeBestSeller?.mrp ?? activeBestSeller?.price) || 0;
-  const bestFishSavings = Math.max(0, bestFishOriginalPrice - bestFishCurrentPrice);
   const bestFishStockCount = Number.isFinite(Number(activeBestSeller?.stock_count))
     ? Number(activeBestSeller?.stock_count)
     : null;
@@ -722,12 +793,12 @@ const Home = ({ profile }) => {
   const TopicTitleCard = ({ title, subtitle, className = "", onViewAll }) => {
     return (
       <div className={`w-full ${className}`}>
-        <div className="relative w-full overflow-hidden bg-gradient-to-r from-[#4EA3E6]/72 via-[#86C0EC]/48 to-[#C2E1F7]/30 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
+        <div className="relative w-full overflow-hidden bg-white/40 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
           <div className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-[#F2C94C]" />
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <h2
-                className="text-[1.18rem] font-semibold uppercase leading-tight text-[#1B2A40] sm:text-[1.34rem]"
+                className="text-[1.18rem] font-semibold uppercase leading-tight text-[#000000] sm:text-[1.34rem]"
                 style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
               >
                 {title}
@@ -1131,7 +1202,7 @@ const Home = ({ profile }) => {
                 return (
                   <article
                     key={card.id}
-                    className="group relative h-[162px] cursor-pointer overflow-hidden rounded-[6px] border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-auto lg:aspect-[3/4] lg:rounded-[6px]"
+                    className="group relative h-[162px] cursor-pointer overflow-hidden rounded-[6px] border border-white/35 shadow-[0_10px_24px_rgba(15,23,42,0.16)] sm:h-[130px] lg:h-[300px] lg:w-full lg:aspect-[3/4] lg:rounded-[6px]"
                     role="button"
                     tabIndex={0}
                     aria-label={`Open ${card.title}`}
@@ -1309,10 +1380,10 @@ const Home = ({ profile }) => {
 
           {activeBestSeller && (
             <section data-home-reveal className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-              <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-auto lg:mb-[30px]" />
               <TopicTitleCard
                 className="mb-2"
-                title="Best Selling and Trending"
+                title="Best Sellers & Trending"
                 subtitle="Most Loved This Week"
                 variant="sale-ribbon"
               />
@@ -1325,14 +1396,11 @@ const Home = ({ profile }) => {
                   {bestSellerPicks.map((product, index) => {
                     const isActive = index === bestSellerIndex;
                     const favoriteSelected = isFavorite(product?.id);
-                    const currentPrice = Number(product?.price) || 0;
-                    const originalPriceRaw =
-                      Number(product?.original_price ?? product?.mrp ?? product?.price) || 0;
-                    const originalPrice =
-                      originalPriceRaw > currentPrice
-                        ? originalPriceRaw
-                        : Math.round(currentPrice * 1.15);
-                    const savings = Math.max(0, originalPrice - currentPrice);
+                    const {
+                      currentPrice,
+                      nonDiscountPrice: originalPrice,
+                      savingsAmount: savings,
+                    } = getProductPricing(product);
                     const productBadgeTextRaw =
                       product?.badge || product?.label || product?.tag || product?.badgeText || "";
                     const productBadgeText =
@@ -1413,7 +1481,7 @@ const Home = ({ profile }) => {
                               className="h-full w-full object-cover bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
                             />
                           </div>
-                          <div className="flex flex-1 flex-col px-3 py-2 text-left sm:px-4">
+                          <div className="flex flex-1 flex-col px-3 py-4 text-left sm:px-4">
                             <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
                             </h2>
@@ -1525,7 +1593,7 @@ const Home = ({ profile }) => {
                           setBestSellerArrowHintSide(null);
                           goToBestSeller(bestSellerIndex - 1);
                         }}
-                        className="absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white shadow sm:h-9 sm:w-9 md:left-[5%] lg:-left-12 lg:h-11 lg:w-11 xl:-left-14"
+                        className="absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow sm:h-9 sm:w-9 md:left-[5%] lg:left-2 lg:h-11 lg:w-11 xl:left-3 before:absolute before:inset-[-6px] before:rounded-full before:bg-slate-900/25 before:blur-[2px] before:content-[''] before:-z-10"
                         aria-label="Previous best seller"
                       >
                         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1548,7 +1616,7 @@ const Home = ({ profile }) => {
                           setBestSellerArrowHintSide(null);
                           goToBestSeller(bestSellerIndex + 1);
                         }}
-                        className="absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white shadow sm:h-9 sm:w-9 md:right-[5%] lg:-right-12 lg:h-11 lg:w-11 xl:-right-14"
+                        className="absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow sm:h-9 sm:w-9 md:right-[5%] lg:right-2 lg:h-11 lg:w-11 xl:right-3 before:absolute before:inset-[-6px] before:rounded-full before:bg-slate-900/25 before:blur-[2px] before:content-[''] before:-z-10"
                         aria-label="Next best seller"
                       >
                         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1592,7 +1660,7 @@ const Home = ({ profile }) => {
           )}
 
           <section data-home-reveal ref={newArrivalsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-            <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
+            <div className="home-progress-line mx-2 mb-3 sm:mx-auto lg:mb-[30px]" />
             <TopicTitleCard
               className="mb-2"
               title="New Arrivals"
@@ -1625,7 +1693,7 @@ const Home = ({ profile }) => {
               ref={section.key === "trending" ? trendingSectionRef : section.key === "under-100" ? underHundredSectionRef : null}
               className="container mx-auto mt-5 px-4 pt-3 sm:px-6"
             >
-              <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-auto lg:mb-[30px]" />
               <div className="mb-2">
                 <TopicTitleCard
                   title={section.title}
@@ -1660,7 +1728,7 @@ const Home = ({ profile }) => {
 
           {medicineAndFilterPicks.length > 0 && (
             <section data-home-reveal ref={essentialsSectionRef} className="container mx-auto mt-5 px-4 pt-3 sm:px-6">
-              <div className="home-progress-line mx-2 mb-3 sm:mx-auto" />
+              <div className="home-progress-line mx-2 mb-3 sm:mx-auto lg:mb-[30px]" />
               <TopicTitleCard
                 className="mb-2"
                 title="Aquarium Essentials"
