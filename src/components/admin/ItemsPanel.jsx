@@ -6,6 +6,7 @@ const ItemsPanel = ({
   setItemSearch,
   filteredItems,
   bestsellingIdSet,
+  essentialIdSet,
   handleOpenEditItem,
   requestDeleteItem,
   editIcon,
@@ -62,6 +63,7 @@ const ItemsPanel = ({
               : availabilityText === "out-of-stock";
             const statusLabel = isOut ? "Out of stock" : "In stock";
             const isBestSeller = bestsellingIdSet?.has?.(item.id);
+            const isEssential = essentialIdSet?.has?.(item.id);
             return (
               <div
                 key={item.id}
@@ -86,6 +88,11 @@ const ItemsPanel = ({
                       {isBestSeller && (
                         <span className="inline-flex items-center rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">
                           BestSeller
+                        </span>
+                      )}
+                      {isEssential && (
+                        <span className="inline-flex items-center rounded-full border border-blue-300/70 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700">
+                          Essential
                         </span>
                       )}
                     </div>
