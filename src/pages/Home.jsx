@@ -1512,8 +1512,8 @@ const Home = ({ profile }) => {
                             <h2 className="mt-1 text-[16px] font-semibold leading-tight text-[#102A43] sm:text-[20px]">
                               {product?.name || "Top Pick"}
                             </h2>
-                            <div className="mt-2 flex justify-start">
-                              {productBadgeText && <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+                            <div className="mt-2 flex justify-center">
+                              <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
                                 <span
                                   className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
                                   style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
@@ -1523,7 +1523,7 @@ const Home = ({ profile }) => {
                               </span>}
                             </div>
                             <div className={`relative ${productBadgeText ? "mt-[7px]" : "mt-2"}`}>
-                              <div className="flex items-end justify-start gap-3 text-left">
+                              <div className="flex items-end justify-center gap-3 text-center">
                                 <p className="text-sm font-medium text-slate-400 line-through">
                                   {"\u20B9"}
                                   {originalPrice.toLocaleString("en-IN")}
@@ -1533,12 +1533,6 @@ const Home = ({ profile }) => {
                                   {currentPrice.toLocaleString("en-IN")}
                                 </p>
                               </div>
-                              <img
-                                src={bestSellerIcon}
-                                alt="Best seller"
-                                title="Best Seller"
-                                className="pointer-events-none absolute -right-[10px] top-[calc(50%-10px)] h-[74px] w-[74px] -translate-y-1/2 rotate-[8deg] drop-shadow-[0_8px_12px_rgba(0,0,0,0.28)] sm:h-[86px] sm:w-[86px]"
-                              />
                             </div>
                             <div className="relative mt-auto flex flex-col items-center gap-1.5 pt-2">
                               {bestFishAddedHintIndex === index && (

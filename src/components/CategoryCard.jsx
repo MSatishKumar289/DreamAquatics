@@ -171,13 +171,13 @@ const ProductInfo = ({
   });
   return (
     <div
-      className={`text-left ${
+      className={`${isSubCategory ? "text-left" : "text-center"} ${
         isSubCategory ? "min-h-[32px]" : "min-h-[44px]"
       } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
       <div
         className={`${
-          isSubCategory ? "" : "flex min-h-[28px] items-center justify-start"
+          isSubCategory ? "" : "flex min-h-[28px] items-center justify-center"
         }`}
       >
         <h3
@@ -193,7 +193,7 @@ const ProductInfo = ({
         </h3>
       </div>
       {!isSubCategory && productBadgeText && (
-        <div className="mt-1 flex justify-start">
+        <div className="mt-1 flex justify-center">
           <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
             <span
               className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
@@ -205,9 +205,9 @@ const ProductInfo = ({
         </div>
       )}
       {!isSubCategory && (
-        <div className={`${productBadgeText ? "mt-[7px]" : "mt-0.5"} flex min-h-[24px] w-full flex-col items-start justify-center`}>
-          <div className="flex h-[20px] w-full items-center justify-start">
-            <div className="inline-flex items-center justify-start gap-2 sm:gap-3">
+        <div className={`${productBadgeText ? "mt-[7px]" : "mt-0.5"} flex min-h-[24px] w-full flex-col items-center justify-center`}>
+          <div className="flex h-[20px] w-full items-center justify-center">
+            <div className="inline-flex items-center justify-center gap-2 sm:gap-3">
               {currentPrice > 0 ? (
                 <p className="text-[12px] font-medium text-slate-400 line-through">
                   {"\u20B9"}
