@@ -9,6 +9,7 @@ import arrowIcon from "../assets/Icons/arrow.png";
 import { renderFormattedDescription } from "../utils/formatDescription";
 import { useEffect, useState } from "react";
 import { fetchProductById } from "../lib/catalogApi";
+import { getProductPricing } from "../lib/pricing";
 
 const ProductDetailsPage = () => {
   const location = useLocation();
@@ -98,9 +99,8 @@ const ProductDetailsPage = () => {
     return getImageWithFallback(imageFromDb, title);
   }, [imageFromDb, title]);
 
-  const currentPrice = Number(product?.price || 0);
-  const originalPrice = Math.round(currentPrice * 1.15);
-  const savings = Math.max(0, originalPrice - currentPrice);
+  const { currentPrice, nonDiscountPrice: originalPrice, savingsAmount: savings } =
+    getProductPricing(product);
   const currentQty = cartItems?.find((item) => item.id === product?.id)?.qty || 0;
   const favoriteSelected = isFavorite(product?.id);
   const availabilityText = String(product?.availability || product?.status || "").toLowerCase();

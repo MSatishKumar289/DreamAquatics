@@ -7,6 +7,7 @@ import incMinusIcon from "../assets/Icons/iminus.png";
 import closeIcon from "../assets/Icons/close_one.png";
 import { useCart } from "../context/CartContext";
 import { renderFormattedDescription } from "../utils/formatDescription";
+import { getProductPricing } from "../lib/pricing";
 
 const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
@@ -32,8 +33,11 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
     return getImageWithFallback("", title);
   }, [imageRaw, title]);
 
-  const priceValue = Number(safeProduct?.price ?? 0);
-  const originalPriceValue = Math.round(priceValue * 1.15);
+  const {
+    currentPrice: priceValue,
+    nonDiscountPrice: originalPriceValue,
+    savingsAmount,
+  } = getProductPricing(safeProduct);
   const formattedPriceValue = priceValue.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -134,6 +138,12 @@ const ProductModal = ({ isOpen, product, onClose, onAddToCart }) => {
                   </p>
                 )}
               </div>
+              {savingsAmount > 0 && (
+                <p className="mt-1 text-sm font-semibold text-emerald-600">
+                  You Save {"\u20B9"}
+                  {Math.round(savingsAmount).toLocaleString("en-IN")}
+                </p>
+              )}
             </div>
           </div>
 
