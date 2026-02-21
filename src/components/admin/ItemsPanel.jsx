@@ -5,6 +5,7 @@ const ItemsPanel = ({
   itemSearch,
   setItemSearch,
   filteredItems,
+  bestsellingIdSet,
   handleOpenEditItem,
   requestDeleteItem,
   editIcon,
@@ -60,6 +61,7 @@ const ItemsPanel = ({
               ? count <= 0
               : availabilityText === "out-of-stock";
             const statusLabel = isOut ? "Out of stock" : "In stock";
+            const isBestSeller = bestsellingIdSet?.has?.(item.id);
             return (
               <div
                 key={item.id}
@@ -79,7 +81,14 @@ const ItemsPanel = ({
                   )}
 
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                      {isBestSeller && (
+                        <span className="inline-flex items-center rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+                          BestSeller
+                        </span>
+                      )}
+                    </div>
 
                     <p className="text-xs text-slate-500">
                       {item.price ? `Price: ${item.price}` : "No price set"}

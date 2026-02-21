@@ -51,8 +51,15 @@ const ItemModal = ({
             <label className="block text-sm font-medium text-slate-700">Options</label>
             <div className="mt-2 flex flex-wrap items-center gap-4">
               <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                <span>Best Selling & Trending</span>
+                <input
+                  type="checkbox"
+                  checked={!!itemDraft.isBestSeller}
+                  onChange={(e) =>
+                    setItemDraft((prev) => ({ ...prev, isBestSeller: e.target.checked }))
+                  }
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span>Best Sellers & Trending</span>
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                 <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
@@ -74,6 +81,10 @@ const ItemModal = ({
             <label className="block text-sm font-medium text-slate-700">Old Price</label>
             <input
               type="text"
+              value={itemDraft.nonDiscountPrice}
+              onChange={(e) =>
+                setItemDraft((prev) => ({ ...prev, nonDiscountPrice: e.target.value }))
+              }
               className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
               placeholder="e.g. 299"
             />
