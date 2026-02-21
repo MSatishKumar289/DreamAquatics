@@ -161,6 +161,11 @@
     background-color: var(--da-primary);
   }
 
+  .da-toast-error {
+    @apply rounded-lg px-3 py-2 text-xs font-semibold text-white shadow-lg;
+    background-color: #dc2626;
+  }
+
   .da-home-item-card {
     border-radius: 5px;
     border: 1px solid rgba(146, 117, 34, 0.28);

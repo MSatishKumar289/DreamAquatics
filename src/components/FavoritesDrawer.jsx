@@ -9,6 +9,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [favoriteToast, setFavoriteToast] = useState('');
+  const [favoriteToastType, setFavoriteToastType] = useState('success');
   const [pendingCartRemovalItem, setPendingCartRemovalItem] = useState(null);
 
   useEffect(() => {
@@ -188,8 +189,14 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
                     )}
                     <button
                       type="button"
-                      onClick={() => {
-                        removeFavorite(item.id);
+                      onClick={async () => {
+                        const { error } = await removeFavorite(item.id);
+                        if (error) {
+                          setFavoriteToastType('error');
+                          setFavoriteToast('Some error occurred, try again later');
+                          return;
+                        }
+                        setFavoriteToastType('success');
                         setFavoriteToast(`${item.title} removed from favorites`);
                       }}
                       className="inline-flex h-8 w-8 items-center justify-center self-end rounded-full border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
@@ -227,7 +234,7 @@ const FavoritesDrawer = ({ isOpen, onClose }) => {
 
         {favoriteToast && (
           <div className="pointer-events-none absolute inset-x-4 bottom-16 z-10 flex justify-center">
-            <div className="da-toast-info">
+            <div className={favoriteToastType === 'error' ? 'da-toast-error' : 'da-toast-info'}>
               {favoriteToast}
             </div>
           </div>
