@@ -723,7 +723,9 @@ const CategoryListingPage = () => {
           {loading ? (
             <div
               className={`grid ${
-                isSubcategoryMode ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-3 sm:grid-cols-2 lg:grid-cols-6"
+                isSubcategoryMode
+                  ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
+                  : "grid-cols-3 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-6"
               } gap-2`}
             >
               {Array.from({ length: isSubcategoryMode ? 8 : 12 }).map((_, index) => (
@@ -768,7 +770,7 @@ const CategoryListingPage = () => {
               {isSearching ? (
                 <div
                   className={`grid ${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} max-h-[70vh] overflow-y-auto overflow-x-hidden pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:grid-cols-3 ${
-                    isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"
+                    isSubcategoryMode ? "lg:grid-cols-4" : "md:grid-cols-6 lg:grid-cols-6"
                   } ${
                     isSubcategoryMode ? "gap-2" : "gap-2"
                   }`}
@@ -798,7 +800,7 @@ const CategoryListingPage = () => {
                   className={`grid ${
                     useTankTwoCardFeaturedLayout
                       ? "mx-auto max-w-[760px] grid-cols-2 gap-2 sm:gap-3"
-                      : `${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "lg:grid-cols-6"}`
+                      : `${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "md:grid-cols-6 lg:grid-cols-6"}`
                   }`}
                 >
                   {sortedFilteredList.map((item, index) => (
