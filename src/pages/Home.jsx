@@ -555,6 +555,31 @@ const Home = ({ profile }) => {
     }
   }, [bestSellerPicks, bestSellerIndex]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    if (!bestSellerPicks.length || bestSellerIndex !== 0) return undefined;
+    const track = bestSellerTrackRef.current;
+    if (!track) return undefined;
+
+    const resetTrackToStart = () => {
+      track.scrollLeft = 0;
+      track.scrollTo({ left: 0, behavior: "auto" });
+    };
+
+    const raf = window.requestAnimationFrame(resetTrackToStart);
+    const timerImmediate = window.setTimeout(resetTrackToStart, 0);
+    const timerDelayed = window.setTimeout(resetTrackToStart, 180);
+    const handlePageShow = () => resetTrackToStart();
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(timerImmediate);
+      window.clearTimeout(timerDelayed);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [bestSellerPicks.length, bestSellerIndex]);
+
   const activeBestSeller = bestSellerPicks[bestSellerIndex] || null;
   const bestFishStockCount = Number.isFinite(Number(activeBestSeller?.stock_count))
     ? Number(activeBestSeller?.stock_count)
@@ -596,6 +621,9 @@ const Home = ({ profile }) => {
   }, []);
 
   const handleBestSellerTrackScroll = () => {
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
+      return;
+    }
     if (Date.now() < bestSellerProgrammaticUntilRef.current) return;
     if (bestSellerScrollRafRef.current) return;
     bestSellerScrollRafRef.current = window.requestAnimationFrame(() => {
@@ -698,7 +726,7 @@ const Home = ({ profile }) => {
     return essentialEntries
       .map((entry) => productsById.get(entry.product_id))
       .filter(Boolean)
-      .slice(0, 20);
+      .slice(0, 6);
   }, [essentialEntries, allProducts]);
 
   const smartSections = useMemo(() => {
@@ -734,7 +762,7 @@ const Home = ({ profile }) => {
     return rules
       .map((rule) => ({
         ...rule,
-        items: allProducts.filter(rule.filter).sort(rule.sort).slice(0, 4),
+        items: allProducts.filter(rule.filter).sort(rule.sort).slice(0, 6),
       }))
       .filter((section) => section.items.length > 0);
   }, [allProducts]);
@@ -1422,7 +1450,7 @@ const Home = ({ profile }) => {
                 <div
                   ref={bestSellerTrackRef}
                   onScroll={handleBestSellerTrackScroll}
-                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto overscroll-x-contain lg:overflow-x-hidden"
+                  className="no-scrollbar mx-10 flex snap-x snap-mandatory items-stretch gap-0 overflow-x-auto overscroll-x-contain sm:mx-12 sm:gap-1.5 lg:mx-0 lg:overflow-x-hidden"
                 >
                   {bestSellerPicks.map((product, index) => {
                     const isActive = index === bestSellerIndex;
@@ -1467,7 +1495,7 @@ const Home = ({ profile }) => {
                             openProductDetails();
                           }
                         }}
-                        className={`da-home-item-card relative h-[314px] snap-start shrink-0 basis-[61%] overflow-hidden rounded-[5px] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                        className={`da-home-item-card relative h-[314px] snap-start shrink-0 basis-[80%] overflow-hidden rounded-[5px] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:h-[386px] lg:basis-[19%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
@@ -1525,7 +1553,7 @@ const Home = ({ profile }) => {
                                 </span>
                               </span>}
                             </div>
-                            <div className={`relative ${productBadgeText ? "mt-[7px]" : "mt-2"}`}>
+                            <div className={`relative ${productBadgeText ? "mt-[7px]" : "mt-2"} pr-14`}>
                               <div className="flex items-end justify-center gap-3 text-center">
                                 <p className="text-sm font-medium text-slate-400 line-through">
                                   {"\u20B9"}
@@ -1536,6 +1564,12 @@ const Home = ({ profile }) => {
                                   {currentPrice.toLocaleString("en-IN")}
                                 </p>
                               </div>
+                              <img
+                                src={bestSellerIcon}
+                                alt=""
+                                aria-hidden="true"
+                                className="pointer-events-none absolute right-0 top-1/2 h-14 w-14 -translate-y-1/2 -rotate-12 object-contain"
+                              />
                             </div>
                             <div className="relative mt-auto flex flex-col items-center gap-1.5 pt-2">
                               {bestFishAddedHintIndex === index && (
@@ -1610,21 +1644,20 @@ const Home = ({ profile }) => {
                 </div>
                 {bestSellerPicks.length > 1 && (
                   <>
-                    {bestSellerIndex > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBestSellerArrowHintSide(null);
-                          goToBestSeller(bestSellerIndex - 1);
-                        }}
-                        className="absolute left-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow sm:h-9 sm:w-9 md:left-[5%] lg:left-2 lg:h-11 lg:w-11 xl:left-3 before:absolute before:inset-[-6px] before:rounded-full before:bg-slate-900/25 before:blur-[2px] before:content-[''] before:-z-10"
-                        aria-label="Previous best seller"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M15 18l-6-6 6-6" />
-                        </svg>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBestSellerArrowHintSide(null);
+                        goToBestSeller(bestSellerIndex - 1);
+                      }}
+                      disabled={bestSellerIndex === 0}
+                      className="absolute left-2 top-1/2 z-30 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow transition disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9 md:left-[5%] lg:left-2 lg:h-11 lg:w-11 xl:left-3 before:absolute before:inset-[-6px] before:rounded-full before:bg-slate-900/25 before:blur-[2px] before:content-[''] before:-z-10"
+                      aria-label="Previous best seller"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
                     {bestSellerIndex > 0 && bestSellerArrowHintSide === "left" && (
                       <div className="pointer-events-none absolute left-[-118px] top-[calc(50%+42px)] z-30 hidden lg:block">
                         <div className="relative rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shadow">
@@ -1633,21 +1666,20 @@ const Home = ({ profile }) => {
                         </div>
                       </div>
                     )}
-                    {bestSellerIndex < bestSellerPicks.length - 1 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBestSellerArrowHintSide(null);
-                          goToBestSeller(bestSellerIndex + 1);
-                        }}
-                        className="absolute right-[6%] top-1/2 z-30 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow sm:h-9 sm:w-9 md:right-[5%] lg:right-2 lg:h-11 lg:w-11 xl:right-3 before:absolute before:inset-[-6px] before:rounded-full before:bg-slate-900/25 before:blur-[2px] before:content-[''] before:-z-10"
-                        aria-label="Next best seller"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 6l6 6-6 6" />
-                        </svg>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBestSellerArrowHintSide(null);
+                        goToBestSeller(bestSellerIndex + 1);
+                      }}
+                      disabled={bestSellerIndex >= bestSellerPicks.length - 1}
+                      className="absolute right-2 top-1/2 z-30 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow transition disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9 md:right-[5%] lg:right-2 lg:h-11 lg:w-11 xl:right-3 before:absolute before:inset-[-6px] before:rounded-full before:bg-slate-900/25 before:blur-[2px] before:content-[''] before:-z-10"
+                      aria-label="Next best seller"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </button>
                     {bestSellerIndex < bestSellerPicks.length - 1 && bestSellerArrowHintSide === "right" && (
                       <div className="pointer-events-none absolute right-[-118px] top-[calc(50%+42px)] z-30 hidden lg:block">
                         <div className="relative rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shadow">
@@ -1692,7 +1724,7 @@ const Home = ({ profile }) => {
               variant="minimal-stripe"
               tone="new-arrivals"
             />
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
               {newArrivals.map((product) => {
                 const categorySlug = product?.subcategory?.category?.slug;
                 const categoryKey = categoryBySlug[categorySlug] || "fishes";
@@ -1733,7 +1765,7 @@ const Home = ({ profile }) => {
                   }
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
                 {section.items.map((product) => {
                   const categorySlug = product?.subcategory?.category?.slug;
                   const categoryKey = categoryBySlug[categorySlug] || "fishes";
@@ -1744,6 +1776,7 @@ const Home = ({ profile }) => {
                         product={product}
                         relatedProducts={getRelatedProductsFor(product)}
                         className="da-home-item-card"
+                        compact
                         showStockBadge
                       />
                     </div>
@@ -1762,8 +1795,9 @@ const Home = ({ profile }) => {
                 subtitle="Everyday Must-Haves"
                 variant="minimal-stripe"
                 tone="essentials"
+                onViewAll={() => navigate("/essentials")}
               />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
                 {essentialPicks.map((product) => (
                   <div key={`essential-${product.id}`} className="h-full">
                     <CategoryCard
@@ -1771,6 +1805,7 @@ const Home = ({ profile }) => {
                       product={product}
                       relatedProducts={getRelatedProductsFor(product)}
                       className="da-home-item-card"
+                      compact
                       showStockBadge
                     />
                   </div>

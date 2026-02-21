@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAllProductsWithCategories } from "../lib/catalogApi";
+import { fetchEssentialEntries } from "../lib/essentialsApi";
 import CategoryCard from "../components/CategoryCard";
 
-const UnderHundredPage = () => {
+const EssentialsPage = () => {
   const [items, setItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -17,22 +18,25 @@ const UnderHundredPage = () => {
     let active = true;
     (async () => {
       setLoading(true);
-      const { data, error } = await fetchAllProductsWithCategories();
+      const [{ data: productsData, error: productsError }, { data: essentialsData, error: essentialsError }] =
+        await Promise.all([fetchAllProductsWithCategories(), fetchEssentialEntries()]);
+
       if (!active) return;
-      if (error) {
+      if (productsError || essentialsError) {
         setItems([]);
         setLoading(false);
         return;
       }
-      const filtered = (data || [])
-        .filter((product) => {
-          const price = Number(product?.price);
-          return Number.isFinite(price) && price <= 100;
-        })
-        .sort((a, b) => Number(a?.price || 0) - Number(b?.price || 0));
-      setItems(filtered);
+
+      const productsById = new Map((productsData || []).map((product) => [product.id, product]));
+      const resolved = (essentialsData || [])
+        .map((entry) => productsById.get(entry.product_id))
+        .filter(Boolean);
+
+      setItems(resolved);
       setLoading(false);
     })();
+
     return () => {
       active = false;
     };
@@ -45,7 +49,7 @@ const UnderHundredPage = () => {
     return slug || "fishes";
   };
 
-  const title = useMemo(() => `Under \u20B9100 (${items.length})`, [items.length]);
+  const title = useMemo(() => `Aquarium Essentials (${items.length})`, [items.length]);
 
   const categoryFilterOptions = useMemo(() => {
     const seen = new Set();
@@ -72,7 +76,6 @@ const UnderHundredPage = () => {
     if (selectedCategory === "all") return items;
     return items.filter((product) => getRouteCategorySlug(product) === selectedCategory);
   }, [items, selectedCategory]);
-
 
   const getRelatedProductsFor = (baseProduct) => {
     const subcategoryId = baseProduct?.subcategory?.id;
@@ -130,7 +133,7 @@ const UnderHundredPage = () => {
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
               {Array.from({ length: 8 }).map((_, index) => (
                 <div
-                  key={`under-hundred-loading-${index}`}
+                  key={`essentials-loading-${index}`}
                   className="overflow-hidden rounded-[6px] border border-slate-200 bg-white/80"
                 >
                   <div className="da-card-skeleton aspect-[4/3.1]" />
@@ -144,11 +147,11 @@ const UnderHundredPage = () => {
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-              No products found under \u20B9100.
+              No products found in Aquarium Essentials.
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-              No products found in this category under \u20B9100.
+              No products found in this category for Aquarium Essentials.
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
@@ -177,4 +180,4 @@ const UnderHundredPage = () => {
   );
 };
 
-export default UnderHundredPage;
+export default EssentialsPage;
