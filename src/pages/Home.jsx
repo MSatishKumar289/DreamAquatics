@@ -643,10 +643,13 @@ const Home = ({ profile }) => {
     const track = bestSellerTrackRef.current;
     const target = bestSellerSlideRefs.current?.[clampedIndex];
     if (track && target) {
-      target.scrollIntoView({
+      // corousal UI fix: use clamped horizontal scroll to avoid trailing whitespace on last card.
+      const targetLeft = target.offsetLeft - (track.clientWidth - target.clientWidth) / 2;
+      const maxLeft = Math.max(0, track.scrollWidth - track.clientWidth);
+      const boundedLeft = Math.max(0, Math.min(targetLeft, maxLeft));
+      track.scrollTo({
+        left: boundedLeft,
         behavior: "smooth",
-        inline: "center",
-        block: "nearest",
       });
     }
     setBestSellerIndex(clampedIndex);
@@ -1415,11 +1418,11 @@ const Home = ({ profile }) => {
                 subtitle="Most Loved This Week"
                 variant="sale-ribbon"
               />
-              <div className="relative mx-auto w-full">
+              <div className="relative mx-auto w-full overflow-x-clip">
                 <div
                   ref={bestSellerTrackRef}
                   onScroll={handleBestSellerTrackScroll}
-                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto scroll-px-[19.5%] sm:scroll-px-[28%] md:scroll-px-[34.5%] lg:overflow-x-hidden lg:scroll-px-[40%]"
+                  className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-2.5 overflow-x-auto overscroll-x-contain lg:overflow-x-hidden"
                 >
                   {bestSellerPicks.map((product, index) => {
                     const isActive = index === bestSellerIndex;
@@ -1464,7 +1467,7 @@ const Home = ({ profile }) => {
                             openProductDetails();
                           }
                         }}
-                        className={`da-home-item-card relative h-[314px] snap-center snap-always shrink-0 basis-[61%] overflow-visible rounded-[5px] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
+                        className={`da-home-item-card relative h-[314px] snap-start shrink-0 basis-[61%] overflow-hidden rounded-[5px] transition-all duration-300 sm:basis-[44%] md:basis-[31%] lg:basis-[20%] ${
                           isActive ? "scale-100 opacity-100" : "scale-[0.9] opacity-100"
                         }`}
                       >
@@ -1513,7 +1516,7 @@ const Home = ({ profile }) => {
                               {product?.name || "Top Pick"}
                             </h2>
                             <div className="mt-2 flex justify-center">
-                              <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+                              {productBadgeText && <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
                                 <span
                                   className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
                                   style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
