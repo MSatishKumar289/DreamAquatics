@@ -25,7 +25,7 @@ import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
 import { fetchAllOrdersAdmin, fetchMyOrders, normalizeAdminOrders } from './lib/ordersApi';
-import { clearCartStorage, clearFavoritesStorage } from './helpers/storage';
+import { clearCartStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
 import ProtectedRoute from "./components/ProtectedRoute";
 import WhatsIcon from './assets/Icons/whatsapp.png';
@@ -121,7 +121,6 @@ function AppContent() {
             clearCart();
             clearCartStorage();
             clearFavorites();
-            clearFavoritesStorage();
           }, 450);
 
           return;

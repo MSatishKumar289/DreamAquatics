@@ -377,6 +377,7 @@ const CategoryCard = ({
   const [showViewHint, setShowViewHint] = useState(false);
   const [showAddedHint, setShowAddedHint] = useState(false);
   const [favoriteToastMessage, setFavoriteToastMessage] = useState("");
+  const [favoriteToastType, setFavoriteToastType] = useState("success");
   const [pendingRemove, setPendingRemove] = useState(false);
 
   const productTitle = isSubCategory
@@ -465,13 +466,17 @@ const CategoryCard = ({
   const currentQty =
     cartItems?.find((item) => item.id === product?.id)?.qty || 0;
   const favoriteSelected = !isSubCategory && isProductFavorite(product?.id);
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = async () => {
     if (isSubCategory) return;
     const isAdding = !favoriteSelected;
-    toggleFavorite(product);
-    setFavoriteToastMessage(
-      isAdding ? "Added to favourite" : "Removed from favourite"
-    );
+    const { error } = await toggleFavorite(product);
+    if (error) {
+      setFavoriteToastType("error");
+      setFavoriteToastMessage("Some error occurred, try again later");
+      return;
+    }
+    setFavoriteToastType("success");
+    setFavoriteToastMessage(isAdding ? "Added to favourite" : "Removed from favourite");
   };
 
   const handleAddToCart = (event) => {
@@ -668,7 +673,13 @@ const CategoryCard = ({
 
       {favoriteToastMessage && !isSubCategory && (
         <div className="pointer-events-none absolute inset-x-3 bottom-12 z-30 flex justify-center">
-          <span className="whitespace-nowrap rounded-md bg-rose-400 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.04em] text-white shadow-md shadow-rose-100 sm:px-2.5 sm:text-[10px] sm:tracking-wide">
+          <span
+            className={`whitespace-nowrap rounded-md px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.04em] text-white shadow-md sm:px-2.5 sm:text-[10px] sm:tracking-wide ${
+              favoriteToastType === "error"
+                ? "bg-rose-600 shadow-rose-200"
+                : "bg-emerald-600 shadow-emerald-200"
+            }`}
+          >
             {favoriteToastMessage}
           </span>
         </div>

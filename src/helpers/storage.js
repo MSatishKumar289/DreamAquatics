@@ -1,5 +1,4 @@
 const CART_STORAGE_KEY = 'dream-aquatics-cart';
-const FAVORITES_STORAGE_KEY = 'dream-aquatics-favorites';
 
 const isBrowser = typeof window !== 'undefined';
 
@@ -69,65 +68,11 @@ export const clearCartStorage = () => {
   window.localStorage.removeItem(CART_STORAGE_KEY);
 };
 
-export const readFavoritesFromStorage = () => {
-  if (!isStorageAvailable()) {
-    return { items: [], expiry: null };
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-    if (!storedValue) {
-      return { items: [], expiry: getNextMidnightIso() };
-    }
-
-    const parsed = JSON.parse(storedValue);
-    const expiryTime = parsed?.expiry ? new Date(parsed.expiry).getTime() : null;
-    if (!expiryTime || Date.now() >= expiryTime) {
-      window.localStorage.removeItem(FAVORITES_STORAGE_KEY);
-      return { items: [], expiry: getNextMidnightIso() };
-    }
-
-    return {
-      items: Array.isArray(parsed.items) ? parsed.items : [],
-      expiry: parsed.expiry,
-    };
-  } catch (error) {
-    console.warn('[storage] Unable to parse favorites data. Resetting favorites.', error);
-    window.localStorage.removeItem(FAVORITES_STORAGE_KEY);
-    return { items: [], expiry: getNextMidnightIso() };
-  }
-};
-
-export const persistFavoritesToStorage = (items) => {
-  if (!isStorageAvailable()) return;
-  try {
-    const payload = {
-      items,
-      expiry: getNextMidnightIso(),
-    };
-    window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(payload));
-  } catch (error) {
-    console.warn('[storage] Failed to persist favorites data.', error);
-  }
-};
-
-export const clearFavoritesStorage = () => {
-  if (!isStorageAvailable()) return;
-  window.localStorage.removeItem(FAVORITES_STORAGE_KEY);
-};
-
 export const CART_STORAGE = {
   key: CART_STORAGE_KEY,
   read: readCartFromStorage,
   write: persistCartToStorage,
   clear: clearCartStorage,
-};
-
-export const FAVORITES_STORAGE = {
-  key: FAVORITES_STORAGE_KEY,
-  read: readFavoritesFromStorage,
-  write: persistFavoritesToStorage,
-  clear: clearFavoritesStorage,
 };
 
 
