@@ -849,7 +849,7 @@ const Home = ({ profile }) => {
   const TopicTitleCard = ({ title, subtitle, className = "", onViewAll }) => {
     return (
       <div className={`w-full ${className}`}>
-        <div className="relative w-full overflow-hidden bg-white/80 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
+        <div className="relative w-full overflow-hidden rounded-[8px] border border-slate-200 bg-white/80 px-4 py-3 text-left shadow-[0_6px_16px_rgba(14,77,122,0.14)] sm:px-5">
           <div className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-[#F2C94C]" />
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -1876,7 +1876,7 @@ const Home = ({ profile }) => {
             <img
               src={activeHighlight}
               alt="Highlight preview"
-              className="max-h-[80vh] w-full object-contain"
+              className="max-h-[80vh] w-full rounded-3xl object-contain"
             />
           </div>
         </div>
