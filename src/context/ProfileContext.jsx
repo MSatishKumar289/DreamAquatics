@@ -136,9 +136,11 @@ export const ProfileProvider = ({ children }) => {
       label: updates.label,
       name: updates.name,
       email: updates.email,
-      mobile: updates.mobile,
-      address_line1: updates.address_line1,
-      address_line2: updates.address_line2,
+      mobile: updates.mobile ?? updates.phone,
+      address_line1:
+        updates.address_line1 ?? updates.addressLine1 ?? updates.line1,
+      address_line2:
+        updates.address_line2 ?? updates.addressLine2 ?? updates.line2,
       city: updates.city,
       landmark: updates.landmark,
       pincode: updates.pincode,

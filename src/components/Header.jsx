@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
 import cart_ic from '../assets/Icons/cart_ic.svg';
 import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
 import close_ic from '../assets/Icons/close_ic.svg';
@@ -12,12 +13,16 @@ const Header = ({
   onLogout,
   onRequestLogin,
   onCartOpen,
+  onFavoritesOpen,
   onAdminOrdersOpen,
+  onUserOrdersOpen,
   isRoleResolved,
   newOrdersCount = 0,
+  userNotificationsCount = 0,
   showAddedBanner = false
 }) => {
   const { itemCount } = useCart();
+  const { favoriteCount } = useFavorites();
   const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -29,8 +34,8 @@ const Header = ({
   const categories = [
     { label: 'Fishes', value: 'fishes' },
     { label: 'Live Plants', value: 'live-plants' },
-    { label: 'Accessories', value: 'accessories' },
-    { label: 'Tank', value: 'tank' }
+    { label: 'Tanks & Accessories', value: 'accessories' },
+    { label: 'Fish Food & Medicines', value: 'tank' }
   ];
 
   useEffect(() => {
@@ -78,12 +83,12 @@ const Header = ({
   return (
     <>
     <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
-      <nav className="container mx-auto px-3 sm:px-6 lg:px-8" aria-label="Main navigation">
+      <nav className="container mx-auto px-[10px] sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex items-center justify-between gap-2 h-16 md:h-20">
           {/* Brand Title */}
           <Link
             to="/"
-            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
+            className="flex min-w-0 flex-none items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
             aria-label="DreamAquatics home"
           >
             <div className="flex items-baseline leading-none">
@@ -95,7 +100,7 @@ const Header = ({
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden xl:flex items-center space-x-6 xl:space-x-8">
+          <div className="hidden xl:flex items-center space-x-3 xl:space-x-4">
             {categories.map((category) => (
               <Link
                 key={category.value}
@@ -172,7 +177,7 @@ const Header = ({
               {user && isProfileOpen && (
                   <div
                     data-profile-menu
-                    className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                    className="absolute right-0 top-12 z-40 w-64 rounded-[8px] border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
                   >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
@@ -247,7 +252,65 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <div className="relative">
+              <div className="flex items-center gap-0.5">
+                {!!user && !isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onUserOrdersOpen?.()}
+                    className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${userNotificationsCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                    aria-label={`Order notifications with ${userNotificationsCount} updates`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                      <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                    </svg>
+                    {userNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                        aria-label={`${userNotificationsCount} order updates`}
+                      >
+                        {userNotificationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onFavoritesOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Favorites with ${favoriteCount} items`}
+                  data-favorites-target="favorites"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                  </svg>
+                  {favoriteCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${favoriteCount} items in favorites`}
+                    >
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => onCartOpen?.()}
@@ -255,7 +318,7 @@ const Header = ({
                   aria-label={`Shopping cart with ${cartCount} items`}
                   data-cart-target="cart"
                 >
-                  <img src={cart_ic} alt="Cart" />
+                  <img src={cart_ic} alt="Cart" className="h-6 w-6 object-contain" />
                   {cartCount > 0 && (
                     <span
                       className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
@@ -270,7 +333,7 @@ const Header = ({
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex xl:hidden items-center space-x-2.5 flex-shrink-0">
+          <div className="ml-auto flex xl:hidden items-center space-x-2.5 flex-shrink-0">
             <div className="relative flex items-center gap-1.5">
               {user ? (
                 <div className="flex items-center gap-1.5">
@@ -297,8 +360,8 @@ const Header = ({
                     </span>
                   </button>
                   {showProfileHint && (
-                    <div className="absolute right-0 top-10 z-50 w-56 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
-                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                    <div className="absolute left-1/2 top-10 z-50 w-56 -translate-x-1/2 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
+                      <span className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
                       Access your profile here.
                     </div>
                   )}
@@ -335,7 +398,7 @@ const Header = ({
               {user && isProfileOpen && (
                 <div
                   data-profile-menu
-                  className="absolute right-0 top-11 z-40 w-60 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                  className="absolute left-1/2 top-11 z-40 w-60 max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-[8px] border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
                 >
                   <p className="text-sm font-semibold text-slate-800">Signed in</p>
                   <p className="text-base font-bold text-sky-800">{user.name}</p>
@@ -409,7 +472,65 @@ const Header = ({
                 )}
               </button>
             ) : (
-              <div className="relative">
+              <div className="flex items-center gap-0">
+                {!!user && !isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onUserOrdersOpen?.()}
+                    className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${userNotificationsCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                    aria-label={`Order notifications with ${userNotificationsCount} updates`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                      <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                    </svg>
+                    {userNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                        aria-label={`${userNotificationsCount} order updates`}
+                      >
+                        {userNotificationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onFavoritesOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Favorites with ${favoriteCount} items`}
+                  data-favorites-target="favorites"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                  </svg>
+                  {favoriteCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${favoriteCount} items in favorites`}
+                    >
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => onCartOpen?.()}
@@ -417,7 +538,7 @@ const Header = ({
                   aria-label={`Shopping cart with ${cartCount} items`}
                   data-cart-target="cart"
                 >
-                  <img src={mobile_cart_ic} alt="Cart" />
+                  <img src={mobile_cart_ic} alt="Cart" className="h-5 w-5 object-contain" />
                   {cartCount > 0 && (
                     <span
                       className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
@@ -453,7 +574,7 @@ const Header = ({
                 if (event.target === event.currentTarget) setLogoutConfirmOpen(false);
               }}
             >
-              <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+              <div className="w-full max-w-sm rounded-[8px] bg-white p-5 text-center shadow-xl">
                 <h3 className="text-lg font-semibold text-slate-900">
                   Confirm logout
                 </h3>

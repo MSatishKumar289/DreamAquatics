@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
+import { FavoritesProvider, useFavorites } from './context/FavoritesContext';
 import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
+import FavoritesDrawer from './components/FavoritesDrawer';
 import AdminOrdersDrawer from './components/AdminOrdersDrawer';
+import UserOrdersDrawer from './components/UserOrdersDrawer';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import CartPage from './pages/CartPage.jsx';
@@ -16,13 +19,17 @@ import Terms from './pages/Terms';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
 import TrackOrder from './pages/TrackOrder';
+import UnderHundredPage from './pages/UnderHundredPage';
+import EssentialsPage from './pages/EssentialsPage';
+import ProductDetailsPage from './pages/ProductDetailsPage';
 import AuthForm from './components/AuthForm';
 import { supabase } from './lib/supabaseClient';
 import { fetchCurrentProfile, upsertProfile } from './lib/profileApi';
-import { fetchAllOrdersAdmin, normalizeAdminOrders } from './lib/ordersApi';
+import { fetchAllOrdersAdmin, fetchMyOrders, normalizeAdminOrders } from './lib/ordersApi';
 import { clearCartStorage } from './helpers/storage';
 import { ProfileProvider } from './context/ProfileContext';
 import ProtectedRoute from "./components/ProtectedRoute";
+import WhatsIcon from './assets/Icons/whatsapp.png';
 
 
 function AppContent() {
@@ -31,16 +38,63 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isAdminOrdersOpen, setIsAdminOrdersOpen] = useState(false);
+  const [isUserOrdersOpen, setIsUserOrdersOpen] = useState(false);
   const [adminOrders, setAdminOrders] = useState([]);
   const [adminOrdersLastRefreshedAt, setAdminOrdersLastRefreshedAt] = useState(null);
-  const [userOrders] = useState([]);
+  const [userOrders, setUserOrders] = useState([]);
+  const [userOrdersLastRefreshedAt, setUserOrdersLastRefreshedAt] = useState(null);
+  const [userOrderNotifications, setUserOrderNotifications] = useState([]);
   const adminPollTimerRef = useRef(null);
   const adminPollInFlightRef = useRef(false);
+  const userPollTimerRef = useRef(null);
+  const userPollInFlightRef = useRef(false);
+  const userOrderStatusMapRef = useRef({});
+  const userOrdersSeededRef = useRef(false);
   const location = useLocation();
+  const pathname = location.pathname || '';
+  const showPersistentWhatsApp =
+    pathname === '/profile' ||
+    pathname === '/checkout' ||
+    pathname.startsWith('/category/') ||
+    pathname.startsWith('/product/');
 
   const { clearCart, lastAddedAt, lastAddedItem } = useCart();
+  const { clearFavorites } = useFavorites();
   const [showAddedBanner, setShowAddedBanner] = useState(false);
+  const clearCartRef = useRef(clearCart);
+  const clearFavoritesRef = useRef(clearFavorites);
+
+  useEffect(() => {
+    clearCartRef.current = clearCart;
+  }, [clearCart]);
+
+  useEffect(() => {
+    clearFavoritesRef.current = clearFavorites;
+  }, [clearFavorites]);
+
+  const resetSignedOutState = useCallback(() => {
+    setSessionUser(null);
+    setProfile(null);
+    setAuthLoading(false);
+    localStorage.removeItem('da_profile_hint_seen');
+    setUserOrders([]);
+    setUserOrdersLastRefreshedAt(null);
+    setUserOrderNotifications([]);
+    setIsUserOrdersOpen(false);
+    userOrderStatusMapRef.current = {};
+    userOrdersSeededRef.current = false;
+    clearUserPollTimer();
+    clearCartRef.current?.();
+    clearCartStorage();
+    clearFavoritesRef.current?.();
+  }, []);
+
+  useEffect(() => {
+    if (!pathname.startsWith('/admin')) return;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [pathname, location.search]);
 
   /* ================= AUTH LISTENER (SESSION ONLY) ================= */
 
@@ -62,32 +116,26 @@ function AppContent() {
 
     const { data: { subscription } } =
       supabase.auth.onAuthStateChange((event, session) => {
-        console.log('AUTH EVENT:', event);
-
         if (event === 'SIGNED_OUT') {
-          setSessionUser(null);
-          setProfile(null);
-          setAuthLoading(false);
-          localStorage.removeItem('da_profile_hint_seen');
-
-          // 🔒 Cart cleanup happens ONLY here
-          clearCart();
-          clearCartStorage();
-
+          resetSignedOutState();
           return;
         }
 
         if (session?.user) {
           setSessionUser(session.user);
           setAuthLoading(false);
+          return;
         }
+
+        // Treat null session from any auth event as signed out.
+        resetSignedOutState();
       });
 
     return () => {
       active = false;
       subscription.unsubscribe();
     };
-  }, [clearCart]);
+  }, [resetSignedOutState]);
 
   /* ================= PROFILE FETCH + SAFE CREATION ================= */
 
@@ -165,6 +213,21 @@ function AppContent() {
     [adminOrders]
   );
 
+  const userNotificationsCount = useMemo(
+    () => userOrderNotifications.filter((item) => !item.read).length,
+    [userOrderNotifications]
+  );
+
+  const userNotificationsStorageKey = useMemo(
+    () => (sessionUser?.id ? `da_user_order_notifications_${sessionUser.id}` : null),
+    [sessionUser?.id]
+  );
+
+  const userStatusMapStorageKey = useMemo(
+    () => (sessionUser?.id ? `da_user_order_status_map_${sessionUser.id}` : null),
+    [sessionUser?.id]
+  );
+
   const fetchAdminOrders = useCallback(async () => {
     if (adminPollInFlightRef.current) return;
     adminPollInFlightRef.current = true;
@@ -198,6 +261,109 @@ function AppContent() {
       scheduleAdminPoll();
     }, 3 * 60 * 1000);
   }, [fetchAdminOrders]);
+
+  useEffect(() => {
+    if (!userNotificationsStorageKey || !userStatusMapStorageKey) return;
+    try {
+      const storedNotificationsRaw = localStorage.getItem(userNotificationsStorageKey);
+      const storedStatusMapRaw = localStorage.getItem(userStatusMapStorageKey);
+      const storedNotifications = storedNotificationsRaw ? JSON.parse(storedNotificationsRaw) : [];
+      const storedStatusMap = storedStatusMapRaw ? JSON.parse(storedStatusMapRaw) : {};
+
+      setUserOrderNotifications(Array.isArray(storedNotifications) ? storedNotifications : []);
+      userOrderStatusMapRef.current =
+        storedStatusMap && typeof storedStatusMap === "object" ? storedStatusMap : {};
+      userOrdersSeededRef.current = Object.keys(userOrderStatusMapRef.current).length > 0;
+    } catch {
+      setUserOrderNotifications([]);
+      userOrderStatusMapRef.current = {};
+      userOrdersSeededRef.current = false;
+    }
+  }, [userNotificationsStorageKey, userStatusMapStorageKey]);
+
+  const fetchUserOrderNotifications = useCallback(async () => {
+    if (userPollInFlightRef.current) return;
+    userPollInFlightRef.current = true;
+
+    try {
+      const { data, error } = await fetchMyOrders();
+      if (error) return;
+
+      const orders = data || [];
+      setUserOrders(orders);
+      setUserOrdersLastRefreshedAt(Date.now());
+
+      const nextStatusMap = orders.reduce((acc, order) => {
+        acc[order.id] = order.status || "awaiting_approval";
+        return acc;
+      }, {});
+
+      const prevStatusMap = userOrderStatusMapRef.current || {};
+      const shouldCreateNotifications = userOrdersSeededRef.current;
+
+      setUserOrderNotifications((prev) => {
+        if (!shouldCreateNotifications) return prev;
+
+        const existingIds = new Set(prev.map((item) => item.id));
+        const newlyDetected = [];
+
+        orders.forEach((order) => {
+          const previous = prevStatusMap[order.id];
+          const current = nextStatusMap[order.id];
+          if (!previous || previous === current) return;
+
+          const notificationId = `${order.id}:${current}`;
+          if (existingIds.has(notificationId)) return;
+
+          newlyDetected.push({
+            id: notificationId,
+            orderId: order.id,
+            orderNumber: order.order_number || order.id,
+            status: current,
+            previousStatus: previous,
+            total: Number(order.total || 0),
+            changedAt: Date.now(),
+            read: false,
+          });
+        });
+
+        if (!newlyDetected.length) return prev;
+
+        const merged = [...newlyDetected, ...prev].slice(0, 50);
+        if (userNotificationsStorageKey) {
+          localStorage.setItem(userNotificationsStorageKey, JSON.stringify(merged));
+        }
+        return merged;
+      });
+
+      userOrderStatusMapRef.current = nextStatusMap;
+      userOrdersSeededRef.current = true;
+      if (userStatusMapStorageKey) {
+        localStorage.setItem(userStatusMapStorageKey, JSON.stringify(nextStatusMap));
+      }
+    } finally {
+      userPollInFlightRef.current = false;
+    }
+  }, [userNotificationsStorageKey, userStatusMapStorageKey]);
+
+  const clearUserPollTimer = () => {
+    if (userPollTimerRef.current) {
+      clearTimeout(userPollTimerRef.current);
+      userPollTimerRef.current = null;
+    }
+  };
+
+  const scheduleUserPoll = useCallback(() => {
+    clearUserPollTimer();
+    userPollTimerRef.current = setTimeout(async () => {
+      if (document.hidden) {
+        scheduleUserPoll();
+        return;
+      }
+      await fetchUserOrderNotifications();
+      scheduleUserPoll();
+    }, 2 * 60 * 1000);
+  }, [fetchUserOrderNotifications]);
 
   useEffect(() => {
     if (!authUser?.role || authUser.role !== "admin") return;
@@ -237,16 +403,75 @@ function AppContent() {
     };
   }, [authUser?.role, fetchAdminOrders, scheduleAdminPoll]);
 
+  useEffect(() => {
+    if (!authUser || authUser.role === "admin") return;
+
+    const handleFocus = () => {
+      if (document.hidden) return;
+      fetchUserOrderNotifications();
+      scheduleUserPoll();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearUserPollTimer();
+        return;
+      }
+      fetchUserOrderNotifications();
+      scheduleUserPoll();
+    };
+
+    const handleAdminOrdersUpdated = () => {
+      if (document.hidden) return;
+      fetchUserOrderNotifications();
+      scheduleUserPoll();
+    };
+
+    fetchUserOrderNotifications();
+    scheduleUserPoll();
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("adminOrdersUpdated", handleAdminOrdersUpdated);
+
+    return () => {
+      clearUserPollTimer();
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("adminOrdersUpdated", handleAdminOrdersUpdated);
+    };
+  }, [authUser, fetchUserOrderNotifications, scheduleUserPoll]);
+
   /* ================= LOGOUT ================= */
 
   const handleLogout = useCallback(async () => {
-    console.log('LOGOUT CLICKED');
     const res = await supabase.auth.signOut();
-    console.log('SIGNOUT RESULT:', res);
-  }, []);
+    if (res?.error) return;
+    resetSignedOutState();
+  }, [resetSignedOutState]);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
+  const handleUserOrdersOpen = useCallback(() => {
+    setIsUserOrdersOpen(true);
+    setUserOrderNotifications((prev) => {
+      if (!prev.some((item) => !item.read)) return prev;
+      const next = prev.map((item) => ({ ...item, read: true }));
+      if (userNotificationsStorageKey) {
+        localStorage.setItem(userNotificationsStorageKey, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [userNotificationsStorageKey]);
+  const handleUserNotificationOpen = useCallback((notificationId) => {
+    if (!notificationId) return;
+    setUserOrderNotifications((prev) => {
+      const next = prev.filter((item) => item.id !== notificationId);
+      if (userNotificationsStorageKey) {
+        localStorage.setItem(userNotificationsStorageKey, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [userNotificationsStorageKey]);
   const isRoleResolved = !sessionUser || !!profile?.role;
 
   return (
@@ -265,9 +490,12 @@ function AppContent() {
           onLogout={handleLogout}
           onRequestLogin={openLoginModal}
           onCartOpen={() => setIsCartOpen(true)}
+          onFavoritesOpen={() => setIsFavoritesOpen(true)}
           onAdminOrdersOpen={() => setIsAdminOrdersOpen(true)}
+          onUserOrdersOpen={handleUserOrdersOpen}
           isRoleResolved={isRoleResolved}
           newOrdersCount={newOrdersCount}
+          userNotificationsCount={userNotificationsCount}
           showAddedBanner={showAddedBanner}
         />
 
@@ -278,7 +506,7 @@ function AppContent() {
               if (e.target === e.currentTarget) closeLoginModal();
             }}
           >
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl relative">
+            <div className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-2xl relative">
               <button
                 type="button"
                 onClick={closeLoginModal}
@@ -300,12 +528,26 @@ function AppContent() {
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
         />
+        <FavoritesDrawer
+          isOpen={isFavoritesOpen}
+          onClose={() => setIsFavoritesOpen(false)}
+        />
         {authUser?.role === 'admin' && (
           <AdminOrdersDrawer
             isOpen={isAdminOrdersOpen}
             onClose={() => setIsAdminOrdersOpen(false)}
             orders={adminOrders}
             lastRefreshedAt={adminOrdersLastRefreshedAt}
+          />
+        )}
+        {authUser && authUser.role !== 'admin' && (
+          <UserOrdersDrawer
+            isOpen={isUserOrdersOpen}
+            onClose={() => setIsUserOrdersOpen(false)}
+            notifications={userOrderNotifications}
+            orders={userOrders}
+            lastRefreshedAt={userOrdersLastRefreshedAt}
+            onNotificationOpen={handleUserNotificationOpen}
           />
         )}
 
@@ -317,6 +559,7 @@ function AppContent() {
               path="/category/:categorySlug/:subCategorySlug"
               element={<CategoryListingPage />}
             />
+            <Route path="/product/:productId" element={<ProductDetailsPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route
               path="/checkout"
@@ -328,6 +571,8 @@ function AppContent() {
             />
             <Route path="/terms" element={<Terms />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/under-100" element={<UnderHundredPage />} />
+            <Route path="/essentials" element={<EssentialsPage />} />
             <Route path="/track-order" element={<TrackOrder />} />
             <Route
               path="/admin/add-product"
@@ -361,15 +606,27 @@ function AppContent() {
 
         {showAddedBanner && (
           <div className="fixed bottom-6 left-0 right-0 z-[120] flex justify-center px-4">
-            <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-xl">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-                ✓
+            <div className="inline-flex items-center gap-3 rounded-2xl border border-emerald-700 bg-emerald-600 px-4 py-2.5 shadow-xl">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white">
+                &#10003;
               </div>
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600">
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white">
                 Item added to cart
               </div>
             </div>
           </div>
+        )}
+
+        {showPersistentWhatsApp && (
+          <a
+            href="https://wa.me/918667418965"
+            target="_blank"
+            rel="noreferrer"
+            className="fixed bottom-5 right-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/80 bg-transparent p-1.5 shadow-lg shadow-emerald-500/35 transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            aria-label="Chat on WhatsApp"
+          >
+            <img src={WhatsIcon} alt="" className="h-full w-full object-contain" aria-hidden="true" />
+          </a>
         )}
 
         <Footer />
@@ -381,16 +638,21 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <CartProvider>
-        <ProfileProvider>
-          <AppContent />
-        </ProfileProvider>
-      </CartProvider>
+      <FavoritesProvider>
+        <CartProvider>
+          <ProfileProvider>
+            <AppContent />
+          </ProfileProvider>
+        </CartProvider>
+      </FavoritesProvider>
     </BrowserRouter>
   );
 }
 
 export default App;
+
+
+
 
 
 

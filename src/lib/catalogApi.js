@@ -71,6 +71,8 @@ export async function fetchAllProductsWithCategories() {
         id,
         name,
         price,
+        non_discount_price,
+        badge_label,
         description,
         stock_count,
         is_active,
@@ -95,6 +97,53 @@ export async function fetchAllProductsWithCategories() {
       `)
       .eq("is_active", true)
       .order("created_at", { ascending: false });
+
+    return { data, error };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+
+/**
+ * Fetch single product by id with category + subcategory
+ * (Used for direct-open product details URLs)
+ */
+export async function fetchProductById(productId) {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        price,
+        non_discount_price,
+        badge_label,
+        description,
+        stock_count,
+        is_active,
+        created_at,
+        subcategory:subcategories (
+          id,
+          name,
+          slug,
+          description,
+          category:categories (
+            id,
+            name,
+            slug
+          )
+        ),
+        product_images (
+          id,
+          url,
+          alt,
+          position
+        )
+      `)
+      .eq("id", productId)
+      .eq("is_active", true)
+      .single();
 
     return { data, error };
   } catch (error) {
@@ -493,9 +542,5 @@ export async function deleteProductImageById({ imageId, path }) {
     return { error };
   }
 }
-
-
-
-
 
 

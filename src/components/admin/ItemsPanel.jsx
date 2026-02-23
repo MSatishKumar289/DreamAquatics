@@ -5,6 +5,8 @@ const ItemsPanel = ({
   itemSearch,
   setItemSearch,
   filteredItems,
+  bestsellingIdSet,
+  essentialIdSet,
   handleOpenEditItem,
   requestDeleteItem,
   editIcon,
@@ -49,7 +51,7 @@ const ItemsPanel = ({
 
       {filteredItems.length === 0 ? (
         <p className="mt-4 text-sm text-slate-500">
-          No items yet. Use â€œAdd Itemâ€ to create one for this subcategory.
+          No items yet. Use Add Items to create one for this subcategory.
         </p>
       ) : (
         <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1 sm:max-h-[420px] lg:max-h-[520px]">
@@ -60,6 +62,9 @@ const ItemsPanel = ({
               ? count <= 0
               : availabilityText === "out-of-stock";
             const statusLabel = isOut ? "Out of stock" : "In stock";
+            const badgeLabel = String(item.badge_label || "").trim().toUpperCase();
+            const isBestSeller = bestsellingIdSet?.has?.(item.id);
+            const isEssential = essentialIdSet?.has?.(item.id);
             return (
               <div
                 key={item.id}
@@ -79,11 +84,24 @@ const ItemsPanel = ({
                   )}
 
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                      {isBestSeller && (
+                        <span className="inline-flex items-center rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+                          BestSeller
+                        </span>
+                      )}
+                      {isEssential && (
+                        <span className="inline-flex items-center rounded-full border border-blue-300/70 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700">
+                          Essential
+                        </span>
+                      )}
+                    </div>
 
                     <p className="text-xs text-slate-500">
                       {item.price ? `Price: ${item.price}` : "No price set"}
-                      {` Â· ${statusLabel}`}
+                      {badgeLabel ? ` - ${badgeLabel}` : ""}
+                      {` - ${statusLabel}`}
                     </p>
                   </div>
                 </div>
@@ -119,3 +137,4 @@ const ItemsPanel = ({
 );
 
 export default ItemsPanel;
+

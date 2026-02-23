@@ -80,7 +80,7 @@ const CartPage = () => {
                 </p>
                 <Link
                   to="/"
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:hidden"
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-950 shadow-sm hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 lg:hidden"
                 >
                   Continue shopping
                 </Link>

@@ -6,11 +6,18 @@ const AdminSidebar = ({
   setSelectedCategoryId,
   adminView
 }) => (
+  // Display-only mapping; underlying DB category names remain unchanged.
   <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <h2 className="text-sm font-semibold text-slate-700">Categories</h2>
     <div className="mt-3 space-y-2">
       {orderedCategories.map((category) => {
         const isActive = category.id === selectedCategoryId;
+        const displayCategoryName =
+          category.name === "Accessories"
+            ? "Tanks & Accessories"
+            : category.name === "Tanks"
+              ? "Fish Food & Medicines"
+              : category.name;
 
         return (
           <button
@@ -27,7 +34,7 @@ const AdminSidebar = ({
                 : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
             }`}
           >
-            {category.name}
+            {displayCategoryName}
           </button>
         );
       })}

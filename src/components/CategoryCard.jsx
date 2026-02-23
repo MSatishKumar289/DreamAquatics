@@ -4,471 +4,326 @@ import { getImageWithFallback } from "../assets";
 import plusIcon from "../assets/Icons/plus.png";
 import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
-import closeIcon from "../assets/Icons/close_one.png";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { renderFormattedDescription } from "../utils/formatDescription";
-
-const StockBadge = ({ isSoldOut }) => (
-  <div className="flex justify-center mb-2">
-    <div
-      className={`relative inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-md ${
-        isSoldOut ? "border-rose-200 bg-rose-500" : "border-emerald-200 bg-emerald-600"
-      }`}
-    >
-      <span
-        className="absolute left-1/2 -top-1.5 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border border-transparent"
-        style={{
-          borderLeftColor: isSoldOut ? "#f43f5e" : "#059669",
-          borderBottomColor: isSoldOut ? "#f43f5e" : "#059669",
-          backgroundColor: isSoldOut ? "#f43f5e" : "#059669"
-        }}
-        aria-hidden="true"
-      />
-      <span className="h-1.5 w-1.5 rounded-full bg-white/90" aria-hidden="true" />
-      {isSoldOut ? "Sold Out" : "In Stock"}
-    </div>
-  </div>
-);
+import { useFavorites } from "../context/FavoritesContext";
+import { getProductPricing } from "../lib/pricing";
 
 const ProductImageArea = ({
   isSubCategory,
   compact,
+  whiteCard,
+  savingsBadgeAmount,
   imageSrc,
   productTitle,
   productSubtitle,
   showViewHint,
-  showExpandHint,
+  isFavorite,
+  onToggleFavorite,
   onImageClick,
-}) => (
-      <div className="relative w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100">
+}) => {
+  return (
+      <div
+        className={`relative w-full overflow-hidden ${
+          isSubCategory ? "h-full rounded-[6px]" : "rounded-t-[6px]"
+        } ${
+          whiteCard
+            ? "bg-white"
+            : isSubCategory
+              ? "bg-white"
+              : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+        }`}
+      >
         <div
-          className={`relative w-full border-b border-slate-200/60 rounded-t-2xl overflow-hidden ${
-            compact ? "aspect-[1/1]" : "aspect-[4/3] sm:aspect-[4/3]"
+          className={`relative w-full overflow-hidden ${
+            isSubCategory ? "h-full rounded-[6px]" : "border-b border-slate-200/60 rounded-t-[6px]"
+          } ${
+            isSubCategory ? "" : compact ? "aspect-[1/1]" : "aspect-[4/3.1] sm:aspect-[4/3.2]"
           }`}
         >
-      {isSubCategory && (
+      {isSubCategory ? (
         <>
           <span
-            className="pointer-events-none absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white sm:opacity-0 sm:transition sm:group-hover:opacity-100"
-            aria-hidden="true"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </span>
-          <span
-            className={`pointer-events-none absolute left-2 top-2 z-10 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
+            className={`pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
               showViewHint ? "opacity-100" : ""
             }`}
           >
             Tap to view
           </span>
+          <div className="h-full w-full">
+            <img
+              src={imageSrc}
+              alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
+              className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
+                isSubCategory
+                  ? "bg-white"
+                  : whiteCard
+                  ? "bg-white"
+                  : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+              } ${isSubCategory ? "brightness-[0.93] group-hover:brightness-100" : ""}`}
+              onClick={onImageClick}
+              onError={(e) => {
+                e.target.src =
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
+                  encodeURIComponent(productTitle) +
+                  "%3C/text%3E%3C/svg%3E";
+              }}
+            />
+          </div>
+          <div
+            className="pointer-events-none absolute inset-0 z-10"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 100%)",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30">
+            <div className="w-full bg-gradient-to-t from-black/70 via-black/45 to-black/20 px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px]">
+              <p
+                className="mx-auto line-clamp-2 max-w-[92%] text-center text-[0.68rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.8rem]"
+                style={{
+                  fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.95), 0 0 1px rgba(0,0,0,0.9)",
+                }}
+              >
+                {productTitle}
+              </p>
+            </div>
+          </div>
         </>
+      ) : (
+        <img
+          src={imageSrc}
+          alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
+          className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+            whiteCard
+              ? "bg-white"
+              : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+          }`}
+          onClick={onImageClick}
+          onError={(e) => {
+            e.target.src =
+              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
+              encodeURIComponent(productTitle) +
+              "%3C/text%3E%3C/svg%3E";
+          }}
+        />
       )}
-      <img
-        src={imageSrc}
-        alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-        className="h-full w-full object-contain bg-white transition-transform duration-300 group-hover:scale-105"
-        onClick={onImageClick}
-        onError={(e) => {
-          e.target.src =
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
-            encodeURIComponent(productTitle) +
-            "%3C/text%3E%3C/svg%3E";
-        }}
-      />
       {!isSubCategory && (
         <>
-          <div className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow">
+          {savingsBadgeAmount > 0 && (
+            <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
+              Save {"\u20B9"}
+              {savingsBadgeAmount.toLocaleString("en-IN")}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleFavorite?.();
+            }}
+            className={`absolute bottom-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border shadow transition ${
+              isFavorite
+                ? "border-rose-200 bg-rose-50 text-rose-600"
+                : "border-slate-200 bg-white/95 text-slate-600 hover:text-rose-600"
+            }`}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
             <svg
               viewBox="0 0 24 24"
               className="h-4 w-4"
-              fill="none"
+              fill={isFavorite ? "currentColor" : "none"}
               stroke="currentColor"
-              strokeWidth="1.8"
+              strokeWidth="1.9"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M14 5h5v5" />
-              <path d="M19 5l-7 7" />
-              <path d="M10 19H5v-5" />
-              <path d="M5 19l7-7" />
+              <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
             </svg>
-          </div>
-          {showExpandHint && (
-            <span className="pointer-events-none absolute bottom-12 right-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md sm:hidden">
-              Tap to enlarge
-            </span>
-          )}
+          </button>
         </>
       )}
     </div>
   </div>
 );
+};
 
 const ProductInfo = ({
   isSubCategory,
   isMasonry,
+  compact,
   productTitle,
-  productSubtitle,
+  productBadgeText,
   price,
-}) => (
-  <div
-    className={`text-center ${
-      isSubCategory ? "min-h-[32px]" : "min-h-[77px]"
-    } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col" : ""}`}
-  >
-    <h3
-      className={`px-1 text-[0.850rem] sm:text-[1rem] font-semibold text-slate-900 ${
-        isSubCategory ? "line-clamp-2" : "line-clamp-3"
-      }`}
+  originalPrice,
+  savingsAmount,
+}) => {
+  const currentPrice = Number(price ?? 0);
+  const formattedCurrentPrice = currentPrice.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const formattedOriginalPrice = originalPrice.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return (
+    <div
+      className={`${isSubCategory ? "text-left" : "text-center"} ${
+        isSubCategory ? "min-h-[32px]" : "min-h-[44px]"
+      } ${!isSubCategory && !isMasonry ? "flex flex-1 flex-col justify-between" : ""}`}
     >
-      {productTitle}
-    </h3>
-    {!isSubCategory && productSubtitle && (
-      <p className="mt-1 text-sm text-slate-500 line-clamp-1">
-        {productSubtitle}
-      </p>
-    )}
-    {!isSubCategory && (
-      <div className="mt-0.5 flex items-center justify-center">
-        <p className="text-sm font-semibold text-slate-900">
-          {"\u20B9"}
-          {Number(price ?? 0).toLocaleString("en-IN")}
-        </p>
+      <div
+        className={`${
+          isSubCategory ? "" : "flex min-h-[28px] items-center justify-center"
+        }`}
+      >
+        <h3
+          className={`px-1 font-semibold text-[#102A43] ${
+            isSubCategory
+              ? "text-[0.72rem] sm:text-[0.82rem] line-clamp-2"
+              : compact
+                ? "text-[0.72rem] leading-tight line-clamp-2"
+                : "text-[0.82rem] sm:text-[0.92rem] leading-tight line-clamp-2"
+          }`}
+        >
+          {productTitle}
+        </h3>
       </div>
-    )}
-  </div>
-);
+      {!isSubCategory && productBadgeText && (
+        <div className="mt-1 flex justify-center">
+          <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+            <span
+              className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
+              style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+            >
+              {productBadgeText}
+            </span>
+          </span>
+        </div>
+      )}
+      {!isSubCategory && (
+        <div className={`${productBadgeText ? "mt-[7px]" : "mt-0.5"} flex min-h-[24px] w-full flex-col items-center justify-center`}>
+          <div className="flex h-[20px] w-full items-center justify-center">
+            <div className="inline-flex items-center justify-center gap-2 sm:gap-3">
+              {currentPrice > 0 ? (
+                <p className="text-[12px] font-medium text-slate-400 line-through">
+                  {"\u20B9"}
+                  {formattedOriginalPrice}
+                </p>
+              ) : (
+                <span />
+              )}
+              <p className={`${compact ? "text-[0.95rem]" : "text-[1.05rem]"} font-semibold text-[#1D3A8A]`}>
+                {"\u20B9"}
+                {formattedCurrentPrice}
+              </p>
+            </div>
+          </div>
+          {savingsAmount > 0 && (
+            <p className="mt-0.5 text-[10px] font-semibold text-emerald-600">
+              You Save {"\u20B9"}
+              {Math.round(savingsAmount).toLocaleString("en-IN")}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CartControls = ({
   currentQty,
   isSoldOut,
+  compact,
   onAddToCart,
   onDecrease,
   onIncrease,
   showAddedHint,
-  isPreviewOpen,
   productTitle,
 }) => (
-  <div className="relative mt-auto pt-1">
-    {showAddedHint && !isPreviewOpen && (
+  <div className="relative mt-auto pt-0.5">
+    {showAddedHint && (
       <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
         Added 1 item
       </span>
     )}
-    {currentQty === 0 ? (
-      <div className="relative flex justify-center">
+    <div className="flex items-center gap-2">
+      {isSoldOut ? (
+        <button
+          type="button"
+          disabled
+          className={`inline-flex ${compact ? "h-8 text-[9px]" : "h-9 text-[10px]"} w-full min-w-0 items-center justify-center rounded-[5px] bg-slate-200 px-3 py-0 font-semibold uppercase tracking-wide text-slate-600 shadow-sm`}
+        >
+          Back Soon !
+        </button>
+      ) : currentQty === 0 ? (
         <button
           type="button"
           onClick={onAddToCart}
-          disabled={isSoldOut}
-          className="group inline-flex h-9 w-[135px] min-w-[135px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-0 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
+          className={`da-add-cart-btn group ${compact ? "h-9 gap-1 whitespace-nowrap text-[8px] tracking-[0.03em]" : "h-9 text-[10px]"} w-full min-w-0 px-3 py-0`}
         >
-          <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
-            <img src={plusIcon} alt="" className="h-5 w-5" />
+          <span className={`grid shrink-0 ${compact ? "h-4 w-4" : "h-5 w-5"} aspect-square place-items-center rounded-full bg-white/20`}>
+            <img src={plusIcon} alt="" className={`${compact ? "h-4 w-4" : "h-5 w-5"} object-contain`} />
           </span>
           Add to cart
         </button>
-      </div>
-    ) : (
-      <div className="flex justify-center">
-        <div className="w-[160px] min-w-[160px]">
-          <div className="inline-flex h-9 w-full items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
+      ) : (
+        <div className="w-full min-w-0">
+          <div
+            className={`inline-flex ${compact ? "h-8" : "h-9"} w-full items-center justify-between rounded-full bg-gradient-to-r from-slate-50 to-slate-100 px-2 shadow-sm`}
+            onClick={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
             <button
               type="button"
               onClick={onDecrease}
               disabled={isSoldOut}
-              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+              className={`${compact ? "h-6 w-6" : "h-7 w-7"} rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300`}
               aria-label={`Decrease quantity for ${productTitle}`}
             >
-              <img src={incMinusIcon} alt="" className="h-7 w-7" />
+              <img src={incMinusIcon} alt="" className={`${compact ? "h-6 w-6" : "h-7 w-7"}`} />
             </button>
-            <span className="text-sm font-semibold text-blue-700">
+            <span className={`${compact ? "text-[12px]" : "text-sm"} font-semibold text-[#1D3A8A]`}>
               {currentQty}
             </span>
             <button
               type="button"
               onClick={onIncrease}
               disabled={isSoldOut}
-              className="h-7 w-7 rounded-full bg-white text-sm font-semibold text-blue-700 shadow disabled:cursor-not-allowed disabled:text-blue-300"
+              className={`${compact ? "h-6 w-6" : "h-7 w-7"} rounded-full bg-white text-sm font-semibold text-[#1D3A8A] shadow disabled:cursor-not-allowed disabled:text-slate-300`}
               aria-label={`Increase quantity for ${productTitle}`}
             >
-              <img src={incPlusIcon} alt="" className="h-7 w-7" />
+              <img src={incPlusIcon} alt="" className={`${compact ? "h-6 w-6" : "h-7 w-7"}`} />
             </button>
           </div>
         </div>
-      </div>
-    )}
+      )}
+    </div>
   </div>
 );
-
-const ExploreButton = ({
-  exploreStyle,
-  startFromPrice,
-  count,
-  onClick,
-}) => {
-  const commonProps = {
-    type: "button",
-    onClick: (event) => {
-      event.stopPropagation();
-      onClick?.();
-    },
-  };
-
-  const startFromBlock = startFromPrice !== null && (
-    <div className="absolute inset-x-3 bottom-10 flex justify-center sm:bottom-11">
-      <span className="text-center text-[11px] font-semibold uppercase leading-none tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]" style={{ marginBottom: "20px" }}>
-        Starts from {"\u20B9"}
-        {startFromPrice.toLocaleString("en-IN")}
-      </span>
-    </div>
-  );
-
-  if (exploreStyle === "underline") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-md backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.2)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white">
-              {count}
-            </span>
-          )}
-          <span className="absolute inset-x-8 -bottom-1 h-[2px] rounded-full bg-blue-500/60" aria-hidden="true" />
-        </button>
-      </>
-    );
-  }
-
-  if (exploreStyle === "outline") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-3 bottom-3 inline-flex items-center justify-center gap-2 rounded-full border border-blue-300 bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(37,99,235,0.18)] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-2 text-[10px] font-semibold tracking-[0.12em] text-white shadow-sm">
-              {count}
-            </span>
-          )}
-        </button>
-      </>
-    );
-  }
-
-  if (exploreStyle === "corner-badge") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-4 bottom-3 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 md:inset-x-4 md:px-3 md:py-2 md:text-[11px] lg:inset-x-8 lg:px-2.5 lg:py-2 lg:text-[10px]"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 shadow ring-2 ring-blue-400">
-              {count}
-            </span>
-          )}
-        </button>
-      </>
-    );
-  }
-
-  if (exploreStyle === "stacked") {
-    return (
-      <>
-        {startFromBlock}
-        <button
-          {...commonProps}
-          className="absolute inset-x-3 bottom-3 flex flex-col items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-        >
-          <span>Explore</span>
-          {count !== null && (
-            <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white ring-1 ring-white/30">
-              {count}
-            </span>
-          )}
-        </button>
-      </>
-    );
-  }
-
-  return (
-    <>
-      {startFromBlock}
-      <button
-        {...commonProps}
-        className="absolute inset-x-3 bottom-3 inline-flex items-center justify-between rounded-full bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-      >
-        <span className="inline-flex items-center gap-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
-              <path d="M5 12h14M12 5v14" />
-            </svg>
-          </span>
-          <span>Explore</span>
-        </span>
-        {count !== null && (
-          <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-blue-700 ring-2 ring-blue-400">
-            {count}
-          </span>
-        )}
-      </button>
-    </>
-  );
-};
-
-const PreviewModal = ({
-  isOpen,
-  productTitle,
-  productDescription,
-  imageSrc,
-  price,
-  currentQty,
-  isSoldOut,
-  showAddedHint,
-  onClose,
-  onAddToCart,
-  onDecrease,
-  onIncrease,
-}) => {
-  if (!isOpen || typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose?.();
-      }}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
-          aria-label="Close image preview"
-        >
-          <img src={closeIcon} alt="" className="h-5 w-5" aria-hidden="true" />
-        </button>
-        <div className="flex max-h-[calc(90vh-3rem)] flex-col gap-6 p-6 md:flex-row md:items-stretch">
-          <div className="flex w-full flex-col md:w-1/2">
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-              <img
-                src={imageSrc}
-                alt={productTitle}
-                className="h-full w-full object-contain bg-white"
-              />
-            </div>
-            <div className="mt-1 flex flex-col items-center text-center">
-              <h2 className="text-2xl font-semibold text-slate-900">
-                {productTitle}
-              </h2>
-              <p className="text-lg font-semibold text-slate-900">
-                {"\u20B9"}
-                {Number(price ?? 0).toLocaleString("en-IN")}
-              </p>
-            </div>
-          </div>
-          <div className="flex w-full flex-1 min-h-0 flex-col gap-3 md:w-1/2">
-            <div className="flex-1 overflow-y-auto pr-1 md:mt-1 md:pr-0">
-              {productDescription ? (
-                <div className="text-sm leading-relaxed text-slate-600">
-                  {renderFormattedDescription(productDescription)}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">
-                  Product details will be available soon.
-                </p>
-              )}
-            </div>
-            <div className="relative mt-auto flex justify-center pt-1">
-              {showAddedHint && (
-                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-200">
-                  Added 1 item
-                </span>
-              )}
-              {currentQty === 0 ? (
-                <button
-                  type="button"
-                  onClick={onAddToCart}
-                  disabled={isSoldOut}
-                  className="group inline-flex h-11 w-full max-w-[180px] min-w-[180px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-0 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300"
-                >
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20">
-                    <img src={plusIcon} alt="" className="h-6 w-6" />
-                  </span>
-                  Add to cart
-                </button>
-              ) : (
-                <div className="inline-flex h-11 w-full max-w-[220px] min-w-[220px] items-center justify-between rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-2 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={onDecrease}
-                    disabled={isSoldOut}
-                    className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                    aria-label={`Decrease quantity for ${productTitle}`}
-                  >
-                    <img src={incMinusIcon} alt="" className="h-9 w-9" />
-                  </button>
-                  <span className="px-3 text-base font-semibold text-blue-700">
-                    {currentQty}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onIncrease}
-                    disabled={isSoldOut}
-                    className="h-9 w-9 rounded-full bg-white text-base font-semibold text-blue-700 shadow hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-blue-300"
-                    aria-label={`Increase quantity for ${productTitle}`}
-                  >
-                    <img src={incPlusIcon} alt="" className="h-9 w-9" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-};
 
 const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
   if (!isOpen || typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4"
       onClick={(event) => {
+        event.stopPropagation();
         if (event.target === event.currentTarget) onCancel?.();
       }}
+      onPointerDown={(event) => event.stopPropagation()}
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl">
+      <div
+        className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-xl"
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
         <h3 className="text-lg font-semibold text-slate-900">
           Remove item?
         </h3>
@@ -478,14 +333,20 @@ const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
         <div className="mt-4 flex items-center justify-center gap-3">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={(event) => {
+              event.stopPropagation();
+              onCancel?.();
+            }}
             className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
             Cancel
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={(event) => {
+              event.stopPropagation();
+              onConfirm?.();
+            }}
             className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
           >
             Remove
@@ -500,19 +361,23 @@ const RemoveConfirmModal = ({ isOpen, productTitle, onCancel, onConfirm }) => {
 const CategoryCard = ({
   categoryName,
   product,
+  relatedProducts = [],
   isSubCategory = false,
   onAddToCart,
-  showStockBadge,
   isMasonry = false,
   compact = false,
+  borderless = false,
+  itemDetailGoldenBorder = false,
+  whiteCard = false,
+  className = "",
 }) => {
-  const EXPLORE_STYLE = "corner-badge";
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQty, removeItem } = useCart();
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const { toggleFavorite, isFavorite: isProductFavorite } = useFavorites();
   const [showViewHint, setShowViewHint] = useState(false);
-  const [showExpandHint, setShowExpandHint] = useState(false);
   const [showAddedHint, setShowAddedHint] = useState(false);
+  const [favoriteToastMessage, setFavoriteToastMessage] = useState("");
+  const [favoriteToastType, setFavoriteToastType] = useState("success");
   const [pendingRemove, setPendingRemove] = useState(false);
 
   const productTitle = isSubCategory
@@ -520,19 +385,20 @@ const CategoryCard = ({
     : product?.name || product?.title || "Product";
 
   const productSubtitle = product?.subtitle || "";
-  const productDescription =
-    product?.description || product?.details || product?.summary || "";
-  const startFromPrice = Number.isFinite(Number(product?.startFromPrice))
-    ? Number(product?.startFromPrice)
-    : null;
-
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
     : product?.product_images?.[0]?.url || product?.image;
+  const productBadgeTextRaw = product?.badge_label || "";
+  const productBadgeTextValue = typeof productBadgeTextRaw === "string"
+    ? productBadgeTextRaw.trim()
+    : "";
+  const productBadgeText = productBadgeTextValue.toUpperCase();
 
   const availabilityText = String(
     product?.availability || product?.status || ""
   ).toLowerCase();
+  const { nonDiscountPrice, savingsAmount } = getProductPricing(product);
+  const savingsBadgeAmount = Math.max(0, Math.round(savingsAmount));
   const parsedStockCount = Number.isFinite(Number(product?.stock_count))
     ? Number(product?.stock_count)
     : null;
@@ -540,28 +406,17 @@ const CategoryCard = ({
     ? parsedStockCount <= 0
     : /out|sold/.test(availabilityText);
 
-  const shouldShowStockBadge =
-    typeof showStockBadge === "boolean" ? showStockBadge : !isSubCategory;
-
   const handleClick = () => {
-    if (!isSubCategory) return;
-    if (product?.subcategorySlug) {
-      navigate(`/category/${categoryName}/${product.subcategorySlug}`);
+    if (isSubCategory) {
+      if (product?.subcategorySlug) {
+        navigate(`/category/${categoryName}/${product.subcategorySlug}`);
+      }
+      return;
+    }
+    if (product?.id) {
+      navigate(`/product/${product.id}`, { state: { product, relatedProducts } });
     }
   };
-
-  useEffect(() => {
-    if (!isPreviewOpen) return;
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") setIsPreviewOpen(false);
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [isPreviewOpen]);
 
   // One-time hint to nudge users to view product details (subcategories only)
   useEffect(() => {
@@ -599,8 +454,27 @@ const CategoryCard = ({
     return () => clearTimeout(timer);
   }, [showAddedHint]);
 
+  useEffect(() => {
+    if (!favoriteToastMessage) return;
+    const timer = setTimeout(() => setFavoriteToastMessage(""), 1600);
+    return () => clearTimeout(timer);
+  }, [favoriteToastMessage]);
+
   const currentQty =
     cartItems?.find((item) => item.id === product?.id)?.qty || 0;
+  const favoriteSelected = !isSubCategory && isProductFavorite(product?.id);
+  const handleFavoriteToggle = async () => {
+    if (isSubCategory) return;
+    const isAdding = !favoriteSelected;
+    const { error } = await toggleFavorite(product);
+    if (error) {
+      setFavoriteToastType("error");
+      setFavoriteToastMessage("Some error occurred, try again later");
+      return;
+    }
+    setFavoriteToastType("success");
+    setFavoriteToastMessage(isAdding ? "Added to favourite" : "Removed from favourite");
+  };
 
   const handleAddToCart = (event) => {
     event?.stopPropagation();
@@ -686,72 +560,85 @@ const CategoryCard = ({
     }
   };
 
-  // One-time hint for product image expand (products only)
-  useEffect(() => {
-    if (isSubCategory) return;
-    if (typeof window === "undefined") return;
-    const storageKey = "da-expand-hint-shown";
-    const alreadyShown = window.localStorage.getItem(storageKey);
-    if (alreadyShown) return;
-    setShowExpandHint(true);
-    const timer = setTimeout(() => setShowExpandHint(false), 1600);
-    window.localStorage.setItem(storageKey, "1");
-    return () => clearTimeout(timer);
-  }, [isSubCategory]);
-
   return (
     <article
-      className={`group relative overflow-visible rounded-2xl border border-slate-300 bg-white shadow-sm transition-shadow duration-300 ${
-        isSubCategory ? "cursor-pointer pb-6 sm:pb-8 hover:shadow-lg" : "hover:shadow-md"
-      } ${compact ? "h-full" : ""}`}
-      tabIndex={isSubCategory ? "0" : undefined}
-      role={isSubCategory ? "button" : "group"}
+      className={`group relative rounded-[6px] bg-white shadow-sm transition-shadow duration-300 ${
+        isSubCategory ? "overflow-hidden" : "overflow-visible"
+      } ${
+        whiteCard
+          ? isSubCategory
+            ? "cursor-pointer aspect-[25/27] bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
+            : "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
+          : isSubCategory
+            ? "cursor-pointer aspect-[25/27] bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
+            : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
+      } ${
+        itemDetailGoldenBorder && !isSubCategory
+          ? "border-[0.5px] border-amber-300/90"
+          : borderless
+            ? "border-0"
+            : "border border-slate-300"
+      } ${compact ? "h-full" : ""} ${className}`}
+      tabIndex="0"
+      role="button"
       aria-label={
         isSubCategory ? `View ${productTitle} subcategory` : productTitle
       }
       onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
     >
       <ProductImageArea
         isSubCategory={isSubCategory}
         compact={compact}
+        whiteCard={whiteCard}
+        savingsBadgeAmount={savingsBadgeAmount}
         imageSrc={imageSrc}
         productTitle={productTitle}
         productSubtitle={productSubtitle}
         showViewHint={showViewHint}
-        showExpandHint={showExpandHint}
+        isFavorite={favoriteSelected}
+        onToggleFavorite={handleFavoriteToggle}
         onImageClick={(event) => {
           if (isSubCategory) return;
           event.stopPropagation();
-          setIsPreviewOpen(true);
+          navigate(`/product/${product?.id}`, { state: { product, relatedProducts } });
         }}
       />
 
       <div
-        className={`${compact ? "p-2" : "p-2 sm:p-3"} ${
+        className={`${compact ? "px-2 pb-2 pt-1.5" : "px-2 pb-2 pt-1.5 sm:px-3 sm:pb-3 sm:pt-2"} ${
           isSubCategory
-            ? "flex flex-col gap-2 pb-12 sm:gap-3 sm:pb-14"
+            ? "hidden"
             : isMasonry
-              ? "flex flex-col gap-1 sm:gap-1.5"
+              ? "flex flex-1 flex-col gap-1 sm:gap-1.5"
               : compact
-                ? "flex min-h-[111px] flex-col gap-1 sm:gap-1.5"
-                : "flex min-h-[137px] flex-col gap-1 sm:min-h-[159px] sm:gap-1.5"
+                ? "flex min-h-[78px] flex-1 flex-col gap-0.5 sm:gap-1"
+                : "flex min-h-[74px] flex-1 flex-col gap-0.5 sm:min-h-[84px] sm:gap-1"
         }`}
       >
-        {!isSubCategory && shouldShowStockBadge && (
-          <StockBadge isSoldOut={isSoldOut} />
+        {!isSubCategory && (
+          <ProductInfo
+            isSubCategory={isSubCategory}
+            isMasonry={isMasonry}
+            compact={compact}
+            productTitle={productTitle}
+            productBadgeText={productBadgeText}
+            price={product?.price}
+            originalPrice={nonDiscountPrice}
+            savingsAmount={savingsAmount}
+          />
         )}
-        <ProductInfo
-          isSubCategory={isSubCategory}
-          isMasonry={isMasonry}
-          productTitle={productTitle}
-          productSubtitle={productSubtitle}
-          price={product?.price}
-        />
 
         {!isSubCategory && (
           <CartControls
             currentQty={currentQty}
             isSoldOut={isSoldOut}
+            compact={compact}
             onAddToCart={handleAddToCart}
             onDecrease={(event) => {
               event.stopPropagation();
@@ -766,45 +653,10 @@ const CategoryCard = ({
               updateQty?.(product?.id, currentQty + 1);
             }}
             showAddedHint={showAddedHint}
-            isPreviewOpen={isPreviewOpen}
             productTitle={productTitle}
           />
         )}
       </div>
-
-      {isSubCategory && (
-        <ExploreButton
-          exploreStyle={EXPLORE_STYLE}
-          startFromPrice={startFromPrice}
-          count={Number.isFinite(product?.itemCount) ? product.itemCount : null}
-          onClick={handleClick}
-        />
-      )}
-
-      <PreviewModal
-        isOpen={isPreviewOpen}
-        productTitle={productTitle}
-        productDescription={productDescription}
-        imageSrc={imageSrc}
-        price={product?.price}
-        currentQty={currentQty}
-        isSoldOut={isSoldOut}
-        showAddedHint={showAddedHint}
-        onClose={() => setIsPreviewOpen(false)}
-        onAddToCart={handleAddToCart}
-        onDecrease={(event) => {
-          event.stopPropagation();
-          if (currentQty <= 1) {
-            setPendingRemove(true);
-            return;
-          }
-          updateQty?.(product?.id, currentQty - 1);
-        }}
-        onIncrease={(event) => {
-          event.stopPropagation();
-          updateQty?.(product?.id, currentQty + 1);
-        }}
-      />
 
       <RemoveConfirmModal
         isOpen={pendingRemove}
@@ -815,6 +667,20 @@ const CategoryCard = ({
           setPendingRemove(false);
         }}
       />
+
+      {favoriteToastMessage && !isSubCategory && (
+        <div className="pointer-events-none absolute inset-x-3 bottom-12 z-30 flex justify-center">
+          <span
+            className={`whitespace-nowrap rounded-md px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.04em] text-white shadow-md sm:px-2.5 sm:text-[10px] sm:tracking-wide ${
+              favoriteToastType === "error"
+                ? "bg-rose-600 shadow-rose-200"
+                : "bg-emerald-600 shadow-emerald-200"
+            }`}
+          >
+            {favoriteToastMessage}
+          </span>
+        </div>
+      )}
     </article>
   );
 };

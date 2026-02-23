@@ -1,0 +1,51 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">Fishes category showcase</title>
+  <desc id="desc">Aquarium style category card with fish illustration</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022B5B"/>
+      <stop offset="100%" stop-color="#0C7BC7"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#BEEBFF" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#67C9FF" stop-opacity="0.10"/>
+    </linearGradient>
+    <linearGradient id="titleBand" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFE96B"/>
+      <stop offset="100%" stop-color="#FFC928"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
+
+  <rect width="640" height="640" rx="42" fill="url(#bg)"/>
+
+  <rect x="28" y="28" width="584" height="584" rx="34" fill="url(#glass)"/>
+
+  <circle cx="84" cy="94" r="9" fill="#E6F8FF"/>
+  <circle cx="118" cy="122" r="7" fill="#D3F2FF"/>
+  <circle cx="540" cy="130" r="11" fill="#DFF6FF"/>
+  <circle cx="564" cy="156" r="7" fill="#DFF6FF"/>
+
+  <ellipse cx="332" cy="332" rx="250" ry="146" fill="#0A4D88" opacity="0.45"/>
+  <ellipse cx="332" cy="486" rx="282" ry="88" fill="#0A457A" opacity="0.55"/>
+
+  <ellipse cx="318" cy="324" rx="166" ry="96" fill="#4FD2FF"/>
+  <ellipse cx="300" cy="318" rx="136" ry="78" fill="#7BE4FF"/>
+  <polygon points="440,324 538,272 540,374" fill="#4FD2FF"/>
+  <polygon points="430,324 506,286 508,362" fill="#8FE9FF"/>
+  <path d="M230 280 Q268 245 326 252" stroke="#D6F8FF" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M214 352 Q262 388 330 380" stroke="#38A6D6" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+  <circle cx="222" cy="316" r="13" fill="#083E6B"/>
+  <circle cx="218" cy="312" r="4" fill="#FFFFFF"/>
+
+  <ellipse cx="280" cy="324" rx="32" ry="16" fill="#FFFFFF" opacity="0.30" filter="url(#soft)"/>
+
+  <polygon points="150,460 610,430 586,544 128,572" fill="url(#titleBand)"/>
+  <text x="366" y="530" text-anchor="middle" font-family="'Trajan Pro Regular', 'Trajan Pro', serif" font-size="96" font-weight="700" fill="#06396B">FISHES</text>
+
+  <text x="74" y="102" font-family="'Trajan Pro Regular', 'Trajan Pro', serif" font-size="54" font-weight="700" fill="#FFFFFF">AQUA WORLD</text>
+  <text x="560" y="600" text-anchor="end" font-family="'Trajan Pro Regular', 'Trajan Pro', serif" font-size="46" font-weight="700" fill="#FFFFFF">SHOP NOW</text>
+</svg>

@@ -60,21 +60,21 @@ const CartDrawer = ({ isOpen, onClose }) => {
       }}
     >
       <aside
-        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`da-drawer-panel ${
           isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <header className="flex flex-none items-center justify-between border-b border-blue-100 px-6 py-4">
+        <header className="da-drawer-header">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-              DreamAquatics
+            <p className="da-drawer-brand">
+              <span className="skew-x-[10deg]">DreamAquatics</span>
             </p>
             <h2 className="mt-1 text-lg font-semibold text-slate-900">Cart</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            className="da-drawer-close"
             aria-label="Close cart"
           >
             Close
@@ -93,7 +93,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
               <Link
                 to="/"
                 onClick={onClose}
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:hidden"
+                className="da-cta-amber da-cta-amber-pill mt-4 px-4 text-xs tracking-wide lg:hidden"
               >
                 Continue shopping
               </Link>
@@ -118,14 +118,14 @@ const CartDrawer = ({ isOpen, onClose }) => {
         </div>
 
         {!emptyState && (
-          <footer className="flex-none border-t border-blue-100 bg-blue-50 px-6 py-4">
+          <footer className="da-drawer-footer">
             <div className="text-center text-xs text-slate-600">
               <span>Shipping calculated at checkout</span>
             </div>
             <button
               type="button"
               onClick={handleCheckout}
-              className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+              className="da-cta-amber mt-4 w-full rounded-xl px-4 py-3 text-sm tracking-wide shadow-lg"
             >
               Checkout -- INR {subtotal.toLocaleString('en-IN')}
             </button>

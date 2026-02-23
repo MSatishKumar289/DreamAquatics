@@ -36,6 +36,14 @@ import ItemModal from "../components/admin/ItemModal.jsx";
 import SubcategoryModal from "../components/admin/SubcategoryModal.jsx";
 import PendingDeleteModal from "../components/admin/PendingDeleteModal.jsx";
 import OrderReceiptModal from "../components/admin/OrderReceiptModal.jsx";
+import {
+  fetchBestsellingEntriesWithProducts,
+  updateBestsellerForProduct
+} from "../lib/bestsellingApi.js";
+import {
+  fetchEssentialEntries,
+  updateEssentialForProduct
+} from "../lib/essentialsApi.js";
 
 
 const MAX_IMAGE_BYTES = 300 * 1024;
@@ -45,10 +53,14 @@ const MAX_VIDEO_SECONDS = 31;
 const blankItemDraft = {
   name: "",
   price: "",
+  nonDiscountPrice: "",
+  badgeLabel: "",
   description: "",
   availability: "in-stock",
   imageData: "",
-  imageName: ""
+  imageName: "",
+  isBestSeller: false,
+  isEssential: false
 };
 
 const blankSubcategoryDraft = {
@@ -168,6 +180,8 @@ const AdminAddProduct = ({
      PRODUCTS (DB)
   ========================= */
   const [itemsBySubcategory, setItemsBySubcategory] = useState({});
+  const [bestsellingEntries, setBestsellingEntries] = useState([]);
+  const [essentialEntries, setEssentialEntries] = useState([]);
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [itemDraft, setItemDraft] = useState(blankItemDraft);
@@ -175,6 +189,7 @@ const AdminAddProduct = ({
   const [itemError, setItemError] = useState("");
   const [isItemImageProcessing, setIsItemImageProcessing] = useState(false);
   const [isSavingItem, setIsSavingItem] = useState(false);
+  const [showBestsellerPreview, setShowBestsellerPreview] = useState(false);
 
   const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
   const [subcategoryDraft, setSubcategoryDraft] = useState(blankSubcategoryDraft);
@@ -442,7 +457,7 @@ const AdminAddProduct = ({
         }
         dataUrl = await readFileAsDataUrl(file);
       } else {
-        dataUrl = await prepareImageData(file);
+        dataUrl = await readFileAsDataUrl(file);
       }
 
       setHomeMediaDraft((prev) => ({
@@ -523,6 +538,26 @@ const AdminAddProduct = ({
     });
   }, [dbCategories]);
 
+  const CATEGORY_NAME_TO_KEY = useMemo(
+    () => ({
+      Fishes: "fishes",
+      Plants: "live-plants",
+      Accessories: "accessories",
+      Tanks: "tank"
+    }),
+    []
+  );
+
+  const CATEGORY_KEY_TO_LABEL = useMemo(
+    () => ({
+      fishes: "Fishes",
+      "live-plants": "Plants",
+      accessories: "Tanks & Accessories",
+      tank: "Fish Food & Medicines"
+    }),
+    []
+  );
+
   const selectedSubcategory = useMemo(
     () =>
       currentSubcategories.find((subcategory) => subcategory.id === selectedSubcategoryId) ||
@@ -571,9 +606,89 @@ const AdminAddProduct = ({
   }, [profile, authLoading, navigate]);
 
   useEffect(() => {
+    let active = true;
+    const loadBestselling = async () => {
+      const { data, error } = await fetchBestsellingEntriesWithProducts();
+      if (!active) return;
+      if (error) {
+        console.error("Failed to load bestselling entries", error);
+        setBestsellingEntries([]);
+      } else {
+        setBestsellingEntries(data || []);
+      }
+    };
+
+    loadBestselling();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadEssentials = async () => {
+      const { data, error } = await fetchEssentialEntries();
+      if (!active) return;
+      if (error) {
+        console.error("Failed to load essential entries", error);
+        setEssentialEntries([]);
+      } else {
+        setEssentialEntries(data || []);
+      }
+    };
+
+    loadEssentials();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const bestsellingPreviewByCategory = useMemo(() => {
+    const preview = {
+      fishes: [],
+      "live-plants": [],
+      accessories: [],
+      tank: []
+    };
+
+    (bestsellingEntries || []).forEach((entry) => {
+      if (!preview[entry.category_key]) return;
+      const name =
+        entry?.product?.name ||
+        entry?.product?.subcategory?.name ||
+        "Unnamed item";
+      if (preview[entry.category_key].length < 2) {
+        preview[entry.category_key].push(name);
+      }
+    });
+
+    return preview;
+  }, [bestsellingEntries]);
+
+  const bestsellingIdSet = useMemo(() => {
+    const ids = new Set();
+    (bestsellingEntries || []).forEach((entry) => {
+      if (entry?.product_id) ids.add(entry.product_id);
+    });
+    return ids;
+  }, [bestsellingEntries]);
+
+  const essentialIdSet = useMemo(() => {
+    const ids = new Set();
+    (essentialEntries || []).forEach((entry) => {
+      if (entry?.product_id) ids.add(entry.product_id);
+    });
+    return ids;
+  }, [essentialEntries]);
+
+  useEffect(() => {
     if (adminView !== "orders") return;
     loadAdminOrders();
   }, [adminView]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [adminView, location.search]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -612,14 +727,24 @@ const AdminAddProduct = ({
     setEditingItemId(item.id);
 
     const availability = item.stock_count > 0 ? "in-stock" : "out-of-stock";
+    const isBestSeller = bestsellingEntries.some(
+      (entry) => entry.product_id === item.id
+    );
+    const isEssential = essentialEntries.some(
+      (entry) => entry.product_id === item.id
+    );
 
     setItemDraft({
       name: item.name || "",
       price: item.price || "",
+      nonDiscountPrice: item.non_discount_price || "",
+      badgeLabel: item.badge_label || "",
       description: item.description || "",
       availability,
       imageData: item.imageData || "",
-      imageName: item.imageName || ""
+      imageName: item.imageName || "",
+      isBestSeller,
+      isEssential
     });
 
     setItemError("");
@@ -645,6 +770,19 @@ const AdminAddProduct = ({
       return;
     }
 
+    const normalizedBadgeLabel = String(itemDraft.badgeLabel ?? "").trim();
+    const badgeWords = normalizedBadgeLabel ? normalizedBadgeLabel.split(/\s+/).filter(Boolean) : [];
+    if (badgeWords.length > 2) {
+      setItemError("Badge Label can have max 2 words.");
+      setIsSavingItem(false);
+      return;
+    }
+    if (normalizedBadgeLabel.length > 24) {
+      setItemError("Badge Label can be up to 24 characters.");
+      setIsSavingItem(false);
+      return;
+    }
+
     if (!selectedSubcategoryId) {
       setItemError("Subcategory not selected.");
       setIsSavingItem(false);
@@ -655,11 +793,18 @@ const AdminAddProduct = ({
 
     const hasNewImage = !!fileInputRef.current?.files?.[0];
     const stock_count = itemDraft.availability === "out-of-stock" ? 0 : 1;
+    const normalizedNonDiscountPrice = String(itemDraft.nonDiscountPrice ?? "").trim();
+    const non_discount_price = normalizedNonDiscountPrice ? normalizedNonDiscountPrice : null;
+    const badge_label = normalizedBadgeLabel ? normalizedBadgeLabel : null;
+
+    let savedProductId = editingItemId || null;
 
     if (editingItemId) {
       const { error: updateError } = await updateProduct(editingItemId, {
         name: itemDraft.name.trim(),
         price: itemDraft.price,
+        non_discount_price,
+        badge_label,
         description: itemDraft.description,
         stock_count
       });
@@ -688,6 +833,8 @@ const AdminAddProduct = ({
       const { data: product, error: createError } = await createProduct({
         name: itemDraft.name.trim(),
         price: itemDraft.price,
+        non_discount_price,
+        badge_label,
         description: itemDraft.description,
         subcategory_id: selectedSubcategoryId
       });
@@ -711,7 +858,40 @@ const AdminAddProduct = ({
         }
       }
 
+      savedProductId = product?.id || null;
       showToast("Product added successfully", "success");
+    }
+
+    if (savedProductId) {
+      const categoryKey = CATEGORY_NAME_TO_KEY[selectedCategory];
+      if (categoryKey) {
+        const { data: updatedEntries, error: bestErr } =
+          await updateBestsellerForProduct({
+            productId: savedProductId,
+            categoryKey,
+            enabled: !!itemDraft.isBestSeller
+          });
+
+        if (bestErr) {
+          console.error("Failed to update bestseller list", bestErr);
+          showToast("Bestseller update failed", "error");
+        } else {
+          setBestsellingEntries(updatedEntries || []);
+        }
+      }
+
+      const { data: updatedEssentialEntries, error: essentialErr } =
+        await updateEssentialForProduct({
+          productId: savedProductId,
+          enabled: !!itemDraft.isEssential
+        });
+
+      if (essentialErr) {
+        console.error("Failed to update essentials list", essentialErr);
+        showToast("Essentials update failed", "error");
+      } else {
+        setEssentialEntries(updatedEssentialEntries || []);
+      }
     }
 
     const { data } = await fetchProducts(selectedSubcategoryId);
@@ -989,7 +1169,7 @@ const AdminAddProduct = ({
         handleConfirmDelete={handleConfirmDelete}
       />
 
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-transparent">
         <header className="border-b border-slate-200 bg-white">
           <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div>
@@ -1025,18 +1205,88 @@ const AdminAddProduct = ({
               deleteIcon={bin_ic}
             />
 
-            <ItemsPanel
-              selectedSubcategory={selectedSubcategory}
-              selectedSubcategoryId={selectedSubcategoryId}
-              handleOpenAddItem={handleOpenAddItem}
-              itemSearch={itemSearch}
-              setItemSearch={setItemSearch}
-              filteredItems={filteredItems}
-              handleOpenEditItem={handleOpenEditItem}
-              requestDeleteItem={requestDeleteItem}
-              editIcon={edit_ic}
-              deleteIcon={bin_ic}
-            />
+            <div className="flex flex-col gap-4">
+              {/* bestsellerPreviewList */}
+              {Object.values(bestsellingPreviewByCategory).some((items) => items.length > 0) && (
+                <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setShowBestsellerPreview((prev) => !prev)}
+                    className="flex w-full items-center justify-between text-left"
+                    aria-expanded={showBestsellerPreview}
+                  >
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                        Best Sellers & Trending
+                      </h3>
+                      <span className="text-[10px] text-slate-400">
+                        2 per category
+                      </span>
+                    </div>
+                    <span
+                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition ${
+                        showBestsellerPreview ? "rotate-180 bg-slate-50" : "bg-white"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </span>
+                  </button>
+
+                  {showBestsellerPreview && (
+                    <>
+                      {/* wrap For Ipad */}
+                      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:overflow-x-auto sm:pb-1 md:flex-wrap md:overflow-visible md:pb-0">
+                        {Object.keys(bestsellingPreviewByCategory).map((key) => (
+                          <div
+                            key={key}
+                            className="min-w-[190px] flex-1 rounded-lg border border-slate-200/80 bg-slate-50/60 px-3 py-2 md:basis-[calc(50%-0.5rem)]"
+                          >
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                              {CATEGORY_KEY_TO_LABEL[key]}
+                            </p>
+                            <div className="mt-1 space-y-1 text-[12px] text-slate-700">
+                              {(bestsellingPreviewByCategory[key] || []).length > 0 ? (
+                                (bestsellingPreviewByCategory[key] || []).map((name, idx) => (
+                                  <div
+                                    key={`${key}-${idx}`}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                    <span className="line-clamp-1" title={name}>
+                                      {name}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="text-[11px] text-slate-400">No items yet</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <ItemsPanel
+                selectedSubcategory={selectedSubcategory}
+                selectedSubcategoryId={selectedSubcategoryId}
+                handleOpenAddItem={handleOpenAddItem}
+                itemSearch={itemSearch}
+                setItemSearch={setItemSearch}
+                filteredItems={filteredItems}
+                bestsellingIdSet={bestsellingIdSet}
+                essentialIdSet={essentialIdSet}
+                handleOpenEditItem={handleOpenEditItem}
+                requestDeleteItem={requestDeleteItem}
+                editIcon={edit_ic}
+                deleteIcon={bin_ic}
+              />
+            </div>
           </div>
           )}
           {adminView === "orders" && (
