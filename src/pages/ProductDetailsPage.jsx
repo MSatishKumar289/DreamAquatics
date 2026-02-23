@@ -1,4 +1,3 @@
-import { useMemo, useRef } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
@@ -7,7 +6,7 @@ import incPlusIcon from "../assets/Icons/iplus.png";
 import incMinusIcon from "../assets/Icons/iminus.png";
 import arrowIcon from "../assets/Icons/arrow.png";
 import { renderFormattedDescription } from "../utils/formatDescription";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchProductById } from "../lib/catalogApi";
 import { getProductPricing } from "../lib/pricing";
 
@@ -122,17 +121,48 @@ const ProductDetailsPage = () => {
   useEffect(() => {
     const node = relatedTrackRef.current;
     if (!node) return;
+
     const updateState = () => {
-      const maxLeft = Math.max(0, node.scrollWidth - node.clientWidth);
-      setCanScrollLeft(node.scrollLeft > 4);
-      setCanScrollRight(maxLeft - node.scrollLeft > 4);
+      const trackRect = node.getBoundingClientRect();
+      const cards = Array.from(node.children);
+      if (!cards.length) {
+        setCanScrollLeft(false);
+        setCanScrollRight(false);
+        return;
+      }
+
+      const tolerance = 6;
+      let hasHiddenLeft = false;
+      let hasHiddenRight = false;
+
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        if (rect.left < trackRect.left - tolerance) hasHiddenLeft = true;
+        if (rect.right > trackRect.right + tolerance) hasHiddenRight = true;
+      });
+
+      setCanScrollLeft(hasHiddenLeft);
+      setCanScrollRight(hasHiddenRight);
     };
-    updateState();
+
+    const scheduleUpdate = () => window.requestAnimationFrame(updateState);
+    scheduleUpdate();
+
     node.addEventListener("scroll", updateState, { passive: true });
     window.addEventListener("resize", updateState);
+    node.addEventListener("touchend", scheduleUpdate, { passive: true });
+    node.addEventListener("pointerup", scheduleUpdate, { passive: true });
+
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    resizeObserver.observe(node);
+    Array.from(node.children).forEach((card) => resizeObserver.observe(card));
+
     return () => {
       node.removeEventListener("scroll", updateState);
       window.removeEventListener("resize", updateState);
+      node.removeEventListener("touchend", scheduleUpdate);
+      node.removeEventListener("pointerup", scheduleUpdate);
+      resizeObserver.disconnect();
     };
   }, [relatedProducts.length]);
 
