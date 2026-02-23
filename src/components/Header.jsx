@@ -1,139 +1,622 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
+import cart_ic from '../assets/Icons/cart_ic.svg';
+import mobile_cart_ic from '../assets/Icons/mobile_cart_ic.svg';
+import close_ic from '../assets/Icons/close_ic.svg';
+import hamburger_menu_ic from '../assets/Icons/hamburger_menu_ic.svg';
 
-const Header = () => {
-  const [cartCount] = useState(0); // Placeholder for cart count
+
+const Header = ({
+  user,
+  onLogout,
+  onRequestLogin,
+  onCartOpen,
+  onFavoritesOpen,
+  onAdminOrdersOpen,
+  onUserOrdersOpen,
+  isRoleResolved,
+  newOrdersCount = 0,
+  userNotificationsCount = 0,
+  showAddedBanner = false
+}) => {
+  const { itemCount } = useCart();
+  const { favoriteCount } = useFavorites();
+  const cartCount = itemCount;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [showProfileHint, setShowProfileHint] = useState(false);
+  const navigate = useNavigate();
+  const isAdmin = user?.role === 'admin';
 
   const categories = [
     { label: 'Fishes', value: 'fishes' },
     { label: 'Live Plants', value: 'live-plants' },
-    { label: 'Accessories', value: 'accessories' },
-    { label: 'Tank', value: 'tank' }
+    { label: 'Tanks & Accessories', value: 'accessories' },
+    { label: 'Fish Food & Medicines', value: 'tank' }
   ];
 
+  useEffect(() => {
+    if (!isProfileOpen) return;
+    const handleClickOutside = (event) => {
+      const inMenu = event.target.closest('[data-profile-menu]');
+      const inButton = event.target.closest('[data-profile-button]');
+      if (inMenu || inButton) return;
+      setIsProfileOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isProfileOpen]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleClickOutside = (event) => {
+      const inMenu = event.target.closest('[data-mobile-menu]');
+      const inButton = event.target.closest('[data-mobile-menu-button]');
+      if (inMenu || inButton) return;
+      setIsMobileMenuOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!user) return;
+    const seen = localStorage.getItem('da_profile_hint_seen');
+    if (seen) return;
+    setShowProfileHint(true);
+    const timer = setTimeout(() => {
+      setShowProfileHint(false);
+      localStorage.setItem('da_profile_hint_seen', '1');
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [user]);
+
+  const dismissProfileHint = () => {
+    if (!showProfileHint) return;
+    setShowProfileHint(false);
+    localStorage.setItem('da_profile_hint_seen', '1');
+  };
+
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-        <div className="flex items-center justify-between h-16 md:h-20">
+    <>
+    <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
+      <nav className="container mx-auto px-[10px] sm:px-6 lg:px-8" aria-label="Main navigation">
+        <div className="flex items-center justify-between gap-2 h-16 md:h-20">
           {/* Brand Title */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600">
-            Dream Aquatics
-          </h1>
+          <Link
+            to="/"
+            className="flex min-w-0 flex-none items-center gap-2 sm:gap-3 text-blue-600 hover:text-blue-700 transition-colors focus:outline-none rounded"
+            aria-label="DreamAquatics home"
+          >
+            <div className="flex items-baseline leading-none">
+              <span className="text-[1.5rem] sm:text-[rem] md:text-[3rem] font-extrabold tracking-[0.04em]">D</span>
+              <span className="-ml-0.5 sm:-ml-1 text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.04em]">REAM</span>
+              <span className="ml-0.5 sm:ml-1 text-[1.5rem] sm:text-[2rem] md:text-[3rem] font-extrabold tracking-[0.04em]">A</span>
+              <span className="-ml-0.5 sm:-ml-1 text-[1.0rem] sm:text-[2.4rem] md:text-3xl font-semibold tracking-[0.04em]">QUATICS</span>
+            </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+          <div className="hidden xl:flex items-center space-x-3 xl:space-x-4">
             {categories.map((category) => (
-              <button
+              <Link
                 key={category.value}
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+                to={`/category/${category.value}`}
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors focus:outline-none rounded px-2 py-1"
                 aria-label={`View ${category.label} category`}
               >
                 {category.label}
-              </button>
+              </Link>
             ))}
+
+            {/* Profile / Login */}
+            <div className="relative flex items-center gap-2">
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      dismissProfileHint();
+                      setIsProfileOpen((prev) => !prev);
+                    }}
+                    data-profile-button
+                    className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_0_0_6px_rgba(37,99,235,0.08)] transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-[0_0_0_8px_rgba(37,99,235,0.12)] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    aria-label="Account menu"
+                  >
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                    <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
+                    <span className="relative text-sm font-semibold text-slate-700">
+                      {(user?.name || "U")
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </span>
+                  </button>
+                  {showProfileHint && (
+                    <div className="absolute right-0 top-12 z-50 hidden w-60 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg xl:block">
+                      <span className="absolute -top-2 right-4 h-3 w-3 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                      Access your profile here.
+                    </div>
+                  )}
+                  {user.role === 'admin' && (
+                    <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-2 py-1 rounded-md border border-sky-200">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onRequestLogin?.()}
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  aria-label="Login to your DreamAquatics account"
+                >
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                  <span className="absolute inset-[6px] rounded-full bg-white shadow-inner" aria-hidden />
+                  <svg
+                    className="relative h-5 w-5 text-slate-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <circle cx="12" cy="8.5" r="3.25" />
+                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                  </svg>
+                </button>
+              )}
+              {user && isProfileOpen && (
+                  <div
+                    data-profile-menu
+                    className="absolute right-0 top-12 z-40 w-64 rounded-[8px] border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                  >
+                  <p className="text-sm font-semibold text-slate-800">Signed in</p>
+                  <p className="text-base font-bold text-sky-800">{user.name}</p>
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Profile
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/admin/add-product');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Admin
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      setLogoutConfirmOpen(true);
+                    }}
+                    className="mt-3 w-full rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
             
-            {/* Cart Icon */}
-            <button
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-              aria-label={`Shopping cart with ${cartCount} items`}
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+            {/* Cart / Notifications */}
+            {!isRoleResolved ? null : isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onAdminOrdersOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${newOrdersCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Admin notifications with ${newOrdersCount} new orders`}
+                data-orders-target="orders"
               >
-                <path
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
+                  aria-hidden="true"
                 >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+                  <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                </svg>
+                {newOrdersCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${newOrdersCount} new orders`}
+                  >
+                    {newOrdersCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <div className="flex items-center gap-0.5">
+                {!!user && !isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onUserOrdersOpen?.()}
+                    className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${userNotificationsCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                    aria-label={`Order notifications with ${userNotificationsCount} updates`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                      <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                    </svg>
+                    {userNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                        aria-label={`${userNotificationsCount} order updates`}
+                      >
+                        {userNotificationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onFavoritesOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Favorites with ${favoriteCount} items`}
+                  data-favorites-target="favorites"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                  </svg>
+                  {favoriteCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${favoriteCount} items in favorites`}
+                    >
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCartOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Shopping cart with ${cartCount} items`}
+                  data-cart-target="cart"
+                >
+                  <img src={cart_ic} alt="Cart" className="h-6 w-6 object-contain" />
+                  {cartCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${cartCount} items in cart`}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex md:hidden items-center space-x-4">
-            {/* Mobile Cart Icon */}
-            <button
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-              aria-label={`Shopping cart with ${cartCount} items`}
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+          <div className="ml-auto flex xl:hidden items-center space-x-2.5 flex-shrink-0">
+            <div className="relative flex items-center gap-1.5">
+              {user ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      dismissProfileHint();
+                      setIsProfileOpen((prev) => !prev);
+                    }}
+                    data-profile-button
+                    className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_0_0_5px_rgba(37,99,235,0.08)] transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-[0_0_0_7px_rgba(37,99,235,0.12)] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    aria-label="Account menu"
+                  >
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                    <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
+                    <span className="relative text-[11px] font-semibold text-slate-700">
+                      {(user?.name || "U")
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </span>
+                  </button>
+                  {showProfileHint && (
+                    <div className="absolute left-1/2 top-10 z-50 w-56 -translate-x-1/2 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 shadow-lg xl:hidden">
+                      <span className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-blue-100 bg-white" aria-hidden />
+                      Access your profile here.
+                    </div>
+                  )}
+                  {user.role === 'admin' && (
+                    <span className="text-[10px] font-semibold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 whitespace-nowrap">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onRequestLogin?.()}
+                  className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                  aria-label="Login to your DreamAquatics account"
+                >
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-50 via-white to-blue-50 opacity-90" aria-hidden />
+                  <span className="absolute inset-[4px] rounded-full bg-white shadow-inner" aria-hidden />
+                  <svg
+                    className="relative h-[16px] w-[16px] text-slate-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <circle cx="12" cy="8.5" r="3.25" />
+                    <path d="M6.5 18.25c1.2-2 3.1-3.25 5.5-3.25s4.3 1.25 5.5 3.25" />
+                  </svg>
+                </button>
+              )}
+              {user && isProfileOpen && (
+                <div
+                  data-profile-menu
+                  className="absolute left-1/2 top-11 z-40 w-60 max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-[8px] border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur"
+                >
+                  <p className="text-sm font-semibold text-slate-800">Signed in</p>
+                  <p className="text-base font-bold text-sky-800">{user.name}</p>
+                  {user.email && <p className="text-xs text-slate-600 break-words">{user.email}</p>}
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Profile
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/admin/add-product');
+                      }}
+                      className="mt-3 w-full rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 shadow hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+                    >
+                      Admin
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      setLogoutConfirmOpen(true);
+                    }}
+                    className="mt-3 w-full rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* Mobile Cart / Notifications */}
+            {!isRoleResolved ? null : isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onAdminOrdersOpen?.()}
+                className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${newOrdersCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                aria-label={`Admin notifications with ${newOrdersCount} new orders`}
+                data-orders-target="orders"
               >
-                <path
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              {cartCount > 0 && (
-                <span
-                  className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-                  aria-label={`${cartCount} items in cart`}
+                  aria-hidden="true"
                 >
-                  {cartCount}
-                </span>
-              )}
-            </button>
+                  <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                </svg>
+                {newOrdersCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    aria-label={`${newOrdersCount} new orders`}
+                  >
+                    {newOrdersCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <div className="flex items-center gap-0">
+                {!!user && !isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onUserOrdersOpen?.()}
+                    className={`relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded ${userNotificationsCount > 0 ? 'motion-safe:animate-pulse' : ''}`}
+                    aria-label={`Order notifications with ${userNotificationsCount} updates`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+                      <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
+                    </svg>
+                    {userNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                        aria-label={`${userNotificationsCount} order updates`}
+                      >
+                        {userNotificationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onFavoritesOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Favorites with ${favoriteCount} items`}
+                  data-favorites-target="favorites"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
+                  </svg>
+                  {favoriteCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${favoriteCount} items in favorites`}
+                    >
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCartOpen?.()}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
+                  aria-label={`Shopping cart with ${cartCount} items`}
+                  data-cart-target="cart"
+                >
+                  <img src={mobile_cart_ic} alt="Cart" className="h-5 w-5 object-contain" />
+                  {cartCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                      aria-label={`${cartCount} items in cart`}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
 
             {/* Hamburger Menu Button */}
             <button
-              className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              className="p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none rounded"
               aria-label="Toggle mobile menu"
               aria-expanded={isMobileMenuOpen}
+              data-mobile-menu-button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                {isMobileMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
+              {isMobileMenuOpen ? (
+                <img src={close_ic} />
+              ) : (
+                <img src={hamburger_menu_ic} />
+              )}
             </button>
           </div>
+
+          {logoutConfirmOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) setLogoutConfirmOpen(false);
+              }}
+            >
+              <div className="w-full max-w-sm rounded-[8px] bg-white p-5 text-center shadow-xl">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Confirm logout
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  Are you sure you want to log out?
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setLogoutConfirmOpen(false)}
+                    className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLogoutConfirmOpen(false);
+                      await onLogout();
+                      navigate('/');
+                    }}
+                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2">
+          <div className="xl:hidden pb-4 space-y-2" data-mobile-menu>
             {categories.map((category) => (
               <button
                 key={category.value}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                onClick={() => {
+                  navigate(`/category/${category.value}`);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded transition-colors focus:outline-none"
                 aria-label={`View ${category.label} category`}
               >
                 {category.label}
@@ -143,6 +626,8 @@ const Header = () => {
         )}
       </nav>
     </header>
+    <div className="h-16 md:h-20" aria-hidden />
+    </>
   );
 };
 

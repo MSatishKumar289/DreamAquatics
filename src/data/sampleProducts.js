@@ -3,21 +3,22 @@ export const sampleProducts = [
   // Fishes
   {
     id: 'fish-1',
-    category: 'fishes',
-    title: 'Neon Tetra',
-    subtitle: 'Small schooling fish',
-    price: 120,
-    image: 'neon-tetra.jpg',
-    description: 'Beautiful small schooling fish perfect for community tanks'
+     category: 'fishes',
+    title: 'Betta Fish',
+    subtitle: 'Colorful ornamental fish',
+    price: 350,
+    image: 'Images/Betta-Fish.jpg',
+    description: 'Stunning betta fish with vibrant colors'
+   
   },
   {
     id: 'fish-2',
     category: 'fishes',
-    title: 'Betta Fish',
-    subtitle: 'Colorful ornamental fish',
-    price: 350,
-    image: 'betta-fish.jpg',
-    description: 'Stunning betta fish with vibrant colors'
+    title: 'Neon Tetra',
+    subtitle: 'Small schooling fish',
+    price: 120,
+    image: 'Images/tetra.jpg',
+    description: 'Beautiful small schooling fish perfect for community tanks'
   },
   {
     id: 'fish-3',
@@ -25,7 +26,7 @@ export const sampleProducts = [
     title: 'Goldfish',
     subtitle: 'Classic aquarium favorite',
     price: 250,
-    image: 'goldfish.jpg',
+    image: 'Images/go.jpg',
     description: 'Traditional goldfish, great for beginners'
   },
   {
@@ -34,7 +35,7 @@ export const sampleProducts = [
     title: 'Angelfish',
     subtitle: 'Elegant and graceful',
     price: 450,
-    image: 'angelfish.jpg',
+    image:  'Images/angel.jpg',
     description: 'Beautiful angelfish with distinctive fins'
   },
   // Live Plants

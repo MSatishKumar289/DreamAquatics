@@ -1,0 +1,164 @@
+import { supabase } from "./supabaseClient"; // adjust path if your supabase client is elsewhere
+
+// ---------- Shared ----------
+export const STATUS_LABELS = {
+  awaiting_approval: "Awaiting Approval",
+  accepted: "Order Confirmed",
+  in_transit: "Confirmed (In Transit)",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  placed: "Placed" // in case older data exists
+};
+
+export const formatOrderStatus = (status) =>
+  STATUS_LABELS[status] || status || "Unknown";
+
+export const normalizeAdminOrders = (orders = []) =>
+  orders.map((order) => ({
+    ...order,
+    placedAt: order.created_at,
+    items: order.order_items || [],
+  }));
+
+// ---------- USER ----------
+export const fetchMyOrders = async () => {
+  // user_id is set on order insert for logged in users.
+  // If later you add guest orders, those won't appear here by user_id.
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      `
+      id,
+      order_number,
+      customer_name,
+      customer_email,
+      customer_mobile,
+      address_line1,
+      address_line2,
+      landmark,
+      city,
+      pincode,
+      subtotal,
+      shipping_fee,
+      total,
+      status,
+      created_at,
+      order_items (
+        id,
+        product_id,
+        title,
+        price,
+        qty,
+        line_total
+      )
+    `
+    )
+    .order("created_at", { ascending: false });
+
+  return { data, error };
+};
+
+// ---------- ADMIN ----------
+export const fetchAllOrdersAdmin = async () => {
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      `
+      id,
+      order_number,
+      customer_name,
+      customer_email,
+      customer_mobile,
+      address_line1,
+      address_line2,
+      landmark,
+      city,
+      pincode,
+      subtotal,
+      shipping_fee,
+      total,
+      status,
+      created_at,
+      order_items (
+        id,
+        product_id,
+        title,
+        price,
+        qty,
+        line_total
+      )
+    `
+    )
+    .order("created_at", { ascending: false });
+
+  return { data, error };
+};
+
+export const updateOrderStatusAdmin = async (orderId, status) => {
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status })
+    .eq("id", orderId)
+    .select("id,status");
+
+  if (error) return { data: null, error };
+  if (!data || data.length === 0) {
+    return {
+      data: null,
+      error: new Error("No rows updated (check RLS policy for orders update).")
+    };
+  }
+  return { data: data[0], error: null };
+};
+
+// ---------- CREATE ORDER ----------
+export const createOrder = async (payload) => {
+  // get real logged-in user from Supabase session
+  const { data: userRes, error: userErr } = await supabase.auth.getUser();
+  if (userErr) return { data: null, error: userErr };
+
+  const authUserId = userRes?.user?.id ?? null;
+  if (!authUserId) {
+    return { data: null, error: new Error("Login required to place an order.") };
+  }
+
+  // Always set correct user_id for logged-in users
+  const finalPayload = {
+    ...payload,
+    user_id: authUserId,
+  };
+  const { data, error } = await supabase
+    .from("orders")
+    .insert(finalPayload)
+    .select("id, order_number, status, total, created_at, user_id")
+    .single();
+
+  return { data, error };
+};
+
+export const createOrderItems = async ({ orderId, cartItems }) => {
+  const rows = (cartItems || []).map((item) => {
+    const qty = Number(item.qty || 1);
+    const price = Number(item.price || 0);
+
+    return {
+      order_id: orderId,
+      product_id: item.id || null,          // if your cart stores product uuid in item.id
+      title: item.title || item.name || "",
+      price,
+      qty,
+      line_total: price * qty,
+    };
+  });
+
+  const { data, error } = await supabase
+    .from("order_items")
+    .insert(rows)
+    .select("id, order_id");
+
+  return { data, error };
+};
+
+
+
+
