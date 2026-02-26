@@ -209,7 +209,7 @@ const Terms = () => {
               For feedback regarding these terms and conditions, customers are welcome to share their suggestions via email or WhatsApp.
             </p>
             <p className="mt-2 text-sm text-slate-600">
-              Thank you to all customers for your valuable time, trust, and support. We are committed to providing satisfying service to all.
+              Thank you to all customers for your valuable time, trust, and support. We are committed to providing satisfactory service to all.
             </p>
           </div>
         </section>
