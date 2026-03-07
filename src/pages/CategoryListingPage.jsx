@@ -346,16 +346,15 @@ const CategoryListingPage = () => {
       : normalizedCategorySlug === "accessories"
         ? "Explore essential aquarium accessories and reach out for custom setup guidance tailored to your space."
         : "Explore carefully curated aquatic species ready to ship nationwide. Add items straight from the cards.";
-  const showCustomTankRequestCta =
-    !isSearching &&
-    !isSubcategoryMode &&
-    normalizedCategorySlug === "accessories";
+  const showCustomTankRequestCta = false;
   // Keep enquiry CTA only for accessories flows; fishes/plants/fish-food use floating WhatsApp.
   const showSubcategoryEnquiryCta =
+    false;
+  const showBuildYourTankInlineCta =
     !isSearching &&
-    !isSubcategoryMode &&
-    !showCustomTankRequestCta &&
-    normalizedCategorySlug === "accessories";
+    isSubcategoryMode &&
+    normalizedCategorySlug === "accessories" &&
+    subCategorySlug === "tanks";
   const useBlueEnquiryTheme = normalizedCategorySlug === "accessories";
   const enquiryCtaButtonClass = useBlueEnquiryTheme
     ? "inline-flex items-center justify-center rounded-[5px] bg-blue-600 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 sm:px-3.5"
@@ -704,6 +703,23 @@ const CategoryListingPage = () => {
         <section
           className={`${isSearching ? "mt-4" : "mt-8"} rounded-none border-0 bg-transparent p-0 shadow-none`}
         >
+          {showBuildYourTankInlineCta && !loading && (
+            <div className="mb-4 rounded-[8px] bg-gradient-to-b from-[#C9E1F5] to-[#B9D6EE] px-4 py-3 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomTankRequestModal(true)}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-[5px] bg-[#1e6fe8] px-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_16px_rgba(30,111,232,0.28)] transition hover:bg-[#1a63cf] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+                  aria-label="Open custom tank request form"
+                >
+                  <span className="grid h-5 w-5 place-items-center rounded-full bg-white/18">
+                    <img src={WhatsIcon} alt="" className="h-4 w-4 object-contain" aria-hidden />
+                  </span>
+                  <span>Tap Here To Build Your Dream Tank</span>
+                </button>
+              </div>
+            </div>
+          )}
           {isSubcategoryMode && !loading && (
             <div className="mb-3 flex justify-end">
               <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">

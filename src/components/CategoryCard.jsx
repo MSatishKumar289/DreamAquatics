@@ -112,7 +112,7 @@ const ProductImageArea = ({
       {!isSubCategory && (
         <>
           {savingsBadgeAmount > 0 && (
-            <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
+            <span className="pointer-events-none absolute right-0 top-0 z-20 inline-flex items-center rounded-bl-md bg-emerald-600 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
               Save {"\u20B9"}
               {savingsBadgeAmount.toLocaleString("en-IN")}
             </span>
@@ -222,12 +222,6 @@ const ProductInfo = ({
               </p>
             </div>
           </div>
-          {savingsAmount > 0 && (
-            <p className="mt-0.5 text-[10px] font-semibold text-emerald-600">
-              You Save {"\u20B9"}
-              {Math.round(savingsAmount).toLocaleString("en-IN")}
-            </p>
-          )}
         </div>
       )}
     </div>

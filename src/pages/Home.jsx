@@ -1502,7 +1502,7 @@ const Home = ({ profile }) => {
                         <div className="flex h-full flex-col">
                           <div className="relative aspect-[4/3.1] w-full overflow-hidden rounded-t-[5px] border-b border-slate-200/60 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] sm:aspect-[4/3.2]">
                             {savings > 0 && (
-                              <span className="pointer-events-none absolute left-2 top-2 z-20 inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
+                              <span className="pointer-events-none absolute right-0 top-0 z-20 inline-flex items-center rounded-bl-md bg-emerald-600 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
                                 Save {"\u20B9"}
                                 {Math.round(savings).toLocaleString("en-IN")}
                               </span>
