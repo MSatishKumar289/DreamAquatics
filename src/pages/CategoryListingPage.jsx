@@ -238,6 +238,11 @@ const CategoryListingPage = () => {
 
       const sub = latestProduct?.subcategory;
       if (!sub?.id) return null;
+      const imageGallery = group
+        .map((product) => product?.product_images?.[0]?.url || "")
+        .filter(Boolean)
+        .filter((url, index, arr) => arr.indexOf(url) === index)
+        .slice(0, 4);
 
       return {
         id: sub.id,
@@ -247,6 +252,7 @@ const CategoryListingPage = () => {
         subcategoryDescription: sub.description || "",
         latestProductDate: latestProduct?.created_at || "",
         image: latestProduct?.product_images?.[0]?.url || "",
+        imageGallery,
         itemCount: group.length,
         startFromPrice: minPrice,
       };
@@ -741,20 +747,34 @@ const CategoryListingPage = () => {
               className={`grid ${
                 isSubcategoryMode
                   ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
-                  : "grid-cols-3 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-6"
-              } gap-2`}
+                  : "grid-cols-3 lg:grid-cols-5"
+              } ${isSubcategoryMode ? "gap-x-2 gap-y-2" : "gap-x-2 gap-y-2 lg:gap-x-3 lg:gap-y-3"}`}
             >
               {Array.from({ length: isSubcategoryMode ? 8 : 12 }).map((_, index) => (
                 <div
                   key={`loading-card-${index}`}
-                  className="overflow-hidden rounded-[6px] border border-slate-200 bg-white/80"
+                  className={
+                    isSubcategoryMode
+                      ? "overflow-hidden rounded-[6px] border border-slate-200 bg-white/80"
+                      : "rounded-[28px] bg-transparent px-1 pt-2"
+                  }
                 >
-                  <div className={`da-card-skeleton ${isSubcategoryMode ? "aspect-[25/27]" : "aspect-[4/3.1]"}`} />
-                  {!isSubcategoryMode && (
-                    <div className="space-y-2 p-2">
-                      <div className="da-card-skeleton h-3 w-4/5" />
-                      <div className="da-card-skeleton h-3 w-2/5" />
-                      <div className="da-card-skeleton h-8 w-full rounded-[5px]" />
+                  {isSubcategoryMode ? (
+                    <>
+                      <div className="da-card-skeleton aspect-[25/27]" />
+                      <div className="space-y-2 p-2">
+                        <div className="da-card-skeleton h-3 w-4/5" />
+                        <div className="da-card-skeleton h-3 w-2/5" />
+                        <div className="da-card-skeleton h-8 w-full rounded-[5px]" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <div className="da-card-skeleton aspect-square w-[82%] rounded-[24px]" />
+                      <div className="mt-3 flex w-full flex-col items-center gap-2 px-3">
+                        <div className="da-card-skeleton h-4 w-4/5 rounded-full" />
+                        <div className="da-card-skeleton h-4 w-3/5 rounded-full" />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -785,11 +805,15 @@ const CategoryListingPage = () => {
               )}
               {isSearching ? (
                 <div
-                  className={`grid ${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} max-h-[70vh] overflow-y-auto overflow-x-hidden pb-24 sm:max-h-none sm:overflow-visible sm:pb-0 sm:grid-cols-3 ${
-                    isSubcategoryMode ? "lg:grid-cols-4" : "md:grid-cols-6 lg:grid-cols-6"
-                  } ${
-                    isSubcategoryMode ? "gap-2" : "gap-2"
-                  }`}
+                  className={`grid ${
+                    isSubcategoryMode
+                      ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+                      : "grid-cols-3 lg:grid-cols-5"
+                  } max-h-[70vh] overflow-y-auto overflow-x-hidden ${
+                    isSubcategoryMode
+                      ? "gap-x-2 gap-y-2"
+                      : "gap-x-2 gap-y-2 lg:gap-x-3 lg:gap-y-3"
+                  } pb-24 sm:max-h-none sm:overflow-visible sm:pb-0`}
                   onScroll={() => searchInputRef.current?.blur()}
                 >
                   {sortedFilteredList.map((item, index) => (
@@ -816,7 +840,7 @@ const CategoryListingPage = () => {
                   className={`grid ${
                     useTankTwoCardFeaturedLayout
                       ? "mx-auto max-w-[760px] grid-cols-2 gap-2 sm:gap-3"
-                      : `${isSubcategoryMode ? "grid-cols-2" : "grid-cols-3"} gap-2 sm:grid-cols-2 ${isSubcategoryMode ? "lg:grid-cols-4" : "md:grid-cols-6 lg:grid-cols-6"}`
+                      : `${isSubcategoryMode ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-2" : "grid-cols-3 lg:grid-cols-5 gap-x-2 gap-y-2 lg:gap-x-3 lg:gap-y-3"}`
                   }`}
                 >
                   {sortedFilteredList.map((item, index) => (
