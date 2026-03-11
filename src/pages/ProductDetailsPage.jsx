@@ -18,6 +18,7 @@ const ProductDetailsPage = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [showAddedHint, setShowAddedHint] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState("");
   const [isResolvingProduct, setIsResolvingProduct] = useState(false);
   const [resolveError, setResolveError] = useState("");
   const relatedTrackRef = useRef(null);
@@ -91,6 +92,11 @@ const ProductDetailsPage = () => {
   const categoryDisplayName =
     categoryDisplayNameMap[rawCategorySlug] ||
     (product?.subcategory?.category?.name || "Category");
+  const productBadgeTextRaw = product?.badge_label || "";
+  const productBadgeTextValue = typeof productBadgeTextRaw === "string"
+    ? productBadgeTextRaw.trim()
+    : "";
+  const productBadgeText = productBadgeTextValue.toUpperCase();
   const imageFromDb = product?.product_images?.[0]?.url || product?.image || "";
   const imageSrc = useMemo(() => {
     if (!imageFromDb) return getImageWithFallback("", title);
@@ -113,6 +119,12 @@ const ProductDetailsPage = () => {
     const timer = setTimeout(() => setShowAddedHint(false), 1600);
     return () => clearTimeout(timer);
   }, [showAddedHint]);
+
+  useEffect(() => {
+    if (!shareFeedback) return;
+    const timer = setTimeout(() => setShareFeedback(""), 1800);
+    return () => clearTimeout(timer);
+  }, [shareFeedback]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -171,6 +183,40 @@ const ProductDetailsPage = () => {
     if (!node) return;
     const amount = Math.max(220, Math.floor(node.clientWidth * 0.45));
     node.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+  };
+
+  const handleShareProduct = async () => {
+    if (typeof window === "undefined") return;
+
+    const exactProductUrl = `${window.location.origin}/product/${product?.id || productId || ""}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          url: exactProductUrl,
+        });
+        setShareFeedback("Share ready");
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(exactProductUrl);
+        setShareFeedback("Link copied");
+        return;
+      }
+
+      setShareFeedback("Share unavailable");
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(exactProductUrl);
+        setShareFeedback("Link copied");
+        return;
+      }
+
+      setShareFeedback("Share failed");
+    }
   };
 
   if (isResolvingProduct) {
@@ -238,9 +284,14 @@ const ProductDetailsPage = () => {
             </div>
 
             <div
-              className="relative rounded-[8px] border-0 bg-transparent p-2 text-left da-card-reveal sm:p-3 md:p-4"
+              className="relative rounded-[8px] border-0 bg-transparent p-2 pr-14 text-left da-card-reveal sm:p-3 sm:pr-16 md:p-4 md:pr-20"
               style={{ "--da-stagger": "130ms" }}
             >
+              {shareFeedback ? (
+                <span className="pointer-events-none absolute right-0 top-20 z-20 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-lg">
+                  {shareFeedback}
+                </span>
+              ) : null}
               <button
                 type="button"
                 onClick={() => toggleFavorite(product)}
@@ -264,7 +315,42 @@ const ProductDetailsPage = () => {
                   <path d="M12 21s-7-4.35-9.5-8.4C.8 9.6 2.2 5.8 5.8 5c2.2-.5 4.2.4 5.2 2.1 1-1.7 3-2.6 5.2-2.1 3.6.8 5 4.6 3.3 7.6C19 16.65 12 21 12 21Z" />
                 </svg>
               </button>
+              <button
+                type="button"
+                onClick={handleShareProduct}
+                className="absolute -right-[10px] top-[34px] sm:right-3 sm:top-[58px] inline-flex h-10 w-10 min-h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-full border border-[6px] border-sky-100 bg-white/95 p-0 text-sky-600 shadow transition hover:text-sky-700"
+                aria-label="Share product link"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.59 13.51 15.42 17.49" />
+                  <path d="M15.41 6.51 8.59 10.49" />
+                </svg>
+              </button>
               <h1 className="text-[1.68rem] font-semibold text-[#102A43] sm:text-[2.25rem]">{title}</h1>
+              {productBadgeText ? (
+                <div className="mt-2 flex justify-start">
+                  <span className="inline-flex max-w-full -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-1 text-[#0D2F5A] shadow-sm">
+                    <span
+                      className="truncate skew-x-[10deg] text-[11px] font-semibold tracking-[0.05em]"
+                      style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                    >
+                      {productBadgeText}
+                    </span>
+                  </span>
+                </div>
+              ) : null}
               <div className="mt-3 flex flex-wrap items-center justify-start gap-3">
                 {originalPrice > currentPrice && (
                   <p className="text-2xl font-medium text-slate-400 line-through">
