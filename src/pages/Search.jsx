@@ -254,7 +254,7 @@ const Search = () => {
                   {sortedSearchResults.length} items found
                 </h2>
                 <p className="mt-2 text-center text-xs text-sky-600/80">
-                  * Images are for reference. Actual product appearance may vary. *
+                  * Images are for reference. Actual product appearance may vary.
                 </p>
               </div>
               <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { CartProvider, useCart } from './context/CartContext';
 import { FavoritesProvider, useFavorites } from './context/FavoritesContext';
 import Header from './components/Header';
@@ -642,6 +643,7 @@ function App() {
         <CartProvider>
           <ProfileProvider>
             <AppContent />
+            <Analytics />
           </ProfileProvider>
         </CartProvider>
       </FavoritesProvider>
