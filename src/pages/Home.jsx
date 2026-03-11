@@ -1700,7 +1700,8 @@ const Home = ({ profile }) => {
                   </>
                 )}
                 {bestSellerPicks.length > 1 && (
-                  <div className="mt-4 flex items-center justify-center gap-2.5">
+                  <div className="mt-4 flex items-center justify-center">
+                    <div className="inline-flex items-center gap-2.5 rounded-full bg-slate-100/92 px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.12)] ring-1 ring-slate-300/80 backdrop-blur-sm">
                     {bestSellerPicks.map((_, index) => {
                       const active = index === bestSellerIndex;
                       return (
@@ -1718,6 +1719,7 @@ const Home = ({ profile }) => {
                         />
                       );
                     })}
+                    </div>
                   </div>
                 )}
               </div>
