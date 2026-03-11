@@ -91,6 +91,11 @@ const ProductDetailsPage = () => {
   const categoryDisplayName =
     categoryDisplayNameMap[rawCategorySlug] ||
     (product?.subcategory?.category?.name || "Category");
+  const productBadgeTextRaw = product?.badge_label || "";
+  const productBadgeTextValue = typeof productBadgeTextRaw === "string"
+    ? productBadgeTextRaw.trim()
+    : "";
+  const productBadgeText = productBadgeTextValue.toUpperCase();
   const imageFromDb = product?.product_images?.[0]?.url || product?.image || "";
   const imageSrc = useMemo(() => {
     if (!imageFromDb) return getImageWithFallback("", title);
@@ -265,6 +270,18 @@ const ProductDetailsPage = () => {
                 </svg>
               </button>
               <h1 className="text-[1.68rem] font-semibold text-[#102A43] sm:text-[2.25rem]">{title}</h1>
+              {productBadgeText ? (
+                <div className="mt-2 flex justify-start">
+                  <span className="inline-flex max-w-full -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-1 text-[#0D2F5A] shadow-sm">
+                    <span
+                      className="truncate skew-x-[10deg] text-[11px] font-semibold tracking-[0.05em]"
+                      style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
+                    >
+                      {productBadgeText}
+                    </span>
+                  </span>
+                </div>
+              ) : null}
               <div className="mt-3 flex flex-wrap items-center justify-start gap-3">
                 {originalPrice > currentPrice && (
                   <p className="text-2xl font-medium text-slate-400 line-through">
