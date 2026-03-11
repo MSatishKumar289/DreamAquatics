@@ -228,6 +228,11 @@ const Home = ({ profile }) => {
 
               const subcategory = latestProduct?.subcategory;
               if (!subcategory?.id) return null;
+              const imageGallery = group
+                .map((product) => product?.product_images?.[0]?.url || "")
+                .filter(Boolean)
+                .filter((url, index, arr) => arr.indexOf(url) === index)
+                .slice(0, 4);
 
               return {
                 subcategoryId: subcategory.id,
@@ -235,6 +240,7 @@ const Home = ({ profile }) => {
                 subcategorySlug: subcategory.slug,
                 latestProductDate: latestProduct?.created_at || '',
                 image: latestProduct?.product_images?.[0]?.url || '',
+                imageGallery,
                 itemCount: group.length,
                 startFromPrice: minPrice
               };

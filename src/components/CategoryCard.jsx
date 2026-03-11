@@ -9,12 +9,30 @@ import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { getProductPricing } from "../lib/pricing";
 
+const resolveCatalogImage = (src, fallbackLabel) => {
+  if (typeof src !== "string" || !src.trim()) {
+    return getImageWithFallback("", fallbackLabel);
+  }
+
+  if (
+    /^(https?:)?\/\//.test(src) ||
+    src.startsWith("data:") ||
+    src.startsWith("blob:") ||
+    src.startsWith("/")
+  ) {
+    return src;
+  }
+
+  return getImageWithFallback(src, fallbackLabel);
+};
+
 const ProductImageArea = ({
   isSubCategory,
   compact,
   whiteCard,
   savingsBadgeAmount,
   imageSrc,
+  imageGallery = [],
   productTitle,
   productSubtitle,
   showViewHint,
@@ -22,76 +40,101 @@ const ProductImageArea = ({
   onToggleFavorite,
   onImageClick,
 }) => {
-  return (
-      <div
-        className={`relative w-full overflow-hidden ${
-          isSubCategory ? "h-full rounded-[6px]" : "rounded-t-[6px]"
-        } ${
-          whiteCard
-            ? "bg-white"
-            : isSubCategory
-              ? "bg-white"
-              : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
-        }`}
-      >
-        <div
-          className={`relative w-full overflow-hidden ${
-            isSubCategory ? "h-full rounded-[6px]" : "border-b border-slate-200/60 rounded-t-[6px]"
-          } ${
-            isSubCategory ? "" : compact ? "aspect-[1/1]" : "aspect-[4/3.1] sm:aspect-[4/3.2]"
+  if (isSubCategory) {
+    const visualImages = (imageGallery.length ? imageGallery : [imageSrc]).slice(0, 3);
+    const primaryImage = visualImages[0] || imageSrc;
+    const secondaryImages = visualImages.slice(1, 3);
+    const hasSecondaryImages = secondaryImages.length > 0;
+
+    return (
+      <div className="relative flex h-full w-full flex-col items-center">
+        <span
+          className={`pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-white opacity-0 shadow-lg transition group-hover:opacity-100 sm:hidden ${
+            showViewHint ? "opacity-100" : ""
           }`}
         >
-      {isSubCategory ? (
-        <>
-          <span
-            className={`pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100 sm:hidden ${
-              showViewHint ? "opacity-100" : ""
+          Tap to view
+        </span>
+
+        <div className="relative mx-auto aspect-[1/1.24] w-full overflow-hidden rounded-[12px] border border-[#f3d35a] bg-[#d7e6f1] shadow-[0_10px_22px_rgba(66,110,145,0.18),0_0_0_1px_rgba(255,225,92,0.45)] sm:aspect-[1/1.05]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.32),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.08))]" />
+          <div
+            className={`absolute top-[8%] bottom-[24%] ${
+              hasSecondaryImages ? "inset-x-[6%]" : "inset-x-[3%]"
             }`}
           >
-            Tap to view
-          </span>
-          <div className="h-full w-full">
-            <img
-              src={imageSrc}
-              alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
-              className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
-                isSubCategory
-                  ? "bg-white"
-                  : whiteCard
-                  ? "bg-white"
-                  : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
-              } ${isSubCategory ? "brightness-[0.93] group-hover:brightness-100" : ""}`}
-              onClick={onImageClick}
-              onError={(e) => {
-                e.target.src =
-                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
-                  encodeURIComponent(productTitle) +
-                  "%3C/text%3E%3C/svg%3E";
-              }}
-            />
-          </div>
-          <div
-            className="pointer-events-none absolute inset-0 z-10"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 100%)",
-            }}
-          />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30">
-            <div className="w-full bg-gradient-to-t from-black/70 via-black/45 to-black/20 px-2 pb-[3px] pt-[2px] backdrop-blur-[1.5px]">
-              <p
-                className="mx-auto line-clamp-2 max-w-[92%] text-center text-[0.68rem] font-semibold uppercase leading-[1.12] tracking-[0.01em] text-white sm:text-[0.8rem]"
-                style={{
-                  fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.95), 0 0 1px rgba(0,0,0,0.9)",
+            {secondaryImages[0] && (
+              <div className="absolute bottom-[7%] left-[5%] z-20 h-[76%] w-[34%] origin-bottom-left -rotate-[18deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
+                <img
+                  src={secondaryImages[0]}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  aria-hidden="true"
+                  onError={(e) => {
+                    e.target.src =
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Crect fill='%23dbe4ea' width='260' height='260'/%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
+            )}
+
+            {secondaryImages[1] && (
+              <div className="absolute bottom-[7%] right-[5%] z-20 h-[76%] w-[34%] origin-bottom-right rotate-[18deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
+                <img
+                  src={secondaryImages[1]}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  aria-hidden="true"
+                  onError={(e) => {
+                    e.target.src =
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Crect fill='%23dbe4ea' width='260' height='260'/%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
+            )}
+
+            <div
+              className={`absolute top-[1%] bottom-0 z-30 overflow-hidden rounded-[12px] bg-white shadow-[0_18px_30px_rgba(15,23,42,0.30)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-y-1.5 ${
+                hasSecondaryImages ? "inset-x-[5%] sm:inset-x-[10%]" : "inset-x-0"
+              }`}
+            >
+              <img
+                src={primaryImage}
+                alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='420'%3E%3Crect fill='%23dbe4ea' width='400' height='420'/%3E%3Ctext fill='%2364748b' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
+                    encodeURIComponent(productTitle) +
+                    "%3C/text%3E%3C/svg%3E";
                 }}
-              >
-                {productTitle}
-              </p>
+              />
             </div>
           </div>
-        </>
-      ) : (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] rounded-b-[12px] bg-[linear-gradient(180deg,rgba(232,241,248,0.96),rgba(214,230,241,0.98))] ring-1 ring-white/30" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex min-h-[22%] items-center justify-center px-2.5 pb-2 pt-2">
+            <p className="line-clamp-2 text-center text-[0.84rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#111111] sm:text-[1rem]">
+              {productTitle}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-t-[6px] ${
+        whiteCard
+          ? "bg-white"
+          : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+      }`}
+    >
+      <div
+        className={`relative w-full overflow-hidden border-b border-slate-200/60 rounded-t-[6px] ${
+          compact ? "aspect-[1/1]" : "aspect-[4/3.1] sm:aspect-[4/3.2]"
+        }`}
+      >
         <img
           src={imageSrc}
           alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
@@ -108,8 +151,6 @@ const ProductImageArea = ({
               "%3C/text%3E%3C/svg%3E";
           }}
         />
-      )}
-      {!isSubCategory && (
         <>
           {savingsBadgeAmount > 0 && (
             <span className="pointer-events-none absolute right-0 top-0 z-20 inline-flex items-center rounded-bl-md bg-emerald-600 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
@@ -144,10 +185,9 @@ const ProductImageArea = ({
             </svg>
           </button>
         </>
-      )}
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 const ProductInfo = ({
@@ -382,6 +422,7 @@ const CategoryCard = ({
   const productImage = isSubCategory
     ? product?.image || product?.product_images?.[0]?.url || product?.image
     : product?.product_images?.[0]?.url || product?.image;
+  const subcategoryImageGallery = Array.isArray(product?.imageGallery) ? product.imageGallery : [];
   const productBadgeTextRaw = product?.badge_label || "";
   const productBadgeTextValue = typeof productBadgeTextRaw === "string"
     ? productBadgeTextRaw.trim()
@@ -480,10 +521,14 @@ const CategoryCard = ({
     setShowAddedHint(true);
   };
 
-  const imageSrc =
-    typeof productImage === "string" && productImage.startsWith("http")
-      ? productImage
-      : getImageWithFallback(productImage, productTitle);
+  const imageSrc = resolveCatalogImage(productImage, productTitle);
+  const subcategoryVisualImages = isSubCategory
+    ? [productImage, ...subcategoryImageGallery]
+        .filter((src) => typeof src === "string" && src.trim())
+        .filter((src, index, list) => list.indexOf(src) === index)
+        .map((src) => resolveCatalogImage(src, productTitle))
+        .slice(0, 3)
+    : [];
 
   const runFlyToCartAnimation = () => {
     try {
@@ -556,22 +601,20 @@ const CategoryCard = ({
 
   return (
     <article
-      className={`group relative rounded-[6px] bg-white shadow-sm transition-shadow duration-300 ${
-        isSubCategory ? "overflow-hidden" : "overflow-visible"
-      } ${
-        whiteCard
-          ? isSubCategory
-            ? "cursor-pointer aspect-[25/27] bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.18)]"
-            : "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
-          : isSubCategory
-            ? "cursor-pointer aspect-[25/27] bg-white opacity-95 scale-[0.985] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:opacity-100 hover:scale-100 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(146,117,34,0.20)]"
-            : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
-      } ${
-        itemDetailGoldenBorder && !isSubCategory
-          ? "border-[0.5px] border-amber-300/90"
-          : borderless
-            ? "border-0"
-            : "border border-slate-300"
+      className={`group relative ${
+        isSubCategory
+          ? "flex h-full cursor-pointer flex-col justify-start overflow-visible rounded-[28px] bg-transparent pt-0.5 shadow-none transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300/80"
+          : `rounded-[6px] bg-white shadow-sm transition-shadow duration-300 overflow-visible ${
+              whiteCard
+                ? "flex h-full flex-col bg-white shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:shadow-[0_10px_22px_rgba(15,23,42,0.14)]"
+                : "flex h-full flex-col bg-gradient-to-b from-[#FFF8DC] via-[#FFF3C4] to-[#FFFDF2] shadow-[0_8px_18px_rgba(146,117,34,0.12)] hover:shadow-[0_10px_22px_rgba(146,117,34,0.16)]"
+            } ${
+              itemDetailGoldenBorder
+                ? "border-[0.5px] border-amber-300/90"
+                : borderless
+                  ? "border-0"
+                  : "border border-slate-300"
+            }`
       } ${compact ? "h-full" : ""} ${className}`}
       tabIndex="0"
       role="button"
@@ -592,6 +635,7 @@ const CategoryCard = ({
         whiteCard={whiteCard}
         savingsBadgeAmount={savingsBadgeAmount}
         imageSrc={imageSrc}
+        imageGallery={subcategoryVisualImages}
         productTitle={productTitle}
         productSubtitle={productSubtitle}
         showViewHint={showViewHint}
