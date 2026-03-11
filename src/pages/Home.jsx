@@ -768,7 +768,10 @@ const Home = ({ profile }) => {
     return rules
       .map((rule) => ({
         ...rule,
-        items: allProducts.filter(rule.filter).sort(rule.sort).slice(0, 6),
+        items:
+          rule.key === 'under-100'
+            ? allProducts.filter(rule.filter).sort(rule.sort).slice(-6)
+            : allProducts.filter(rule.filter).sort(rule.sort).slice(0, 6),
       }))
       .filter((section) => section.items.length > 0);
   }, [allProducts]);

@@ -111,9 +111,9 @@ const ProductImageArea = ({
               />
             </div>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] rounded-b-[12px] bg-[linear-gradient(180deg,rgba(232,241,248,0.96),rgba(214,230,241,0.98))] ring-1 ring-white/30" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex min-h-[22%] items-center justify-center px-2.5 pb-2 pt-2">
-            <p className="line-clamp-2 text-center text-[0.84rem] font-semibold leading-[1.04] tracking-[-0.03em] text-[#111111] sm:text-[1rem]">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-[26%] rounded-b-[12px] border-t border-slate-200 bg-white sm:h-[22%]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex min-h-[26%] items-center justify-center px-1.5 pb-2 pt-2 sm:min-h-[22%] sm:px-2.5">
+            <p className="line-clamp-2 break-words text-center text-[0.68rem] font-semibold leading-[1.02] tracking-[-0.03em] text-[#111111] sm:text-[1rem] sm:leading-[1.04] sm:tracking-[-0.03em]">
               {productTitle}
             </p>
           </div>
@@ -234,9 +234,9 @@ const ProductInfo = ({
       </div>
       {!isSubCategory && productBadgeText && (
         <div className="mt-1 flex justify-center">
-          <span className="inline-flex max-w-[88%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-3 py-0.5 text-[#0D2F5A] shadow-sm">
+          <span className="inline-flex max-w-[96%] -skew-x-[10deg] items-center rounded-[4px] bg-[#FFE100] px-2 py-0.5 text-[#0D2F5A] shadow-sm sm:max-w-[88%] sm:px-3">
             <span
-              className="truncate skew-x-[10deg] text-[10px] font-semibold tracking-[0.05em]"
+              className="truncate skew-x-[10deg] text-[9px] font-semibold tracking-[0.02em] sm:text-[10px] sm:tracking-[0.05em]"
               style={{ fontFamily: "'Trajan Pro Regular', 'Trajan Pro', serif" }}
             >
               {productBadgeText}
