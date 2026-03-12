@@ -412,7 +412,7 @@ const ProductDetailsPage = () => {
                         addToCart?.(product, 1);
                         setShowAddedHint(true);
                       }}
-                      className="da-add-cart-btn h-11 w-full px-4 text-sm"
+                      className="da-add-cart-btn h-11 w-full whitespace-nowrap px-2 text-[13px] tracking-[0.04em] sm:px-4 sm:text-sm sm:tracking-[0.08em]"
                     >
                       Add to Cart
                     </button>
@@ -431,7 +431,7 @@ const ProductDetailsPage = () => {
                         },
                       });
                     }}
-                    className="inline-flex h-11 w-[48%] min-w-0 items-center justify-center rounded-lg border border-[#d97706] bg-[#f59e0b] px-4 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#d97706]"
+                    className="inline-flex h-11 w-[48%] min-w-0 items-center justify-center whitespace-nowrap rounded-lg border border-[#d97706] bg-[#f59e0b] px-2 text-[13px] font-semibold uppercase tracking-[0.04em] text-white shadow-sm transition hover:bg-[#d97706] sm:px-4 sm:text-sm sm:tracking-wide"
                   >
                     Buy Now
                   </button>
