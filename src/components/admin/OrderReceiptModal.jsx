@@ -80,8 +80,8 @@ const OrderReceiptModal = ({
   const plainQrPath = useMemo(() => upiQrImageUrl.replace(/^https?:\/\//, ""), [upiQrImageUrl]);
   const whatsappMessage = encodeURIComponent(
     `Hi ${selectedAdminOrder.customer_name || ""},\nThis is *DreamAquatics* regarding your order *${orderRef}*.${
-      hasValidUpiAmount ? `\n*Please pay Rs. ${parsedUpiAmount.toFixed(2)}.*` : ""
-    }${upiId ? `\n\nUPI ID: ${upiId}` : ""}${
+      hasValidUpiAmount ? `\n\n*Please pay Rs. ${parsedUpiAmount.toFixed(2)}.*` : ""
+    }${upiId ? `\n\nPlease copy this UPI ID and pay in your UPI app.\nUPI ID: ${upiId}` : ""}${
       plainQrPath ? `\n\nQR code link: ${plainQrPath}` : ""
     }${
       plainQrPath
