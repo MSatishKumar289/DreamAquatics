@@ -236,7 +236,7 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
         return;
       }
       setError('');
-      setNotice('Please check your email for a password reset link.');
+      setNotice('Please check your email for a password reset link. If you do not see it, check your spam folder.');
       setResetCountdown(60);
     } catch (err) {
       console.error('Reset request failed', err);

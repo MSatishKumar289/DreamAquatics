@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 const ResetPassword = () => {
-  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +63,7 @@ const ResetPassword = () => {
         return;
       }
       await supabase.auth.signOut();
-      navigate('/login', { replace: true });
+      window.location.replace('/login');
     } catch (err) {
       console.error('Password reset failed', err);
       setError('Password reset failed. Please try again.');
@@ -119,7 +118,7 @@ const ResetPassword = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter a new password"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    className="da-password-input w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
                   />
                   <button
                     type="button"
@@ -138,7 +137,7 @@ const ResetPassword = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter your password"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    className="da-password-input w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 text-base text-slate-900 shadow-inner focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
                   />
                   <button
                     type="button"

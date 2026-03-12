@@ -209,6 +209,16 @@
   display: none;
 }
 
+.da-password-input::-ms-reveal,
+.da-password-input::-ms-clear {
+  display: none;
+}
+
+.da-password-input::-webkit-credentials-auto-fill-button,
+.da-password-input::-webkit-textfield-decoration-container {
+  display: none;
+}
+
 .home-scroll-animate {
   opacity: 0;
   transform: translateX(36px);
