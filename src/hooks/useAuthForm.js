@@ -184,12 +184,17 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
         { redirectTo }
       );
       if (resetError) {
-        setError(resetError.message);
+        const resetErrorMessage = resetError.message?.toLowerCase?.() || '';
+        if (resetErrorMessage.includes('rate limit') || resetErrorMessage.includes('too many requests')) {
+          setError('A reset link was requested recently. Please wait a minute before trying again.');
+        } else {
+          setError(resetError.message);
+        }
         return;
       }
       setError('');
       setNotice('Please check your email for a password reset link.');
-      setResetCountdown(30);
+      setResetCountdown(60);
     } catch (err) {
       console.error('Reset request failed', err);
       setError('Reset request failed. Please try again.');
