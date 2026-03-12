@@ -131,7 +131,7 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
         return;
       }
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: normalizedEmail,
         password: password.trim(),
         options: {
@@ -166,6 +166,26 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
         console.error('Profile creation error', profileError);
       }
 
+      const hasActiveSession = Boolean(signUpData?.session);
+
+      if (hasActiveSession) {
+        try {
+          const { profile: refreshedProfile } = await fetchCurrentProfile();
+          if (onProfileUpdate) {
+            onProfileUpdate(refreshedProfile);
+          }
+        } catch (profileError) {
+          console.error('Profile refresh error', profileError);
+        }
+
+        setError('');
+        setNotice('');
+        if (onSuccess) {
+          onSuccess();
+        }
+        return;
+      }
+
       setError('');
       setNotice('Check your email and confirm the link to finish signing up. Once verified, you can log in.');
       setIsRegisterMode(false);
@@ -175,7 +195,7 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
     } finally {
       setAuthLoading(false);
     }
-  }, [name, email, password, confirmPassword]);
+  }, [name, email, password, confirmPassword, onSuccess, onProfileUpdate]);
 
   const handleResetSubmit = useCallback(async () => {
     setNotice('');
