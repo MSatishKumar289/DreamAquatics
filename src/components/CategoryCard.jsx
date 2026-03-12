@@ -59,12 +59,14 @@ const ProductImageArea = ({
         <div className="relative mx-auto aspect-[1/1.24] w-full overflow-hidden rounded-[12px] border border-[#f3d35a] bg-[#d7e6f1] shadow-[0_10px_22px_rgba(66,110,145,0.18),0_0_0_1px_rgba(255,225,92,0.45)] sm:aspect-[1/1.05]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.32),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.08))]" />
           <div
-            className={`absolute top-[4%] bottom-[24%] ${
-              hasSecondaryImages ? "inset-x-[2%]" : "inset-x-0"
+            className={`absolute ${
+              hasSecondaryImages
+                ? "top-[2%] bottom-[26%] inset-x-0"
+                : "inset-x-0 top-0 bottom-[26%] sm:bottom-[22%]"
             }`}
           >
             {secondaryImages[0] && (
-              <div className="absolute bottom-[5%] left-[1%] z-20 h-[82%] w-[36%] origin-bottom-left -rotate-[18deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
+              <div className="absolute bottom-[2%] left-0 z-20 h-[88%] w-[38%] origin-bottom-left -rotate-[15deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
                 <img
                   src={secondaryImages[0]}
                   alt=""
@@ -79,7 +81,7 @@ const ProductImageArea = ({
             )}
 
             {secondaryImages[1] && (
-              <div className="absolute bottom-[5%] right-[1%] z-20 h-[82%] w-[36%] origin-bottom-right rotate-[18deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
+              <div className="absolute bottom-[2%] right-0 z-20 h-[88%] w-[38%] origin-bottom-right rotate-[15deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
                 <img
                   src={secondaryImages[1]}
                   alt=""
@@ -94,8 +96,10 @@ const ProductImageArea = ({
             )}
 
             <div
-              className={`absolute top-[1%] bottom-0 z-30 overflow-hidden rounded-[12px] bg-white shadow-[0_18px_30px_rgba(15,23,42,0.30)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-y-1.5 ${
-                hasSecondaryImages ? "inset-x-[10%]" : "inset-x-0"
+              className={`absolute z-30 overflow-hidden rounded-[12px] bg-white shadow-[0_18px_30px_rgba(15,23,42,0.30)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-y-1.5 ${
+                hasSecondaryImages
+                  ? "top-0 bottom-0 inset-x-[8%]"
+                  : "inset-0"
               }`}
             >
               <img
