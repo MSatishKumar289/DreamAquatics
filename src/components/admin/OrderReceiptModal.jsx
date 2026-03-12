@@ -62,16 +62,15 @@ const OrderReceiptModal = ({
   const upiId = upiIdDraft.trim();
   const payeeName = import.meta.env.VITE_ADMIN_UPI_PAYEE_NAME || "DreamAquatics";
   const upiLink = useMemo(() => {
-    if (!upiId || !hasValidUpiAmount) return "";
+    if (!upiId) return "";
     const query = new URLSearchParams({
       pa: upiId,
       pn: payeeName,
-      am: parsedUpiAmount.toFixed(2),
       cu: "INR",
       tn: `Order ${orderRef}`
     });
     return `upi://pay?${query.toString()}`;
-  }, [upiId, payeeName, parsedUpiAmount, hasValidUpiAmount, orderRef]);
+  }, [upiId, payeeName, orderRef]);
   const upiQrImageUrl = useMemo(() => {
     if (!upiLink) return "";
     return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
@@ -82,7 +81,7 @@ const OrderReceiptModal = ({
   const whatsappMessage = encodeURIComponent(
     `Hi ${selectedAdminOrder.customer_name || ""},\nThis is *DreamAquatics* regarding your order *${orderRef}*.${
       hasValidUpiAmount ? `\n*Please pay Rs. ${parsedUpiAmount.toFixed(2)}.*` : ""
-    }${upiId ? `\n\nUPI ID: ${upiId}` : ""}${upiLink ? `\n\nUPI payment link: ${upiLink}` : ""}${
+    }${upiId ? `\n\nUPI ID: ${upiId}` : ""}${
       plainQrPath ? `\n\nQR code link: ${plainQrPath}` : ""
     }${
       plainQrPath
@@ -285,7 +284,7 @@ const OrderReceiptModal = ({
                   )}
                 </div>
                 <p className="mt-2 text-xs text-slate-500">
-                  WhatsApp opens with this amount and link prefilled. Admin must tap send manually.
+                  WhatsApp opens with the UPI ID and payee details only. Customer can enter the amount manually in their UPI app.
                 </p>
               </div>
               <p>{selectedAdminOrder.address_line1}</p>
