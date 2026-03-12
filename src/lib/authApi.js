@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from './supabaseClient';
 
 export const getSessionUser = async () => {
   const {
@@ -15,3 +15,20 @@ export const onAuthChange = (callback) => {
     callback(event, session?.user || null);
   });
 };
+
+export async function checkUserExistsByEmail(email) {
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+  if (!normalizedEmail) {
+    return { exists: false, error: new Error('Missing email') };
+  }
+
+  const { data, error } = await supabase.functions.invoke('check-user-exists', {
+    body: { email: normalizedEmail },
+  });
+
+  return {
+    exists: Boolean(data?.exists),
+    error: error || null,
+  };
+}

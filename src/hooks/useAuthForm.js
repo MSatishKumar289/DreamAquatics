@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { fetchCurrentProfile } from '../lib/profileApi';
+import { checkUserExistsByEmail } from '../lib/authApi';
 import { validateEmail } from '../utils/validation';
 
 /**
@@ -118,9 +119,20 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
 
     setAuthLoading(true);
     const displayName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
     try {
+      const { exists, error: existsError } = await checkUserExistsByEmail(normalizedEmail);
+      if (existsError) {
+        setError('Unable to verify this email right now. Please try again.');
+        return;
+      }
+      if (exists) {
+        setError('Email already exists. Try logging in or use Forgot password.');
+        return;
+      }
+
       const { error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: normalizedEmail,
         password: password.trim(),
         options: {
           data: { full_name: displayName || null },
@@ -177,10 +189,21 @@ export const useAuthForm = ({ onSuccess, onProfileUpdate }) => {
     }
 
     setAuthLoading(true);
+    const normalizedEmail = email.trim().toLowerCase();
     try {
+      const { exists, error: existsError } = await checkUserExistsByEmail(normalizedEmail);
+      if (existsError) {
+        setError('Unable to verify this email right now. Please try again.');
+        return;
+      }
+      if (!exists) {
+        setError('Email does not exist. Please register first or check your email address.');
+        return;
+      }
+
       const redirectTo = `${window.location.origin}/reset-password`;
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
+        normalizedEmail,
         { redirectTo }
       );
       if (resetError) {
