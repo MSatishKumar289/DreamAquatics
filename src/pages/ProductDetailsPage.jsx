@@ -22,8 +22,10 @@ const ProductDetailsPage = () => {
   const [isResolvingProduct, setIsResolvingProduct] = useState(false);
   const [resolveError, setResolveError] = useState("");
   const relatedTrackRef = useRef(null);
+  const relatedSectionRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [shouldLoadRelatedProducts, setShouldLoadRelatedProducts] = useState(false);
   const stateProduct = location.state?.product || null;
   const [resolvedProduct, setResolvedProduct] = useState(stateProduct);
   const product = resolvedProduct || null;
@@ -131,6 +133,35 @@ const ProductDetailsPage = () => {
   }, [product?.id]);
 
   useEffect(() => {
+    setShouldLoadRelatedProducts(false);
+  }, [product?.id]);
+
+  useEffect(() => {
+    if (!relatedProducts.length) return undefined;
+    const node = relatedSectionRef.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadRelatedProducts(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "220px 0px" }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [relatedProducts.length, product?.id]);
+
+  useEffect(() => {
+    if (!shouldLoadRelatedProducts) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      return undefined;
+    }
     const node = relatedTrackRef.current;
     if (!node) return;
 
@@ -176,7 +207,7 @@ const ProductDetailsPage = () => {
       node.removeEventListener("pointerup", scheduleUpdate);
       resizeObserver.disconnect();
     };
-  }, [relatedProducts.length]);
+  }, [relatedProducts.length, shouldLoadRelatedProducts]);
 
   const scrollRelated = (direction) => {
     const node = relatedTrackRef.current;
@@ -452,13 +483,17 @@ const ProductDetailsPage = () => {
           </div>
 
           {relatedProducts.length > 0 && (
-            <div className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5 da-card-reveal" style={{ "--da-stagger": "280ms" }}>
+            <div
+              ref={relatedSectionRef}
+              className="mt-5 rounded-[8px] border border-amber-200/80 bg-white/55 p-4 sm:p-5 da-card-reveal"
+              style={{ "--da-stagger": "280ms" }}
+            >
               <h2 className="text-xl font-semibold text-[#102A43] sm:text-2xl">Other Products</h2>
               <div className="relative mt-4">
                 <button
                   type="button"
                   onClick={() => scrollRelated("left")}
-                  disabled={!canScrollLeft}
+                  disabled={!shouldLoadRelatedProducts || !canScrollLeft}
                   className="absolute -left-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-white text-blue-700 shadow transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Scroll related products left"
                 >
@@ -469,7 +504,7 @@ const ProductDetailsPage = () => {
                 <button
                   type="button"
                   onClick={() => scrollRelated("right")}
-                  disabled={!canScrollRight}
+                  disabled={!shouldLoadRelatedProducts || !canScrollRight}
                   className="absolute -right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-white text-blue-700 shadow transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Scroll related products right"
                 >
@@ -478,7 +513,8 @@ const ProductDetailsPage = () => {
                   </svg>
                 </button>
                 <div ref={relatedTrackRef} className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-14 pb-2">
-                {relatedProducts.map((item, index) => {
+                {shouldLoadRelatedProducts
+                  ? relatedProducts.map((item, index) => {
                   const itemTitle = item?.name || item?.title || "Product";
                   const itemImageRaw = item?.product_images?.[0]?.url || item?.image || "";
                   const itemImageSrc =
@@ -503,7 +539,12 @@ const ProductDetailsPage = () => {
                         {itemTitle}
                       </p>
                       <div className="h-28 overflow-hidden rounded-[8px] bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]">
-                        <img src={itemImageSrc} alt={itemTitle} className="h-full w-full object-cover object-center" />
+                        <img
+                          src={itemImageSrc}
+                          alt={itemTitle}
+                          loading="lazy"
+                          className="h-full w-full object-cover object-center"
+                        />
                       </div>
                       <div className="relative mt-2 w-full">
                         <p className="text-center text-lg font-semibold text-[#1D3A8A]">
@@ -515,7 +556,17 @@ const ProductDetailsPage = () => {
                       </div>
                     </button>
                   );
-                })}
+                })
+                  : Array.from({ length: Math.min(4, relatedProducts.length) }).map((_, index) => (
+                      <div
+                        key={`related-skeleton-${index}`}
+                        className="snap-start min-w-[150px] rounded-[8px] border border-amber-200/80 bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA] p-2 shadow-sm"
+                      >
+                        <div className="da-card-skeleton min-h-[3rem] rounded-[8px]" />
+                        <div className="mt-2 da-card-skeleton h-28 rounded-[8px]" />
+                        <div className="mt-2 da-card-skeleton h-9 rounded-[8px]" />
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>

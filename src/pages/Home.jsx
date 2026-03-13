@@ -1137,7 +1137,7 @@ const Home = ({ profile }) => {
                 onClick={() => setActiveHighlight(highlightImageOne)}
                 aria-label="Enlarge highlight image"
               >
-                <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" />
+                <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" loading="lazy" />
               </button>
               <button
                 type="button"
@@ -1145,7 +1145,7 @@ const Home = ({ profile }) => {
                 onClick={() => setActiveHighlight(highlightImageTwo)}
                 aria-label="Enlarge highlight image"
               >
-                <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" />
+                <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" loading="lazy" />
               </button>
             </div>
             <div className="mt-2 flex justify-center">
@@ -1286,6 +1286,7 @@ const Home = ({ profile }) => {
                       src={card.visualImage}
                       alt={card.title}
                       className={`absolute inset-0 h-full w-full object-center transition-transform duration-500 group-hover:scale-[1.04] ${homeCategoryCardImageClass}`}
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-[#06213D]/45" aria-hidden />
                     <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#9DD8FF]/35 via-[#9DD8FF]/10 to-transparent" aria-hidden />
@@ -1402,7 +1403,7 @@ const Home = ({ profile }) => {
                   onClick={() => setActiveHighlight(highlightImageOne)}
                   aria-label="Enlarge highlight image"
                 >
-                  <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" />
+                  <img src={highlightImageOne} alt="Highlight koi" className="h-full w-full object-cover" loading="lazy" />
                 </button>
                 <button
                   type="button"
@@ -1410,7 +1411,7 @@ const Home = ({ profile }) => {
                   onClick={() => setActiveHighlight(highlightImageTwo)}
                   aria-label="Enlarge highlight image"
                 >
-                  <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" />
+                  <img src={highlightImageTwo} alt="Highlight detail" className="h-full w-full object-cover" loading="lazy" />
                 </button>
               </div>
               <div className="mt-2 flex justify-center">
@@ -1546,6 +1547,7 @@ const Home = ({ profile }) => {
                               src={product?.product_images?.[0]?.url || product?.image || BgImage}
                               alt={product?.name || "Best seller"}
                               className="h-full w-full object-cover bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
+                              loading="lazy"
                             />
                           </div>
                           <div className="flex flex-1 flex-col px-3 py-4 text-left sm:px-4">

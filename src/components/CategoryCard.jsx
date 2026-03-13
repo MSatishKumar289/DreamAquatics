@@ -41,10 +41,7 @@ const ProductImageArea = ({
   onImageClick,
 }) => {
   if (isSubCategory) {
-    const visualImages = (imageGallery.length ? imageGallery : [imageSrc]).slice(0, 3);
-    const primaryImage = visualImages[0] || imageSrc;
-    const secondaryImages = visualImages.slice(1, 3);
-    const hasSecondaryImages = secondaryImages.length > 0;
+    const primaryImage = imageSrc;
 
     return (
       <div className="relative flex h-full w-full flex-col items-center">
@@ -58,54 +55,13 @@ const ProductImageArea = ({
 
         <div className="relative mx-auto aspect-[1/1.24] w-full overflow-hidden rounded-[12px] border border-[#f3d35a] bg-[#d7e6f1] shadow-[0_10px_22px_rgba(66,110,145,0.18),0_0_0_1px_rgba(255,225,92,0.45)] sm:aspect-[1/1.05]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.32),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.08))]" />
-          <div
-            className={`absolute ${
-              hasSecondaryImages
-                ? "top-[2%] bottom-[26%] inset-x-0"
-                : "inset-x-0 top-0 bottom-[26%] sm:bottom-[22%]"
-            }`}
-          >
-            {secondaryImages[0] && (
-              <div className="absolute bottom-[2%] left-0 z-20 h-[88%] w-[38%] origin-bottom-left -rotate-[15deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
-                <img
-                  src={secondaryImages[0]}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  aria-hidden="true"
-                  onError={(e) => {
-                    e.target.src =
-                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Crect fill='%23dbe4ea' width='260' height='260'/%3E%3C/svg%3E";
-                  }}
-                />
-              </div>
-            )}
-
-            {secondaryImages[1] && (
-              <div className="absolute bottom-[2%] right-0 z-20 h-[88%] w-[38%] origin-bottom-right rotate-[15deg] overflow-hidden rounded-[12px] bg-white shadow-[0_14px_24px_rgba(15,23,42,0.24)] ring-1 ring-black/6 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
-                <img
-                  src={secondaryImages[1]}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  aria-hidden="true"
-                  onError={(e) => {
-                    e.target.src =
-                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Crect fill='%23dbe4ea' width='260' height='260'/%3E%3C/svg%3E";
-                  }}
-                />
-              </div>
-            )}
-
-            <div
-              className={`absolute z-30 overflow-hidden rounded-[12px] bg-white shadow-[0_18px_30px_rgba(15,23,42,0.30)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-y-1.5 ${
-                hasSecondaryImages
-                  ? "top-0 bottom-0 inset-x-[8%]"
-                  : "inset-0"
-              }`}
-            >
+          <div className="absolute inset-x-0 top-0 bottom-[26%] sm:bottom-[22%]">
+            <div className="absolute inset-0 z-30 overflow-hidden rounded-[12px] bg-white shadow-[0_18px_30px_rgba(15,23,42,0.30)] ring-1 ring-black/6 transition-transform duration-300 group-hover:-translate-y-1.5">
               <img
                 src={primaryImage}
                 alt={`${productTitle}${productSubtitle ? ` - ${productSubtitle}` : ""}`}
                 className="h-full w-full object-cover"
+                loading="lazy"
                 onError={(e) => {
                   e.target.src =
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='420'%3E%3Crect fill='%23dbe4ea' width='400' height='420'/%3E%3Ctext fill='%2364748b' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E" +
@@ -147,6 +103,7 @@ const ProductImageArea = ({
               ? "bg-white"
               : "bg-gradient-to-b from-[#FFF7D6] via-[#FFF3C7] to-[#FFFBEA]"
           }`}
+          loading="lazy"
           onClick={onImageClick}
           onError={(e) => {
             e.target.src =
@@ -527,11 +484,7 @@ const CategoryCard = ({
 
   const imageSrc = resolveCatalogImage(productImage, productTitle);
   const subcategoryVisualImages = isSubCategory
-    ? [productImage, ...subcategoryImageGallery]
-        .filter((src) => typeof src === "string" && src.trim())
-        .filter((src, index, list) => list.indexOf(src) === index)
-        .map((src) => resolveCatalogImage(src, productTitle))
-        .slice(0, 3)
+    ? [imageSrc]
     : [];
 
   const runFlyToCartAnimation = () => {

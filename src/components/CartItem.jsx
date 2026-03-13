@@ -31,6 +31,7 @@ const CartItem = ({ item, onRemove, onIncrement, onDecrement }) => {
         src={imageSrc}
         alt={item.title}
         className="h-20 w-20 flex-shrink-0 rounded-2xl border border-blue-100 bg-blue-50 object-cover"
+        loading="lazy"
       />
 
       <div className="flex flex-1 flex-col gap-3">

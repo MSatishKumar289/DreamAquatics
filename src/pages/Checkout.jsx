@@ -653,6 +653,7 @@ const isFetchingAddressForCheckout = isLoggedIn && loadingAddresses;
                               src={imageSrc}
                               alt={itemTitle}
                               className="h-20 w-20 rounded-[8px] object-cover"
+                              loading="lazy"
                             />
                             <div className="flex-1">
                               <p className="text-base font-semibold text-gray-900">
