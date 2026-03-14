@@ -220,18 +220,39 @@ const ProductDetailsPage = () => {
     if (typeof window === "undefined") return;
 
     const exactProductUrl = `${window.location.origin}/product/${product?.id || productId || ""}`;
+    const formattedCurrentPrice = Number(currentPrice || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    const hasOriginalPrice = Number(originalPrice) > Number(currentPrice);
+    const formattedOriginalPrice = hasOriginalPrice
+      ? Number(originalPrice).toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : "";
+    const shareMessage = [
+      `*${title}*`,
+      `Price : ${
+        hasOriginalPrice
+          ? `~Rs. ${formattedOriginalPrice}~ *Rs. ${formattedCurrentPrice}*`
+          : `*Rs. ${formattedCurrentPrice}*`
+      }`,
+      `Order here : ${exactProductUrl}`,
+    ].join("\n");
 
     try {
       if (navigator.share) {
         await navigator.share({
-          url: exactProductUrl,
+          title,
+          text: shareMessage,
         });
         setShareFeedback("Share ready");
         return;
       }
 
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(exactProductUrl);
+        await navigator.clipboard.writeText(shareMessage);
         setShareFeedback("Link copied");
         return;
       }
@@ -241,7 +262,7 @@ const ProductDetailsPage = () => {
       if (error?.name === "AbortError") return;
 
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(exactProductUrl);
+        await navigator.clipboard.writeText(shareMessage);
         setShareFeedback("Link copied");
         return;
       }
