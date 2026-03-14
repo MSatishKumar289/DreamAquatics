@@ -30,6 +30,7 @@ export async function upsertProfile(updates = {}) {
     full_name: updates.full_name ?? null,
     phone: updates.phone ?? null,
     avatar_url: updates.avatar_url ?? null,
+    role: updates.role ?? 'user',
   };
 
   const { data, error } = await supabase

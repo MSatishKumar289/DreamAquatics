@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchProductById } from "../lib/catalogApi";
 import { getProductPricing } from "../lib/pricing";
 
-const ProductDetailsPage = () => {
+const ProductDetailsPage = ({ authUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -220,6 +220,7 @@ const ProductDetailsPage = () => {
     if (typeof window === "undefined") return;
 
     const exactProductUrl = `${window.location.origin}/product/${product?.id || productId || ""}`;
+    const isAdminUser = authUser?.role === "admin";
     const formattedCurrentPrice = Number(currentPrice || 0).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -243,6 +244,17 @@ const ProductDetailsPage = () => {
 
     try {
       if (navigator.share) {
+        if (isAdminUser) {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareMessage);
+            setShareFeedback("Link copied");
+            return;
+          }
+
+          setShareFeedback("Copy unavailable");
+          return;
+        }
+
         await navigator.share({
           title,
           text: shareMessage,

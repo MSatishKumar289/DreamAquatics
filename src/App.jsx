@@ -150,7 +150,25 @@ function AppContent() {
       if (!active) return;
 
       if (existingProfile) {
-        setProfile(existingProfile);
+        if (existingProfile.role) {
+          setProfile(existingProfile);
+          return;
+        }
+
+        const { profile: normalizedProfile, error } = await upsertProfile({
+          full_name: existingProfile.full_name,
+          phone: existingProfile.phone,
+          avatar_url: existingProfile.avatar_url,
+          role: 'user',
+        });
+
+        if (!active) return;
+        if (!error && normalizedProfile) {
+          setProfile(normalizedProfile);
+          return;
+        }
+
+        setProfile({ ...existingProfile, role: 'user' });
         return;
       }
 
@@ -560,7 +578,7 @@ function AppContent() {
               path="/category/:categorySlug/:subCategorySlug"
               element={<CategoryListingPage />}
             />
-            <Route path="/product/:productId" element={<ProductDetailsPage />} />
+            <Route path="/product/:productId" element={<ProductDetailsPage authUser={authUser} />} />
             <Route path="/cart" element={<CartPage />} />
             <Route
               path="/checkout"
