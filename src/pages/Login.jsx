@@ -28,7 +28,12 @@ const Login = () => {
   };
 
   const handleAuthSuccess = () => {
-    navigate('/');
+    const from = location.state?.from;
+    if (from) {
+      navigate(from.pathname, { state: from.state, replace: true });
+    } else {
+      navigate('/');
+    }
   };
 
   return (
